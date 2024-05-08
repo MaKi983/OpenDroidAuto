@@ -1,4 +1,4 @@
-rootProject.name = "OpenDroidAuto2"
+rootProject.name = "OpenDroidAuto"
 include ':common'
 include ':aasdk'
 include ':app'
