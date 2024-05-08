@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F1F1F1"
+    android:layout_marginBottom="64dp">
+
+    <!-- Media Audio -->
+    <TextView
+        android:id="@+id/media_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:textColor="#000"
+        android:text="@string/media_audio_settings"/>
+
+    <CheckBox
+        android:id="@+id/enable_media_channel"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:layout_marginLeft="100dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/media_title"
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@+id/media_check_button"
+        android:textColor="#000"
+        android:text="@string/enable_media_channel_settings" />
+
+    <TextView
+        android:id="@+id/media_samplerate_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/enable_media_channel"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@+id/media_check_button"
+        android:gravity="center"
+        android:labelFor="@id/media_samplerate"
+        android:textColor="#000"
+        android:text="@string/samplerate_settings" />
+
+    <EditText
+        android:id="@+id/media_samplerate"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/media_samplerate_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/media_check_button"
+        android:gravity="center_horizontal"
+        android:imeOptions="actionDone"
+        android:inputType="number"
+        android:textColor="#000"
+        android:maxLines="1" />
+
+
+    <TextView
+        android:id="@+id/media_samplesize_label"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/media_samplerate"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@+id/media_check_button"
+        android:gravity="center"
+        android:labelFor="@id/media_samplesize"
+        android:textColor="#000"
+        android:text="@string/samplesize_settings" />
+
+    <Spinner
+        android:id="@+id/media_samplesize"
+        android:layout_width="100dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/media_samplesize_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/media_check_button"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:textAlignment="center" />
+
+
+    <TextView
+        android:id="@+id/media_channelcount_label"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/media_samplesize"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@+id/media_check_button"
+        android:gravity="center"
+        android:labelFor="@id/media_channel_count"
+        android:textColor="#000"
+        android:text="@string/channelcount_settings" />
+
+    <Spinner
+        android:id="@+id/media_channel_count"
+        android:layout_width="100dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/media_channelcount_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/media_check_button"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:textAlignment="center" />
+
+    <Button
+        android:id="@+id/media_check_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/media_samplerate"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:background="#039BE5"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="Check Media AUDIO"
+        android:textColor="#FFF" />
+
+    <!-- Speech Audio -->
+
+    <View
+        android:id="@+id/speech_separator"
+        android:layout_width="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/media_channel_count"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        >
+    </View>
+
+    <TextView
+        android:id="@+id/speech_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/speech_separator"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:textColor="#000"
+        android:text="@string/speech_audio_settings"/>
+
+
+    <CheckBox
+        android:id="@+id/enable_speech_channel"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:layout_marginLeft="100dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/speech_title"
+        android:layout_marginTop="10dp"
+        android:textColor="#000"
+        android:layout_toLeftOf="@+id/speech_check_button"
+        android:text="@string/enable_speech_channel_settings" />
+
+    <TextView
+        android:id="@+id/speech_samplerate_label"
+        android:layout_width="0dp"
+        android:layout_below="@id/enable_speech_channel"
+        android:layout_alignParentLeft="true"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@+id/speech_check_button"
+        android:gravity="center"
+        android:textColor="#000"
+        android:labelFor="@id/speech_samplerate"
+        android:text="@string/samplerate_settings"/>
+
+    <EditText
+        android:id="@+id/speech_samplerate"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/speech_samplerate_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/speech_check_button"
+        android:gravity="center_horizontal"
+        android:imeOptions="actionDone"
+        android:inputType="number"
+        android:textColor="#000"
+        android:maxLines="1" />
+
+
+    <TextView
+        android:id="@+id/speech_samplesize_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_below="@id/speech_samplerate"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/speech_check_button"
+        android:gravity="center"
+        android:labelFor="@id/speech_samplesize"
+        android:textColor="#000"
+        android:text="@string/samplesize_settings"/>
+
+    <Spinner
+        android:id="@+id/speech_samplesize"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/speech_samplesize_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/speech_check_button"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:textAlignment="center"/>
+
+
+    <TextView
+        android:id="@+id/speech_channelcount_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_below="@id/speech_samplesize"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/speech_check_button"
+        android:gravity="center"
+        android:labelFor="@id/speech_channel_count"
+        android:textColor="#000"
+        android:text="@string/channelcount_settings"/>
+
+    <Spinner
+        android:id="@+id/speech_channel_count"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/speech_channelcount_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/speech_check_button"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:textAlignment="center"/>
+
+    <Button
+        android:id="@+id/speech_check_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/speech_samplerate"
+        android:layout_marginLeft="50dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="50dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:textColor="#FFF"
+        android:text="Check Speech Audio"/>
+
+    <!-- System Audio -->
+
+    <View
+        android:id="@+id/system_separator"
+        android:layout_width="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/speech_channel_count"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        >
+    </View>
+
+    <TextView
+        android:id="@+id/system_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/system_separator"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:textColor="#000"
+        android:text="@string/system_audio_settings"/>
+
+
+    <TextView
+        android:id="@+id/system_samplerate_label"
+        android:layout_width="0dp"
+        android:layout_below="@id/system_title"
+        android:layout_alignParentLeft="true"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@+id/system_check_button"
+        android:gravity="center"
+        android:textColor="#000"
+        android:labelFor="@id/system_samplerate"
+        android:text="@string/samplerate_settings"/>
+
+    <EditText
+        android:id="@+id/system_samplerate"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/system_samplerate_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/system_check_button"
+        android:inputType="number"
+        android:imeOptions="actionDone"
+        android:maxLines="1"
+        android:textColor="#000"
+        android:gravity="center_horizontal" />
+
+
+    <TextView
+        android:id="@+id/system_samplesize_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_below="@id/system_samplerate"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/system_check_button"
+        android:gravity="center"
+        android:labelFor="@id/system_samplesize"
+        android:textColor="#000"
+        android:text="@string/samplesize_settings"/>
+
+    <Spinner
+        android:id="@+id/system_samplesize"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/system_samplesize_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/system_check_button"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:textAlignment="center"/>
+
+
+    <TextView
+        android:id="@+id/system_channelcount_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_below="@id/system_samplesize"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/system_check_button"
+        android:gravity="center"
+        android:labelFor="@id/system_channel_count"
+        android:textColor="#000"
+        android:text="@string/channelcount_settings"/>
+
+    <Spinner
+        android:id="@+id/system_channel_count"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/system_channelcount_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/system_check_button"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:textAlignment="center"/>
+
+    <Button
+        android:id="@+id/system_check_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/system_samplerate"
+        android:layout_marginLeft="50dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="50dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:textColor="#FFF"
+        android:text="Check System Audio"/>
+
+
+    <!-- Microphone -->
+    <View
+        android:id="@+id/mic_separator"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@+id/system_channel_count"
+        android:background="@android:color/darker_gray"
+        >
+    </View>
+
+    <TextView
+        android:id="@+id/mic_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/mic_separator"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:textColor="#000"
+        android:text="@string/input_audio_settings"/>
+
+    <CheckBox
+        android:id="@+id/enable_audioinput_channel"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:layout_marginLeft="100dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/mic_title"
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@+id/mic_check_button"
+        android:textColor="#000"
+        android:text="@string/enable_audioinput_channel_settings" />
+
+    <TextView
+        android:id="@+id/mic_source_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/enable_audioinput_channel"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/mic_check_button"
+        android:layout_marginTop="0dp"
+        android:gravity="center"
+        android:textColor="#000"
+        android:labelFor="@id/mic_source"
+        android:text="@string/input_settings_mic_source"/>
+
+    <Spinner
+        android:id="@+id/mic_source"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/mic_source_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/mic_check_button"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:textAlignment="center"/>
+
+    <TextView
+        android:id="@+id/mic_samplerate_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_below="@id/mic_source"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/mic_check_button"
+        android:gravity="center"
+        android:labelFor="@id/mic_samplerate"
+        android:textColor="#000"
+        android:text="@string/samplerate_settings"/>
+
+    <EditText
+        android:id="@+id/mic_samplerate"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/mic_samplerate_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/mic_check_button"
+        android:inputType="number"
+        android:imeOptions="actionDone"
+        android:maxLines="1"
+        android:textColor="#000"
+        android:gravity="center_horizontal" />
+
+
+    <TextView
+        android:id="@+id/mic_samplesize_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_below="@id/mic_samplerate"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/mic_check_button"
+        android:gravity="center"
+        android:textColor="#000"
+        android:labelFor="@id/mic_samplesize"
+        android:text="@string/samplesize_settings"/>
+
+    <Spinner
+        android:id="@+id/mic_samplesize"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/mic_samplesize_label"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/mic_check_button"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:textAlignment="center"/>
+
+
+    <TextView
+        android:id="@+id/mic_channelcount_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_below="@id/mic_samplesize"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/mic_check_button"
+        android:gravity="center"
+        android:textColor="#000"
+        android:labelFor="@id/mic_channel_count"
+        android:text="@string/channelcount_settings"/>
+
+    <Spinner
+        android:id="@+id/mic_channel_count"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_below="@id/mic_samplesize"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/mic_check_button"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:textAlignment="center"/>
+
+    <Button
+        android:id="@+id/mic_check_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/mic_samplerate"
+        android:layout_marginLeft="50dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="50dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:textColor="#FFF"
+        android:text="Check mic Audio"/>
+
+</RelativeLayout>

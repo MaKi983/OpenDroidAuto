@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="it.smg.hu"
+    android:versionCode="4"
+    android:versionName="OpenDroidAuto2 V0.0.4">
+
+    <uses-feature android:name="android.hardware.usb.host" android:required="false"/>
+    <uses-feature android:name="android.hardware.usb.accessory" android:required="true" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" android:required="false"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" android:required="false"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" android:required="false"/>
+    <uses-permission android:name="android.permission.INTERNET" android:required="false"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" android:required="false"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" android:required="false" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:required="false" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:required="false" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:required="false" />
+    <!-- per log e dump file -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:required="false" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:required="false" />
+    <uses-permission android:name="android.permission.READ_LOGS" android:required="false" />
+
+    <uses-permission android:name="android.permission.ADA_SERVICE_ACCESS" android:required="false" />
+
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <application android:label="OpenDroidAuto"
+        android:name=".ODAApplication"
+        android:icon="@drawable/logo"
+        android:hardwareAccelerated="true"
+        android:theme="@style/Theme.AppCompat">
+
+        <activity android:name=".ui.MainActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.Popup" android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+        </intent-filter>
+        <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
+        </activity>
+
+        <activity android:name=".ui.SettingsActivity" android:label="Settings" android:screenOrientation="landscape">
+        </activity>
+
+        <activity android:name=".ui.PlayerActivity"  android:screenOrientation="landscape" android:launchMode="singleTask"> <!--android:excludeFromRecents="true" android:noHistory="true"-->
+        </activity>
+
+        <service android:enabled="true" android:name=".service.ODAService" android:exported="true">
+        </service>
+
+    </application>
+</manifest>
+
+

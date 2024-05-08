@@ -1,0 +1,13 @@
+Boost for Android
+https://github.com/moritz-wundke/Boost-for-Android
+
+version 1.68.0
+
+Build:
+ - Download from https://github.com/moritz-wundke/Boost-for-Android (master branch) and unzip in a folder
+ - edit file "build-android.sh" row 622, add following
+ 	cxxstd=14 		     \
+ - run command
+	./build-android.sh --progress --boost=1.68.0 --arch=armeabi-v7a,x86 --target-version=15 ${NDK_ROOT} --layout= --with-libraries=system,log,thread
+ - from Boost-for-Android-master/build/out copy compiled lib (*.a) and include headers in boost directory 
+

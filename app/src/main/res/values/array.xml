@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="video_resolution_labels">
+        <item>480p</item>
+        <item>720p</item>
+        <item>1080p</item>
+        <item>1440p</item>
+    </string-array>
+
+    <integer-array name="video_resolution_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </integer-array>
+
+    <string-array name="video_fps_labels">
+        <item>30</item>
+        <item>60</item>
+    </string-array>
+
+    <integer-array name="video_fps_values">
+        <item>1</item>
+        <item>2</item>
+    </integer-array>
+
+    <string-array name="video_nightmode">
+        <item>TIME/GPS</item>
+        <item>LIGHT</item>
+        <item>DAY</item>
+        <item>NIGHT</item>
+    </string-array>
+
+    <!-- See android.media.MediaRecorder -->
+    <string-array name="mic_source_labels">
+        <item>DEFAULT</item>
+        <item>MIC</item>
+        <item>CAMCORDER</item>
+        <item>VOICE_RECOGNITION</item>
+        <item>VOICE_COMMUNICATION</item>
+    </string-array>
+
+    <integer-array name="mic_source_values">
+        <item>0</item>
+        <item>1</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+    </integer-array>
+
+    <string-array name="mic_channels_labels">
+        <item>MONO</item>
+        <item>STEREO</item>
+    </string-array>
+
+    <integer-array name="mic_channels_values">
+        <item>1</item>
+        <item>2</item>
+    </integer-array>
+
+    <!-- See android.media.AudioFormat -->
+    <string-array name="audio_channels_labels">
+        <item>MONO</item>
+        <item>STEREO</item>
+        <item>QUAD</item>
+        <item>5POINT1</item>
+        <item>7POINT1_SURROUND</item>
+    </string-array>
+
+    <integer-array name="audio_channels_values">
+        <item>1</item>
+        <item>2</item>
+        <item>4</item>
+        <item>6</item>
+        <item>8</item>
+    </integer-array>
+
+    <string-array name="audio_samplesize_labels">
+        <item>16bit</item>
+        <item>8bit</item>
+    </string-array>
+
+    <integer-array name="audio_samplesize_values">
+        <item>16</item>
+        <item>8</item>
+    </integer-array>
+
+    <!-- See android.util.Log -->
+    <string-array name="loglevel_labels">
+        <item>VERBOSE</item>
+        <item>DEBUG</item>
+        <item>INFO</item>
+        <item>WARN</item>
+        <item>ERROR</item>
+    </string-array>
+
+    <integer-array name="loglevel_values">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </integer-array>
+
+</resources>

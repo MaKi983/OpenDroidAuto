@@ -1,0 +1,82 @@
+<resources>
+	<string name="car_settings">Car Settings</string>
+	<string name="car_settings_hu_name">Name</string>
+	<string name="car_settings_model">Model</string>
+	<string name="car_settings_year">Year</string>
+	<string name="car_settings_hu_make">HU Maker</string>
+	<string name="car_settings_hu_model">HU Model</string>
+	<string name="car_settings_sw_build">SW Build</string>
+	<string name="car_settings_sw_version">SW Version</string>
+	<string name="car_settings_play_media_during_vr">Play Native Media During VR</string>
+	<string name="car_settings_hide_clock">Hide Clock</string>
+	<string name="car_settings_left_drive">Left Drive</string>
+	<string name="car_settings_aa_wifi">Use Android Auto Wireless</string>
+
+	<string name="video_settings_use_direct_buffer">EXPERIMENTAL: Use direct buffer (better performance?)</string>
+	<string name="video_settings_sw_dec">Use software decoder (can be slow)</string>
+	<string name="video_settings">Video Settings</string>
+	<string name="video_settings_resolution">Resolution</string>
+	<string name="video_settings_fps">FPS</string>
+	<string name="video_settings_dpi">DPI</string>
+	<string name="video_settings_margin">Margin</string>
+	<string name="video_settings_nightmode">Night Mode</string>
+	<string name="video_settings_exp_omxvideocodec">Use experimental OMXVideoCodec (port of MediaCodec API)</string>
+	<string name="video_show_media_notification">Show Media notification when app is in background</string>
+	<string name="video_show_navigation_notification">Show Navigation notification when app is in background</string>
+	<string name="video_show_app_badge">Show an application badge when app is in background</string>
+
+	<string name="enable_media_channel_settings">Enable Media Audio Channel</string>
+	<string name="enable_speech_channel_settings">Enable Speech Audio Channel</string>
+	<string name="enable_audioinput_channel_settings">Enable Audio Input Channel</string>
+	<string name="media_audio_settings">Media Audio Settings</string>
+	<string name="speech_audio_settings">Speech Audio Settings</string>
+	<string name="system_audio_settings">System Audio Settings</string>
+	<string name="samplerate_settings">Sample Rate</string>
+	<string name="samplesize_settings">Sample Size</string>
+	<string name="channelcount_settings">Channel Count</string>
+	<string name="input_audio_settings">Microphone Settings</string>
+	<string name="input_settings_mic_source">Source Type</string>
+
+	<string name="audio_settings">Audio Settings</string>
+	<string name="audio_settings_mic_format">Microphone Format</string>
+
+	<string name="advanced_settings">Advanced</string>
+	<string name="advanced_settings_logDir">External log directory</string>
+	<string name="advanced_settings_enabledebug">Enable external log</string>
+	<string name="advanced_settings_enabletoast">Enable Toast log</string>
+	<string name="advanced_settings_enablewifi">Enable wifi (only for debug)</string>
+	<string name="advanced_settings_logLevel">Log Level</string>
+	<string name="advanced_settings_logProtocol">Enable Log Protocol (logLevel must be verbose)</string>
+	<string name="advanced_settings_enableautostart">Enable autostart</string>
+	<string name="advanced_settings_sendlog">Send Log</string>
+
+	<string name="settings">Settings</string>
+	<string name="exit">Exit</string>
+	<string name="start">Start WiFi</string>
+	<string name="start_usb">Start</string>
+	<string name="usb_connection_icon">USB connection</string>
+	<string name="wifi_connection_icon">WiFi connection</string>
+
+	<string name="loading_device">Connecting to %1$s</string>
+
+	<string name="keymap_settings">KeyMap</string>
+	<string name="main_settings">Main</string>
+
+	<string name="main_notification_title">Android Auto Mode</string>
+	<string name="main_notification_content">Android Auto Mode</string>
+	<string name="popup_notification_content">Android Auto available, click to connect</string>
+
+	<string name="media_status_update_message">Media Status Update: source %1$s, status %2$s, progress %3$d</string>
+<!--	<string name="media_metadata_update_message">Media Metadata Update: track %1$s, album: %2$s, artist %3$s, length %4$d</string>-->
+
+	<!-- error messages -->
+	<string name="usb_config_error">USB configuration error. Native AA error: %1$d</string>
+	<string name="usb_transfer_error">USB communication error. Native AA error: %1$d</string>
+	<string name="aoap_error">AOAP Device error. Native AA error: %1$d</string>
+	<string name="ssl_error">Securing connection error. Native AA error: %1$d</string>
+	<string name="operation_aborted_error">Operation aborted. Native AA error: %1$d</string>
+	<string name="protocol_error">Protocol error. Native AA error: %1$d</string>
+	<string name="wifi_transfer_error">Wifi comunication error. Native AA error: %1$d</string>
+	<string name="generic_error">Generic error. Native AA error: %1$d</string>
+
+</resources>

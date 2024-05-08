@@ -1,0 +1,18 @@
+Openssl 
+https://github.com/openssl/openssl
+
+version 1.1.1n
+
+Build:
+  - create folder openssl
+  - download from https://github.com/openssl/openssl tag OpenSSL_1_1_1k and unzip it in a folder openssl/openss-1.1.1k
+  - copy script build.sh and put it in openssl folder
+  - set correct android_ndk_home in build.sh (row 7)
+  - change build.sh permission
+    sudo chmod u+x build.sh
+  - run script
+    ./build.sh
+  - copy include folder from openssl/output to lib/openssl inside project
+  - copy *.a file from openssl/output/lib to lib/openssl accordingly to architecture
+  
+To build both armeabi and x86 run script twice changing the architecture inside (row 10, 12, 18 and 20) 

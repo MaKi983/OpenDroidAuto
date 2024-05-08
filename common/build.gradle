@@ -1,0 +1,64 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "30.0.2"
+
+    defaultConfig {
+        minSdkVersion 15
+        //noinspection ExpiredTargetSdkVersion
+        targetSdkVersion 15
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+
+        externalNativeBuild {
+            ndkBuild {
+                arguments "NDK_APPLICATION_MK=src/main/cpp/Application.mk"
+                abiFilters rootProject.ext.SupportedABIs.join(", ")
+                targets  "common"
+            }
+        }
+
+    }
+
+    buildTypes {
+        debug {
+
+        }
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/cpp/Android.mk'
+        }
+    }
+
+    buildFeatures {
+        prefabPublishing true
+        buildConfig false
+    }
+
+    prefab {
+        common {
+            headers "src/main/cpp/include"
+        }
+    }
+
+    ndkVersion rootProject.ext.ndkVersion
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+}

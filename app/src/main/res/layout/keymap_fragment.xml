@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:background="#F1F1F1"
+    android:layout_marginBottom="64dp">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        >
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="64dp"
+            android:padding="4dp"
+            android:orientation="vertical"
+            >
+
+            <Button
+                android:id="@+id/keycode_dpad_up"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="&#8593;" />
+
+            <TextView
+                android:id="@+id/keycode_dpad_up_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_dpad_up"
+                android:layout_alignLeft="@id/keycode_dpad_up"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+<!--
+        <Button
+            android:id="@+id/keycode_soft_left"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:text="SL" />
+-->
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:padding="4dp"
+            android:orientation="vertical"
+            >
+
+            <Button
+                android:id="@+id/keycode_dpad_left"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="&#8592;" />
+
+            <TextView
+                android:id="@+id/keycode_dpad_left_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_dpad_left"
+                android:layout_alignLeft="@id/keycode_dpad_left"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="64dp"
+            android:layout_marginTop="64dp"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_dpad_center"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="OK" />
+
+            <TextView
+                android:id="@+id/keycode_dpad_center_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_dpad_center"
+                android:layout_alignLeft="@id/keycode_dpad_center"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+<!--
+        <Button
+            android:id="@+id/keycode_soft_right"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginLeft="128dp"
+            android:text="SR" />
+-->
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="128dp"
+            android:layout_marginTop="64dp"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_dpad_right"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="&#8594;" />
+
+            <TextView
+                android:id="@+id/keycode_dpad_right_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_dpad_right"
+                android:layout_alignLeft="@id/keycode_dpad_right"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="64dp"
+            android:layout_marginTop="128dp"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_dpad_down"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="&#8595;" />
+
+            <TextView
+                android:id="@+id/keycode_dpad_down_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_dpad_down"
+                android:layout_alignLeft="@id/keycode_dpad_down"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+    </FrameLayout>
+
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="200dp">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_media_previous"
+                android:layout_width="72dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="&#9664;&#9664;" />
+
+            <TextView
+                android:id="@+id/keycode_media_previous_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_media_previous"
+                android:layout_alignLeft="@id/keycode_media_previous"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="80dp"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_media_play"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="&#9654;" />
+
+            <TextView
+                android:id="@+id/keycode_media_play_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_media_play"
+                android:layout_alignLeft="@id/keycode_media_play"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_media_play_pause"
+                android:layout_width="72dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="&#9654;/&#10073;&#10073;" />
+
+            <TextView
+                android:id="@+id/keycode_media_play_pause_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_media_play_pause"
+                android:layout_alignLeft="@id/keycode_media_play_pause"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="64dp"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_media_pause"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="&#10073;&#10073;" />
+
+            <TextView
+                android:id="@+id/keycode_media_pause_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_media_pause"
+                android:layout_alignLeft="@id/keycode_media_pause"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="126dp"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_media_next"
+                android:layout_width="72dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="&#9654;&#9654;" />
+
+            <TextView
+                android:id="@+id/keycode_media_next_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_media_next"
+                android:layout_alignLeft="@id/keycode_media_next"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
+        >
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0dp"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_nav"
+                android:layout_width="64dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="NAV" />
+
+            <TextView
+                android:id="@+id/keycode_nav_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_nav"
+                android:layout_alignLeft="@id/keycode_nav"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="72dp"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_call"
+                android:layout_width="64dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="CALL" />
+
+            <TextView
+                android:id="@+id/keycode_call_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_call"
+                android:layout_alignLeft="@id/keycode_call"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="144dp"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_music"
+                android:layout_width="64dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:textSize="14dp"
+                android:text="MUSIC" />
+
+            <TextView
+                android:id="@+id/keycode_music_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_music"
+                android:layout_alignLeft="@id/keycode_music"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="216dp"
+            android:padding="4dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/keycode_search"
+                android:layout_width="64dp"
+                android:layout_height="56dp"
+                android:background="#039BE5"
+                android:textColor="#FFF"
+                android:text="MIC" />
+
+            <TextView
+                android:id="@+id/keycode_search_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/keycode_search"
+                android:layout_alignLeft="@id/keycode_search"
+                android:textSize="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="6dp"></TextView>
+
+        </RelativeLayout>
+<!--
+        <Button
+            android:id="@+id/keycode_night"
+            android:layout_width="72dp"
+            android:layout_height="64dp"
+            android:layout_marginLeft="288dp"
+            android:textSize="14dp"
+            android:text="NIGHT" />
+-->
+    </FrameLayout>
+<!--
+    <Button
+        android:id="@+id/reset_codes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:text="@string/reset" />
+-->
+</FrameLayout>

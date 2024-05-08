@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="64dp"
+    android:background="#F1F1F1"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:textColor="#000"
+        android:labelFor="@id/loglevel"
+        android:text="@string/advanced_settings_logLevel"/>
+
+    <Spinner
+        android:id="@+id/loglevel"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:textColor="#000"
+        android:gravity="center_horizontal"
+        android:textAlignment="center"/>
+
+    <CheckBox
+        android:id="@+id/logProtocol"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:text="@string/advanced_settings_logProtocol"
+        android:textColor="#000" />
+
+    <CheckBox
+        android:id="@+id/enable_debug"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:text="@string/advanced_settings_enabledebug"
+        android:textColor="#000" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:labelFor="@id/log_dir"
+        android:text="@string/advanced_settings_logDir"
+        android:textColor="#000"></TextView>
+
+    <EditText
+        android:id="@+id/log_dir"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:gravity="center_horizontal"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:maxLines="1"
+        android:textColor="#000" />
+
+    <CheckBox
+        android:id="@+id/enable_wifi"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:text="@string/advanced_settings_enablewifi"
+        android:textColor="#000" />
+<!--
+    <CheckBox
+        android:id="@+id/enable_autostart"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:text="@string/advanced_settings_enableautostart"
+        android:textColor="#000" />
+-->
+</LinearLayout>

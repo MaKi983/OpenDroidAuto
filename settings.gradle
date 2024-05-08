@@ -1,0 +1,5 @@
+rootProject.name = "OpenDroidAuto2"
+include ':common'
+include ':aasdk'
+include ':app'
+include ':omxvideocodec'

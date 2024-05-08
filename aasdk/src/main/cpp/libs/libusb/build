@@ -1,0 +1,20 @@
+Libusb
+https://github.com/libusb/libusb
+
+version 1.0.26
+
+Build:
+  - Download from https://github.com/libusb/libusb tag 1.0.26 and unzip in a folder (libusb-1.0.26)
+  - edit file libusb-1.0.26/android/jni/Android.mk and comment the following rows
+  	#include $(LOCAL_PATH)/examples.mk
+	#include $(LOCAL_PATH)/tests.mk
+  - edit file libusb-1.0.26/android/jni/libusb.mk and chenge the following row (to build statically)
+  	from:
+	include $(BUILD_SHARED_LIBRARY)
+	to
+	include $(BUILD_STATIC_LIBRARY)
+  - run command
+  	${NDK_ROOT}/ndk-build
+  - copy file from libusb-1.0.26/android/obj/local/<<arch>>/libusb1.0.a to libusb/lib folder
+  - copy file from libusb-1.0.26/libusb/libusb.h to libusb/include folder
+

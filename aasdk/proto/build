@@ -1,0 +1,24 @@
+aasdk 
+https://github.com/openDsh/aasdk
+
+Build:
+  - check that every file in src are in Android.mk FILE_LIST variable
+    get file list
+        from libs/aasdk/src
+        find ./src -type f | grep -v ut.cpp
+        put the output in FILE_LIST
+        from libs/aasdk/proto-src
+        find ./aasdk_proto -type f | grep -v .pb.h
+        put the output in PROTO_FILE_LIST
+  - compile proto file:
+    o download protoc with the same version of protobuf from https://github.com/protocolbuffers/protobuf/releases and unzip it in a protoc folder 
+    o go inside *.proto file folder and run following command:
+  	  /path/to/protoc --cpp_out=./build/ *.proto
+      the generated files are under build folder
+To compile proto file:
+  - download protoc with the same version of protobuf from https://github.com/protocolbuffers/protobuf/releases and unzip it in a protoc folder
+  - create folder proto-src/aasdk_proto (or delete content if you wanto to rebuild) inside project lib/aasdk
+  - go inside *.proto file folder (libs/aasdk/src/aasdk-proto) and run following command:
+  	/path/to/protoc --cpp_out=../../proto-src/aasdk_proto *.proto
+    the generated files are under proto-src/aasdk_proto folder
+
