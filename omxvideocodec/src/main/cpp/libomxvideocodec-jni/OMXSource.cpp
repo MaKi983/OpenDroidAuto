@@ -7,9 +7,7 @@
 #include <inttypes.h>
 #include <sstream>
 
-#define DEFAULT_WIDTH "480"
-#define DEFAULT_HEIGHT "800"
-#define DEFAULT_FRAMERATE "30"
+#define BUFFERS_SIZE 10
 
 using namespace android;
 
@@ -21,7 +19,7 @@ OMXSource::OMXSource(int width, int height, int fps, std::mutex& mutex):
 
     bufferSize_ = (width * height * 3) / 2;
 
-    format_ = new MetaData;
+    format_ = new MetaData();
     format_->setInt32(kKeyWidth, width);
     format_->setInt32(kKeyHeight, height);
     format_->setInt32(kKeyStride, width);
@@ -34,7 +32,7 @@ OMXSource::OMXSource(int width, int height, int fps, std::mutex& mutex):
     format_->setInt32(kKeyMaxInputSize, bufferSize_);
     format_->setInt32(kKeyColorFormat, OMX_COLOR_FormatYUV420Planar);
 
-    for (int i = 0; i <= 4; i++) {
+    for (int i = 0; i < BUFFERS_SIZE; i++) {
         group_.add_buffer(new MediaBuffer(bufferSize_));
         writeBuffers_.push(new Packet(bufferSize_));
     }
@@ -58,14 +56,6 @@ OMXSource::~OMXSource() {
     }
 }
 
-//void OMXSource::waitForMediaBuffer() {
-//    std::unique_lock<std::mutex> codeclock(mutex_);
-//    while (mediaBuffers_.empty() && !quitFlag_) {
-//        auto t1 = std::chrono::steady_clock::now() + std::chrono::milliseconds(500);
-//        cond_.wait_until(codeclock, t1);
-//    }
-//}
-
 void OMXSource::waitForReadBuffer(){
     std::unique_lock<std::mutex> codeclock(mutex_);
     while (readBuffers_.empty() && !quitFlag_) {
@@ -87,10 +77,6 @@ Packet::Pointer OMXSource::getWriteBuffer(){
     return nextWriteBuffer();
 }
 
-//status_t OMXSource::getMediaBuffer(MediaBuffer** buffer){
-//    return group_.acquire_buffer(buffer);
-//}
-
 int OMXSource::queueReadBuffer(Packet* buffer){
     std::unique_lock<std::mutex> codeclock(mutex_);
     if (!quitFlag_) {
@@ -102,37 +88,6 @@ int OMXSource::queueReadBuffer(Packet* buffer){
     }
     return OK;
 }
-
-//status_t OMXSource::queueMediaBuffer(MediaBuffer* buffer){
-//    std::unique_lock<std::mutex> codeclock(mutex_);
-//    if (!quitFlag_) {
-//        mediaBuffers_.push(buffer);
-//        Log_v("mediabuffers size: %d", mediaBuffers_.size());
-//        codeclock.unlock();
-//        cond_.notify_one();
-//    }
-//    return OK;
-//}
-
-//int OMXSource::queueBuffer(unsigned char* buffer, size_t len, uint64_t timestamp){
-//    std::unique_lock<std::mutex> codeclock(mMutex);
-//
-//    if (!mQuitFlag) {
-//        int64_t t = timestamp;
-//        if (t < 0){
-//            t = 0;
-//        }
-//        Packet *p = new Packet();
-//        p->buf = buffer;
-//        p->len = len;
-//        p->timestamp = t;
-//        mBuffers.push(p);
-//
-//        codeclock.unlock();
-//        mCond.notify_one();
-//    }
-//    return OK;
-//}
 
 sp<MetaData>  OMXSource::getFormat(){
     return format_;
@@ -157,16 +112,6 @@ Packet::Pointer OMXSource::nextWriteBuffer(){
 
     return buffer;
 }
-
-//MediaBuffer* OMXSource::nextMediaBuffer(){
-//    std::unique_lock<std::mutex> codeclock(mutex_);
-//
-//    MediaBuffer* buffer;
-//    buffer = mediaBuffers_.front();
-//    writeBuffers_.pop();
-//
-//    return buffer;
-//}
 
 status_t OMXSource::read(MediaBuffer **buffer, const MediaSource::ReadOptions *options) {
     if (Log::isVerbose()) Log_v("read");
