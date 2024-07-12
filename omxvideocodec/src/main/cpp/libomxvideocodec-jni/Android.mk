@@ -8,7 +8,8 @@ ANDROID_LIB := $(EXT_LIB)/$(TARGET_ARCH_ABI)/system/hrv
 LOCAL_MODULE    := libomxvideocodec-jni
 LOCAL_SRC_FILES := OMXVideoCodec.cpp \
                    OMXDecoder.cpp \
-                   OMXSource.cpp
+                   OMXSource.cpp \
+                   it_smg_libs_videocodec_OMXVideoCodec.cpp
 
 
 LOCAL_LDLIBS += -llog -landroid -l$(ANDROID_LIB)/libstagefright.so -l$(ANDROID_LIB)/libutils.so -l$(ANDROID_LIB)/libcutils.so
@@ -22,7 +23,7 @@ LOCAL_SHARED_LIBRARIES := common
 
 LOCAL_CFLAGS += -DHAVE_PTHREADS -g -funwind-tables -Wl,--no-merge-exidx-entries -fno-omit-frame-pointer
 LOCAL_LDFLAGS := -Wl,--allow-multiple-definition
-LOCAL_CPPFLAGS += -fno-rtti
+LOCAL_CPPFLAGS += -fno-rtti -fexceptions
 LOCAL_ARM_NEON := true
 
 include $(BUILD_SHARED_LIBRARY)

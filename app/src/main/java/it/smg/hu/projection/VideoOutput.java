@@ -36,10 +36,9 @@ public abstract class VideoOutput extends it.smg.libs.aasdk.projection.VideoOutp
 
     protected int fpsFromSettings(int fps){
         switch (fps){
-            case 1:
-                return 30;
             case 2:
                 return 60;
+            case 1:
             default:
                 return 30;
         }

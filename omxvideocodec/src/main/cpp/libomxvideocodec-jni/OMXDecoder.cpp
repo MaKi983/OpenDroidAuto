@@ -68,7 +68,6 @@ status_t OMXDecoder::read(){
     MediaSource::ReadOptions options;
     options.setLateBy(0);
     status_t ret = decoder_->read(&videoBuffer, &options);
-    if (Log::isVerbose()) Log_v("videoBuffer: %p", videoBuffer);
     if (ret == OK) {
         if (videoBuffer->range_length() > 0) {
             // If video frame availabe, render it to mNativeWindow

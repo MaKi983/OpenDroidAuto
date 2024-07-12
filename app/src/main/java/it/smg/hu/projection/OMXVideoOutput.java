@@ -9,7 +9,7 @@ import it.smg.libs.omxvideocodec.OMXVideoCodec;
 
 public class OMXVideoOutput extends VideoOutput /*implements Runnable*/ {
 
-    private static final String TAG = "OMXVideoOutputLegacy";
+    private static final String TAG = "OMXVideoOutput";
     private OMXVideoCodec videoCodec_;
 
     private int frameSize_;
@@ -54,6 +54,7 @@ public class OMXVideoOutput extends VideoOutput /*implements Runnable*/ {
     @Override
     public void write(long timestamp, ByteBuffer data) {
         if (configured_ && running_) {
+            if (Log.isVerbose()) Log.v(TAG, "video message size: " + data.limit());
             videoCodec_.mediaDecode(timestamp, data, data.limit());
         }
     }
@@ -65,6 +66,7 @@ public class OMXVideoOutput extends VideoOutput /*implements Runnable*/ {
             running_ = false;
             configured_ = false;
             videoCodec_.shutdown();
+            if(Log.isInfo()) Log.i(TAG, "deleted");
             videoCodec_ = null;
         }
     }

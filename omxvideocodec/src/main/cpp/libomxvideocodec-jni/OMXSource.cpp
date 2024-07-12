@@ -7,7 +7,7 @@
 #include <inttypes.h>
 #include <sstream>
 
-#define BUFFERS_SIZE 10
+#define BUFFERS_SIZE 5
 
 using namespace android;
 
@@ -15,9 +15,11 @@ using namespace android;
 // https://vec.io/posts/use-android-hardware-decoder-with-omxcodec-in-ndk
 // https://stackoverflow.com/questions/9832503/android-include-native-stagefright-features-in-my-own-project
 OMXSource::OMXSource(int width, int height, int fps, std::mutex& mutex):
-        format_(NULL), mutex_(mutex), quitFlag_(false){
+        format_(NULL), mutex_(mutex), quitFlag_(false) /*, bufferPool_(50, cChunkSize)*/
+{
 
-    bufferSize_ = (width * height * 3) / 2;
+    size_t bufferSize = (width * height * 3) / 2;
+    if (Log::isVerbose()) Log_v("BufferSize: %d", bufferSize);
 
     format_ = new MetaData();
     format_->setInt32(kKeyWidth, width);
@@ -29,114 +31,70 @@ OMXSource::OMXSource(int width, int height, int fps, std::mutex& mutex):
     format_->setCString(kKeyMIMEType, MEDIA_MIMETYPE_VIDEO_AVC);
     format_->setInt32(kKeyVideoLevel, OMX_VIDEO_AVCLevel31);
     format_->setInt32(kKeyVideoProfile, OMX_VIDEO_AVCProfileBaseline);
-    format_->setInt32(kKeyMaxInputSize, bufferSize_);
+    format_->setInt32(kKeyMaxInputSize, bufferSize);
     format_->setInt32(kKeyColorFormat, OMX_COLOR_FormatYUV420Planar);
 
     for (int i = 0; i < BUFFERS_SIZE; i++) {
-        group_.add_buffer(new MediaBuffer(bufferSize_));
-        writeBuffers_.push(new Packet(bufferSize_));
+        group_.add_buffer(new MediaBuffer(cChunkSize));
     }
 }
 
 OMXSource::~OMXSource() {
     if (Log::isDebug()) Log_d("destructor");
-
-    while (!writeBuffers_.empty()){
-        if (Log::isDebug()) Log_d("delete write buffers");
-        Packet::Pointer p = writeBuffers_.front();
-        writeBuffers_.pop();
-        delete p;
-    }
-
-    while (!readBuffers_.empty()){
-        if (Log::isDebug()) Log_d("delete read buffers");
-        Packet* p = readBuffers_.front();
-        readBuffers_.pop();
-        delete p;
-    }
 }
 
-void OMXSource::waitForReadBuffer(){
+void OMXSource::waitForBuffer(){
     std::unique_lock<std::mutex> codeclock(mutex_);
-    while (readBuffers_.empty() && !quitFlag_) {
+    while (pbuffers_.empty() && !quitFlag_) {
+        if (Log::isVerbose()) Log_v("buffers empty");
         auto t1 = std::chrono::steady_clock::now() + std::chrono::milliseconds(500);
         cond_.wait_until(codeclock, t1);
     }
 }
 
-void OMXSource::waitForWriteBuffer(){
-    std::unique_lock<std::mutex> codeclock(mutex_);
-    while (writeBuffers_.empty() && !quitFlag_) {
-        auto t1 = std::chrono::steady_clock::now() + std::chrono::milliseconds(500);
-        cond_.wait_until(codeclock, t1);
-    }
-}
-
-Packet::Pointer OMXSource::getWriteBuffer(){
-    waitForWriteBuffer();
-    return nextWriteBuffer();
-}
-
-int OMXSource::queueReadBuffer(Packet* buffer){
+void OMXSource::queueBuffer(Packet::Pointer packet){
     std::unique_lock<std::mutex> codeclock(mutex_);
     if (!quitFlag_) {
-        readBuffers_.push(buffer);
-        if (Log::isVerbose()) Log_v("readbuffers size: %d", readBuffers_.size());
-        if (Log::isVerbose()) Log_v("writebuffer size: %d", writeBuffers_.size());
+        pbuffers_.push(packet);
         codeclock.unlock();
         cond_.notify_one();
     }
-    return OK;
 }
 
 sp<MetaData>  OMXSource::getFormat(){
     return format_;
 }
 
-Packet::Pointer OMXSource::nextReadBuffer(){
+Packet::Pointer OMXSource::nextBuffer(){
     std::unique_lock<std::mutex> codeclock(mutex_);
-
-    Packet::Pointer buffer;
-    buffer = readBuffers_.front();
-    readBuffers_.pop();
-
-    return buffer;
-}
-
-Packet::Pointer OMXSource::nextWriteBuffer(){
-    std::unique_lock<std::mutex> codeclock(mutex_);
-
-    Packet::Pointer buffer;
-    buffer = writeBuffers_.front();
-    writeBuffers_.pop();
-
+    Packet::Pointer buffer = pbuffers_.front();
+    pbuffers_.pop();
     return buffer;
 }
 
 status_t OMXSource::read(MediaBuffer **buffer, const MediaSource::ReadOptions *options) {
     if (Log::isVerbose()) Log_v("read");
-    waitForReadBuffer();
+    waitForBuffer();
 
     if (Log::isVerbose()) Log_v("found buffer");
     if (!quitFlag_) {
-        Packet* p = nextReadBuffer();
+        Packet::Pointer p = nextBuffer();
+        common::DataConstBuffer b(p->buffer);
 
         status_t ret = group_.acquire_buffer(buffer);
-        if (Log::isVerbose()) Log_v("buffer_ %p", p);
 
         if (ret == OK) {
+            memcpy((*buffer)->data(), b.cdata, b.size);
 
-            memcpy((*buffer)->data(), p->buf, p->len);
-
-            (*buffer)->set_range(0, (size_t) p->len);
+            (*buffer)->set_range(0, (size_t) b.size);
             (*buffer)->meta_data()->clear();
             (*buffer)->meta_data()->setInt32(kKeyIsSyncFrame, 1);
             (*buffer)->meta_data()->setInt64(kKeyTime, p->timestamp);
+//            (*buffer)->meta_data()->setInt64(kKeyTime, 0);
 
         }
 
-        p->clear();
-        writeBuffers_.push(p);
+        delete p;
 
         return ret;
     }
@@ -154,10 +112,13 @@ status_t OMXSource::start(MetaData *params){
 status_t OMXSource::stop() {
     if (!quitFlag_) {
         if (Log::isInfo()) Log_i("stop");
-        std::unique_lock<std::mutex> codeclock(mutex_);
-        quitFlag_ = true;
+        {
+            std::unique_lock<std::mutex> codeclock(mutex_);
+            quitFlag_ = true;
+        }
         if (Log::isVerbose()) Log_v("quit flag to true");
     }
     return OK;
 }
+
 
