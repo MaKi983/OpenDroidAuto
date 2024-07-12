@@ -3,16 +3,17 @@
 #include "channel/bluetooth/BluetoothServiceChannel.hpp"
 #include "projection/IBluetoothDevice.h"
 #include "IService.hpp"
+#include "IServiceEventHandler.h"
 
 namespace service
 {
 
-class BluetoothService: public aasdk::channel::bluetooth::IBluetoothServiceChannelEventHandler, public IService
+class BluetoothService: public aasdk::channel::bluetooth::IBluetoothServiceChannelEventHandler, public IService, public std::enable_shared_from_this<BluetoothService>
 {
 public:
-    typedef BluetoothService* Pointer;
+    typedef std::shared_ptr<BluetoothService> Pointer;
 
-    BluetoothService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IBluetoothDevice::Pointer bluetoothDevice);
+    BluetoothService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IBluetoothDevice::Pointer bluetoothDevice, IServiceEventHandler::Pointer serviceEventHandler);
     ~BluetoothService();
     void start() override;
     void stop() override;
@@ -22,9 +23,13 @@ public:
     void onChannelError(const aasdk::error::Error& e) override;
 
 private:
+    using std::enable_shared_from_this<BluetoothService>::shared_from_this;
+
     boost::asio::io_service::strand strand_;
     aasdk::channel::bluetooth::BluetoothServiceChannel::Pointer channel_;
     projection::IBluetoothDevice::Pointer bluetoothDevice_;
+    IServiceEventHandler::Pointer serviceEventHandler_;
+    bool isRunning_;
 };
 
 }

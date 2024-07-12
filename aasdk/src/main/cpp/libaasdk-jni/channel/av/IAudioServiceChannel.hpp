@@ -19,7 +19,7 @@ namespace av
 class IAudioServiceChannel
 {
 public:
-    typedef IAudioServiceChannel* Pointer;
+    typedef std::shared_ptr<IAudioServiceChannel> Pointer;
 
     IAudioServiceChannel() = default;
     virtual ~IAudioServiceChannel() = default;

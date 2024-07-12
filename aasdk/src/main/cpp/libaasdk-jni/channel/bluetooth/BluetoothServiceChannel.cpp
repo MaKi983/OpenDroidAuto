@@ -22,7 +22,7 @@ BluetoothServiceChannel::BluetoothServiceChannel(boost::asio::io_service::strand
 void BluetoothServiceChannel::receive(IBluetoothServiceChannelEventHandler::Pointer eventHandler)
 {
     auto receivePromise = messenger::ReceivePromise::defer(strand_);
-    receivePromise->then(std::bind(&BluetoothServiceChannel::messageHandler, this, std::placeholders::_1, eventHandler),
+    receivePromise->then(std::bind(&BluetoothServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IBluetoothServiceChannelEventHandler::onChannelError, eventHandler,std::placeholders::_1));
 
     messenger_->enqueueReceive(channelId_, std::move(receivePromise));
@@ -37,7 +37,7 @@ void BluetoothServiceChannel::sendChannelOpenResponse(const proto::messages::Cha
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendChannelOpenResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::CONTROL);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::CONTROL));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::CHANNEL_OPEN_RESPONSE).getData());
     message->insertPayload(response);
 
@@ -48,7 +48,7 @@ void BluetoothServiceChannel::sendBluetoothPairingResponse(const proto::messages
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendBluetoothPairingResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::BluetoothChannelMessage::PAIRING_RESPONSE).getData());
     message->insertPayload(response);
 

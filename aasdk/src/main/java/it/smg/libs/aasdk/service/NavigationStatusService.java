@@ -2,16 +2,19 @@ package it.smg.libs.aasdk.service;
 
 import it.smg.libs.aasdk.messenger.Messenger;
 import it.smg.libs.aasdk.projection.INavigationStatusEvent;
+import it.smg.libs.common.Log;
 
 public class NavigationStatusService implements IService {
 
     private static final String TAG = "NavigationStatusService";
 
     private INavigationStatusEvent navigationEvent_;
+    private final IAndroidAutoEntityEventHandler eventHandler_;
 
-    public NavigationStatusService(Messenger messenger, INavigationStatusEvent navigationEvent) {
+    public NavigationStatusService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler, INavigationStatusEvent navigationEvent) {
         handle_ = nativeSetup(messenger, navigationEvent);
         navigationEvent_ = navigationEvent;
+        eventHandler_ = eventHandler;
     }
 
     @Override
@@ -29,6 +32,12 @@ public class NavigationStatusService implements IService {
         nativeDelete();
         navigationEvent_.delete();
         navigationEvent_ = null;
+    }
+
+    @Override
+    public void onError(String error, int code){
+        Log.v(TAG, "onError " + error + "/" + code);
+        eventHandler_.onAndroidAutoQuitOnError(error, code);
     }
 
     static {

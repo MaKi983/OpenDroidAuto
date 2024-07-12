@@ -20,7 +20,7 @@ namespace av
 class IVideoServiceChannel
 {
 public:
-    typedef IVideoServiceChannel* Pointer;
+    typedef std::shared_ptr<IVideoServiceChannel> Pointer;
 
     IVideoServiceChannel() = default;
     virtual ~IVideoServiceChannel() = default;

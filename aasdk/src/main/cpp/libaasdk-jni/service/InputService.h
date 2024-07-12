@@ -5,6 +5,7 @@
 #include "IService.hpp"
 #include "projection/IInputDevice.h"
 #include "projection/IInputDeviceEventHandler.h"
+#include "IServiceEventHandler.h"
 
 namespace service
 {
@@ -12,12 +13,13 @@ namespace service
 class InputService:
         public aasdk::channel::input::IInputServiceChannelEventHandler,
         public IService,
-        public projection::IInputDeviceEventHandler
+        public projection::IInputDeviceEventHandler,
+        public std::enable_shared_from_this<InputService>
 {
 public:
-    typedef InputService* Pointer;
+    typedef std::shared_ptr<InputService> Pointer;
 
-    InputService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IInputDevice::Pointer inputDevice);
+    InputService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IInputDevice::Pointer inputDevice, IServiceEventHandler::Pointer serviceEventHandler);
     ~InputService();
 
     void sendButtonPress(aasdk::proto::enums::ButtonCode::Enum buttonCode, projection::WheelDirection wheelDirection = projection::WheelDirection::NONE, projection::ButtonEventType buttonEventType = projection::ButtonEventType::NONE);
@@ -32,10 +34,14 @@ public:
     void onMouseEvent(const projection::TouchEvent& event) override;
 
 private:
+    using std::enable_shared_from_this<InputService>::shared_from_this;
+
     boost::asio::io_service::strand strand_;
     aasdk::channel::input::InputServiceChannel::Pointer channel_;
     projection::IInputDevice::Pointer inputDevice_;
     bool serviceActive = false;
+    IServiceEventHandler::Pointer serviceEventHandler_;
+    bool isRunning_;
 };
 
 }

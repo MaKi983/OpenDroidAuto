@@ -34,7 +34,9 @@ import it.smg.libs.aasdk.projection.ISensor;
 import it.smg.libs.aasdk.projection.IVideoOutput;
 import it.smg.libs.aasdk.service.AudioInputService;
 import it.smg.libs.aasdk.service.BluetoothService;
+import it.smg.libs.aasdk.service.IAndroidAutoEntityEventHandler;
 import it.smg.libs.aasdk.service.IService;
+import it.smg.libs.aasdk.service.IVideoEventHandler;
 import it.smg.libs.aasdk.service.InputService;
 import it.smg.libs.aasdk.service.MediaAudioService;
 import it.smg.libs.aasdk.service.MediaStatusService;
@@ -49,83 +51,83 @@ public class ServiceFactory {
 
     private static final String TAG = "ServiceFactory";
 
-    public static Map<ChannelId, IService> create(Messenger messenger, Context ctx, SurfaceView surfaceView){
+    public static Map<ChannelId, IService> create(Messenger messenger, ODAService service, SurfaceView surfaceView){
         Map<ChannelId, IService> serviceList = new HashMap<>();
 
         Settings settings = Settings.instance();
 
         if (settings.audio.musicChannelEnabled()){
-            IService musicAudioService = createMusicService(messenger);
+            IService musicAudioService = createMusicService(messenger, service);
             serviceList.put(ChannelId.MEDIA_AUDIO, musicAudioService);
         }
 
         if (settings.audio.speechAudioChannelEnabled()){
-            IService speechAudioService = createSpeechService(messenger);
+            IService speechAudioService = createSpeechService(messenger, service);
             serviceList.put(ChannelId.SPEECH_AUDIO, speechAudioService);
         }
 
-        IService systemAudioService = createSystemService(messenger);
+        IService systemAudioService = createSystemService(messenger, service);
         serviceList.put(ChannelId.SYSTEM_AUDIO, systemAudioService);
 
-        IService inputAudioService = createAudioInputService(messenger);
+        IService inputAudioService = createAudioInputService(messenger, service);
         serviceList.put(ChannelId.AV_INPUT, inputAudioService);
 
-        IService videoService = createVideoService(messenger, ctx, surfaceView);
+        IService videoService = createVideoService(messenger, service, surfaceView);
         serviceList.put(ChannelId.VIDEO, videoService);
 
-        IService sensorService = createSensorService(messenger, ctx);
+        IService sensorService = createSensorService(messenger, service.getApplicationContext(), service);
         serviceList.put(ChannelId.SENSOR, sensorService);
 
-        IService bluetoothService = createBluetoothService(messenger);
+        IService bluetoothService = createBluetoothService(messenger, service);
         serviceList.put(ChannelId.BLUETOOTH, bluetoothService);
 
-        IService inputService = createInputService(messenger, ctx, surfaceView);
+        IService inputService = createInputService(messenger, service.getApplicationContext(), service, surfaceView);
         serviceList.put(ChannelId.INPUT, inputService);
 
         if (settings.video.showNavigationNotification()) {
-            IService navigationStatusService = createNavigationStatusService(messenger);
+            IService navigationStatusService = createNavigationStatusService(messenger, service);
             serviceList.put(ChannelId.NAVIGATION, navigationStatusService);
         }
 
         if (settings.video.showMediaNotification()) {
-            IService mediaStatusService = createMediaStatusService(messenger);
+            IService mediaStatusService = createMediaStatusService(messenger, service);
             serviceList.put(ChannelId.MEDIA_STATUS, mediaStatusService);
         }
 
         return serviceList;
     }
 
-    private static IService createMusicService(Messenger messenger){
+    private static IService createMusicService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler){
         if (Log.isInfo()) Log.i(TAG, "create audio music service");
         IAudioOutput mediaAudioOutput = new MediaAudioOutput();
-        return new MediaAudioService(messenger, mediaAudioOutput);
+        return new MediaAudioService(messenger, eventHandler, mediaAudioOutput);
     }
 
-    private static IService createSpeechService(Messenger messenger){
+    private static IService createSpeechService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler){
         if (Log.isInfo()) Log.i(TAG, "create audio speech service");
         IAudioOutput speechAudioOutput = new SpeechAudioOutput();
-        return new SpeechAudioService(messenger, speechAudioOutput);
+        return new SpeechAudioService(messenger, eventHandler, speechAudioOutput);
     }
 
-    private static IService createSystemService(Messenger messenger){
+    private static IService createSystemService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler){
         if (Log.isInfo()) Log.i(TAG, "create audio system service");
         IAudioOutput systemAudioOutput = new SystemAudioOutput();
-        return new SystemAudioService(messenger, systemAudioOutput);
+        return new SystemAudioService(messenger, eventHandler, systemAudioOutput);
     }
 
-    private static IService createAudioInputService(Messenger messenger){
+    private static IService createAudioInputService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler){
         if (Log.isInfo()) Log.i(TAG, "create audio input service");
         IAudioInput audioInput = new AudioInput();
-        return new AudioInputService(messenger, audioInput);
+        return new AudioInputService(messenger, eventHandler, audioInput);
     }
 
-    private static IService createInputService(Messenger messenger, Context ctx, SurfaceView surfaceView){
+    private static IService createInputService(Messenger messenger, Context ctx, IAndroidAutoEntityEventHandler eventHandler, SurfaceView surfaceView){
         if (Log.isInfo()) Log.i(TAG, "create input service");
         IInputDevice inputDevice = new InputDevice(ctx, surfaceView);
-        return new InputService(messenger, inputDevice);
+        return new InputService(messenger, eventHandler, inputDevice);
     }
 
-    private static IService createVideoService(Messenger messenger, Context ctx, SurfaceView surfaceView){
+    private static IService createVideoService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler, SurfaceView surfaceView){
         if (Log.isInfo()) Log.i(TAG, "create video service");
         IVideoOutput videoOutput;
         if (DeviceUtils.isX86) {
@@ -138,10 +140,10 @@ public class ServiceFactory {
             if (Log.isInfo()) Log.i(TAG, "Native Video Output");
             videoOutput = new NativeVideoOutput(surfaceView);
         }
-        return new VideoService(messenger, videoOutput);
+        return new VideoService(eventHandler, messenger, videoOutput);
     }
 
-    private static IService createSensorService(Messenger messenger, Context ctx){
+    private static IService createSensorService(Messenger messenger, Context ctx, IAndroidAutoEntityEventHandler eventHandler){
         if (Log.isInfo()) Log.i(TAG, "create sensor service");
         Settings settings = Settings.instance();
 
@@ -158,24 +160,24 @@ public class ServiceFactory {
                 break;
         }
 
-        return new SensorService(messenger, sensor);
+        return new SensorService(messenger, eventHandler, sensor);
     }
 
-    private static IService createBluetoothService(Messenger messenger){
+    private static IService createBluetoothService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler){
         if (Log.isInfo()) Log.i(TAG, "create audio input service");
         IBluetoothDevice bluetoothDevice = new BluetoothDevice();
-        return new BluetoothService(messenger, bluetoothDevice);
+        return new BluetoothService(messenger, eventHandler, bluetoothDevice);
     }
 
-    private static IService createNavigationStatusService(Messenger messenger){
+    private static IService createNavigationStatusService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler){
         if (Log.isInfo()) Log.i(TAG, "create navigation status service");
         INavigationStatusEvent navigationEvent = new NavigationStatusEvent();
-        return new NavigationStatusService(messenger, navigationEvent);
+        return new NavigationStatusService(messenger, eventHandler, navigationEvent);
     }
 
-    private static IService createMediaStatusService(Messenger messenger){
+    private static IService createMediaStatusService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler){
         if (Log.isInfo()) Log.i(TAG, "create navigation status service");
         IMediaStatusEvent mediaEvent = new MediaStatusEvent();
-        return new MediaStatusService(messenger, mediaEvent);
+        return new MediaStatusService(messenger, eventHandler, mediaEvent);
     }
 }

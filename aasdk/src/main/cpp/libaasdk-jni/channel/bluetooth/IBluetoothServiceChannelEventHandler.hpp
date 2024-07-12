@@ -15,7 +15,7 @@ namespace bluetooth
 class IBluetoothServiceChannelEventHandler
 {
 public:
-    typedef IBluetoothServiceChannelEventHandler* Pointer;
+    typedef std::shared_ptr<IBluetoothServiceChannelEventHandler> Pointer;
 
     IBluetoothServiceChannelEventHandler() = default;
     virtual ~IBluetoothServiceChannelEventHandler() = default;

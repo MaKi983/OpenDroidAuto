@@ -11,7 +11,7 @@ namespace aasdk
 namespace transport
 {
 
-class Transport: public ITransport, boost::noncopyable
+class Transport: public ITransport, public std::enable_shared_from_this<Transport>, boost::noncopyable
 {
 public:
     Transport(boost::asio::io_service& ioService);
@@ -23,6 +23,7 @@ protected:
     typedef std::list<std::pair<size_t, ReceivePromise::Pointer>> ReceiveQueue;
     typedef std::list<std::pair<common::Data, SendPromise::Pointer>> SendQueue;
 
+    using std::enable_shared_from_this<Transport>::shared_from_this;
     void receiveHandler(size_t bytesTransferred);
     void distributeReceivedData();
     void rejectReceivePromises(const error::Error& e);

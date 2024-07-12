@@ -12,15 +12,15 @@ TCPEndpoint::TCPEndpoint(ITCPWrapper& tcpWrapper, SocketPointer socket)
 
 }
 
-TCPEndpoint::~TCPEndpoint(){
-    delete socket_;
-}
+//TCPEndpoint::~TCPEndpoint(){
+//    delete socket_;
+//}
 
 void TCPEndpoint::send(common::DataConstBuffer buffer, Promise::Pointer promise)
 {
     tcpWrapper_.asyncWrite(*socket_, std::move(buffer),
                            std::bind(&TCPEndpoint::asyncOperationHandler,
-                                     this,
+                                     this->shared_from_this(),
                                      std::placeholders::_1,
                                      std::placeholders::_2,
                                      std::move(promise)));
@@ -30,7 +30,7 @@ void TCPEndpoint::receive(common::DataBuffer buffer, Promise::Pointer promise)
 {
     tcpWrapper_.asyncRead(*socket_, std::move(buffer),
                           std::bind(&TCPEndpoint::asyncOperationHandler,
-                                    this,
+                                    this->shared_from_this(),
                                     std::placeholders::_1,
                                     std::placeholders::_2,
                                     std::move(promise)));

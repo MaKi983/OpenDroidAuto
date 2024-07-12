@@ -22,8 +22,10 @@ Messenger::~Messenger(){
     channelReceivePromiseQueue_.clear();
     channelReceiveMessageQueue_.clear();
     channelSendPromiseQueue_.clear();
-    delete messageInStream_;
-    delete messageOutStream_;
+//    delete messageInStream_;
+//    delete messageOutStream_;
+//	messageInStream_.reset();
+//	messageOutStream_.reset();
 }
 
 void Messenger::enqueueReceive(ChannelId channelId, ReceivePromise::Pointer promise)
@@ -32,7 +34,7 @@ void Messenger::enqueueReceive(ChannelId channelId, ReceivePromise::Pointer prom
         return;
     }
 
-    receiveStrand_.dispatch([this, channelId, promise = std::move(promise)]() mutable {
+    receiveStrand_.dispatch([this, self = this->shared_from_this(), channelId, promise = std::move(promise)]() mutable {
         if(Log::isDebug()) Log_d("%s / enqueueReceive", channelIdToString(channelId).c_str());
         if(!channelReceiveMessageQueue_.empty(channelId))
         {
@@ -46,8 +48,8 @@ void Messenger::enqueueReceive(ChannelId channelId, ReceivePromise::Pointer prom
             {
 
                 auto inStreamPromise = ReceivePromise::defer(receiveStrand_);
-                inStreamPromise->then(std::bind(&Messenger::inStreamMessageHandler, this, std::placeholders::_1),
-                                     std::bind(&Messenger::rejectReceivePromiseQueue, this, std::placeholders::_1));
+                inStreamPromise->then(std::bind(&Messenger::inStreamMessageHandler, this->shared_from_this(), std::placeholders::_1),
+                                     std::bind(&Messenger::rejectReceivePromiseQueue, this->shared_from_this(), std::placeholders::_1));
                 messageInStream_->startReceive(std::move(inStreamPromise));
             }
         }
@@ -60,7 +62,7 @@ void Messenger::enqueueSend(Message::Pointer message, SendPromise::Pointer promi
         return;
     }
 
-    sendStrand_.dispatch([this, message = std::move(message), promise = std::move(promise)]() mutable {
+    sendStrand_.dispatch([this, self = this->shared_from_this(), message = std::move(message), promise = std::move(promise)]() mutable {
         channelSendPromiseQueue_.emplace_back(std::make_pair(std::move(message), std::move(promise)));
 
         if(channelSendPromiseQueue_.size() == 1)
@@ -86,8 +88,8 @@ void Messenger::inStreamMessageHandler(Message::Pointer message)
     if(!channelReceivePromiseQueue_.empty())
     {
         auto inStreamPromise = ReceivePromise::defer(receiveStrand_);
-        inStreamPromise->then(std::bind(&Messenger::inStreamMessageHandler, this, std::placeholders::_1),
-                             std::bind(&Messenger::rejectReceivePromiseQueue, this, std::placeholders::_1));
+        inStreamPromise->then(std::bind(&Messenger::inStreamMessageHandler, this->shared_from_this(), std::placeholders::_1),
+                             std::bind(&Messenger::rejectReceivePromiseQueue, this->shared_from_this(), std::placeholders::_1));
         messageInStream_->startReceive(std::move(inStreamPromise));
     }
 }
@@ -96,8 +98,8 @@ void Messenger::doSend()
 {
     auto queueElementIter = channelSendPromiseQueue_.begin();
     auto outStreamPromise = SendPromise::defer(sendStrand_);
-    outStreamPromise->then(std::bind(&Messenger::outStreamMessageHandler, this, queueElementIter),
-                           std::bind(&Messenger::rejectSendPromiseQueue, this, std::placeholders::_1));
+    outStreamPromise->then(std::bind(&Messenger::outStreamMessageHandler, this->shared_from_this(), queueElementIter),
+                           std::bind(&Messenger::rejectSendPromiseQueue, this->shared_from_this(), std::placeholders::_1));
 
     messageOutStream_->stream(std::move(queueElementIter->first), std::move(outStreamPromise));
 }
@@ -134,8 +136,14 @@ void Messenger::stop()
 {
     if (Log::isInfo()) Log_i("Stop messenger");
 
-    isStopping_ = true;
+//    isStopping_ = true;
+//    messageOutStream_->stop();
+//    messageInStream_->stop();
+//    receiveStrand_.dispatch([this, self = this->shared_from_this()]() {
     channelReceiveMessageQueue_.clear();
+//    channelSendPromiseQueue_.clear();
+//    channelReceivePromiseQueue_.clear();
+//    });
 }
 
 }

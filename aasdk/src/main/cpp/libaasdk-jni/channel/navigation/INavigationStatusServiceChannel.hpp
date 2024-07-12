@@ -17,7 +17,7 @@ namespace navigation
 class INavigationStatusServiceChannel
 {
 public:
-    typedef INavigationStatusServiceChannel* Pointer;
+    typedef std::shared_ptr<INavigationStatusServiceChannel> Pointer;
 
     INavigationStatusServiceChannel() = default;
     virtual ~INavigationStatusServiceChannel() = default;

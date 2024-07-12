@@ -8,7 +8,7 @@
 class IService
 {
 public:
-    typedef IService* Pointer;
+    typedef std::shared_ptr<IService> Pointer;
 
     virtual ~IService() = default;
 

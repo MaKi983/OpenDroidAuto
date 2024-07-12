@@ -2,16 +2,18 @@ package it.smg.libs.aasdk.service;
 
 import it.smg.libs.aasdk.messenger.Messenger;
 import it.smg.libs.aasdk.projection.IInputDevice;
+import it.smg.libs.common.Log;
 
 public class InputService implements IService {
 
     private static final String TAG = "InputService";
 
     private IInputDevice inputDevice_;
+    private final IAndroidAutoEntityEventHandler eventHandler_;
 
-    public InputService(Messenger messenger, IInputDevice inputDevice) {
+    public InputService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler, IInputDevice inputDevice) {
         handle_ = nativeSetup(messenger, inputDevice);
-
+        eventHandler_ = eventHandler;
         inputDevice_ = inputDevice;
     }
 
@@ -30,6 +32,12 @@ public class InputService implements IService {
         nativeDelete();
         inputDevice_.delete();
         inputDevice_ = null;
+    }
+
+    @Override
+    public void onError(String error, int code){
+        Log.v(TAG, "onError " + error + "/" + code);
+        eventHandler_.onAndroidAutoQuitOnError(error, code);
     }
 
     public void releaseFocus(){

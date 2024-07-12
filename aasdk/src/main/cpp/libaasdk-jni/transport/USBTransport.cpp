@@ -7,16 +7,16 @@ namespace transport
 
 USBTransport::USBTransport(boost::asio::io_service& ioService, usb::IAOAPDevice::Pointer aoapDevice)
     : Transport(ioService)
-    , aoapDevice_(aoapDevice)
+    , aoapDevice_(std::move(aoapDevice))
 {}
 
 void USBTransport::enqueueReceive(common::DataBuffer buffer)
 {
     auto usbEndpointPromise = usb::IUSBEndpoint::Promise::defer(receiveStrand_);
-    usbEndpointPromise->then([this](auto bytesTransferred) {
+    usbEndpointPromise->then([this, self = this->shared_from_this()](auto bytesTransferred) {
             this->receiveHandler(bytesTransferred);
         },
-        [this](auto e) {
+        [this, self = this->shared_from_this()](auto e) {
             this->rejectReceivePromises(e);
         });
 
@@ -31,10 +31,10 @@ void USBTransport::enqueueSend(SendQueue::iterator queueElement)
 void USBTransport::doSend(SendQueue::iterator queueElement, common::Data::size_type offset)
 {
     auto usbEndpointPromise = usb::IUSBEndpoint::Promise::defer(sendStrand_);
-    usbEndpointPromise->then([this, queueElement, offset](size_t bytesTransferred) mutable {
+    usbEndpointPromise->then([this, self = this->shared_from_this(), queueElement, offset](size_t bytesTransferred) mutable {
             this->sendHandler(queueElement, offset, bytesTransferred);
         },
-        [this, queueElement](const error::Error& e) mutable {
+        [this, self = this->shared_from_this(), queueElement](const error::Error& e) mutable {
             queueElement->second->reject(e);
             sendQueue_.erase(queueElement);
 

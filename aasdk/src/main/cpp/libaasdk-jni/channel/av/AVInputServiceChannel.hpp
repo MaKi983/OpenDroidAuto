@@ -13,7 +13,7 @@ namespace channel
 namespace av
 {
 
-class AVInputServiceChannel: public IAVInputServiceChannel, public ServiceChannel
+class AVInputServiceChannel: public IAVInputServiceChannel, public ServiceChannel, public std::enable_shared_from_this<AVInputServiceChannel>
 {
 public:
     AVInputServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger);
@@ -26,6 +26,7 @@ public:
     messenger::ChannelId getId() const override;
 
 private:
+    using std::enable_shared_from_this<AVInputServiceChannel>::shared_from_this;
     void messageHandler(messenger::Message::Pointer message, IAVInputServiceChannelEventHandler::Pointer eventHandler);
     void handleAVChannelSetupRequest(const common::DataConstBuffer& payload, IAVInputServiceChannelEventHandler::Pointer eventHandler);
     void handleAVInputOpenRequest(const common::DataConstBuffer& payload, IAVInputServiceChannelEventHandler::Pointer eventHandler);

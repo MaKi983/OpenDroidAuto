@@ -1,21 +1,53 @@
+#include <Log.h>
 #include "it_smg_libs_aasdk_service_VideoService.h"
 #include "it_smg_libs_aasdk_messenger_Messenger.h"
 #include "it_smg_libs_aasdk_projection_VideoOutput.h"
 #include "it_smg_libs_aasdk_Runtime.h"
 
+JVideoEventHandler::JVideoEventHandler(JNIEnv *env, jobject jandroidautoentityeventhandler)
+        : JNIBase(env, jandroidautoentityeventhandler, "JAndroidAutoEntityEventHandler")  {
+
+    initJavaMethods();
+}
+
+void JVideoEventHandler::initJavaMethods() {
+    JNIEnv* env = getJniEnv();
+    jclass cls = env->GetObjectClass(androidClass_);
+
+    onAVChannelStopIndicationMethodId_ = env->GetMethodID(cls, "onAVChannelStopIndication", "()V");
+
+    env->DeleteLocalRef(cls);
+}
+
+void JVideoEventHandler::onAVChannelStopIndication() {
+    JNIEnv* env = getJniEnv();
+    env->CallVoidMethod(androidClass_, onAVChannelStopIndicationMethodId_);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 jfieldID JVideoService::handleId = nullptr;
 
-JVideoService::JVideoService(JNIEnv *env, jobject jvideoservice, jobject jmessenger, jobject jvideooutput)
+JVideoService::JVideoService(JNIEnv *env, jobject jvideoservice, jobject jmessenger, jobject jvideooutput, jobject jvideoeventhandler)
         : JNIBase(env, jvideoservice, "JVideoService")  {
 
     JMessenger::Pointer jMessenger = JMessenger::getJMessenger(env, jmessenger);
     projection::JVideoOutput::Pointer jVideoOutput = projection::JVideoOutput::getJVideoOutput(env, jvideooutput);
+    JVideoEventHandler::Pointer jVideoEventHandler = new JVideoEventHandler(env, jvideoeventhandler);
+    videoService_ = std::make_shared<VideoService>(JRuntime::ioService(), jMessenger->getMessenger(), jVideoOutput, jVideoEventHandler, this);
+}
 
-    videoService_ = new VideoService(JRuntime::ioService(), jMessenger->getMessenger(), jVideoOutput);
+void JVideoService::initJavaMethods() {
+//    JNIEnv* env = getJniEnv();
+//    jclass cls = env->GetObjectClass(androidClass_);
+//
+//    onErrorMethodId_ = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+//
+//    env->DeleteLocalRef(cls);
 }
 
 JVideoService::~JVideoService() {
-    delete videoService_;
+//    videoService_.reset();
 }
 
 JVideoService::Pointer JVideoService::getJVideoService(JNIEnv *env, jobject jvideoservice) {
@@ -46,6 +78,17 @@ void JVideoService::gainFocus() {
     videoService_->onVideoFocusRequest(request);
 }
 
+void JVideoService::onError(const aasdk::error::Error &e) {
+    JNIEnv* env = getJniEnv();
+    jclass cls = env->GetObjectClass(androidClass_);
+    jmethodID onErrorMethodId = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+
+    jstring jstr = env->NewStringUTF(e.what());
+    env->CallVoidMethod(androidClass_, onErrorMethodId, jstr, e.getNativeCode());
+    env->DeleteLocalRef(jstr);
+    env->DeleteLocalRef(cls);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C"
@@ -60,8 +103,8 @@ Java_it_smg_libs_aasdk_service_VideoService_nativeInit(JNIEnv *env, jclass clazz
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_it_smg_libs_aasdk_service_VideoService_nativeSetup(JNIEnv *env, jobject thiz, jobject jmessenger, jobject jvideooutput) {
-    JVideoService::Pointer jVideoService = new JVideoService(env, thiz, jmessenger, jvideooutput);
+Java_it_smg_libs_aasdk_service_VideoService_nativeSetup(JNIEnv *env, jobject thiz, jobject jmessenger, jobject jvideooutput, jobject jvideoeventhandler) {
+    JVideoService::Pointer jVideoService = new JVideoService(env, thiz, jmessenger, jvideooutput, jvideoeventhandler);
     return (jlong)((size_t)jVideoService);
 }
 

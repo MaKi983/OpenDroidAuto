@@ -18,7 +18,7 @@ public:
     IMessenger() = default;
     virtual ~IMessenger() = default;
 
-    typedef IMessenger* Pointer;
+    typedef std::shared_ptr<IMessenger> Pointer;
 
     virtual void enqueueReceive(ChannelId channelId, ReceivePromise::Pointer promise) = 0;
     virtual void enqueueSend(Message::Pointer message, SendPromise::Pointer promise) = 0;

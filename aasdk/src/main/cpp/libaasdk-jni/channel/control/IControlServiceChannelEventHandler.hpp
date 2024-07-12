@@ -24,7 +24,7 @@ namespace control
 class IControlServiceChannelEventHandler
 {
 public:
-    typedef IControlServiceChannelEventHandler* Pointer;
+    typedef std::shared_ptr<IControlServiceChannelEventHandler> Pointer;
 
     IControlServiceChannelEventHandler() = default;
     virtual ~IControlServiceChannelEventHandler() = default;

@@ -7,28 +7,32 @@
 namespace service
 {
 
-    NavigationStatusService::NavigationStatusService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::INavigationStatusEvent::Pointer navigationEvent)
+    NavigationStatusService::NavigationStatusService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::INavigationStatusEvent::Pointer navigationEvent, IServiceEventHandler::Pointer serviceEventHandler)
             : strand_(ioService)
-            , channel_(new aasdk::channel::navigation::NavigationStatusServiceChannel(strand_, std::move(messenger)))
+            , channel_(std::make_shared<aasdk::channel::navigation::NavigationStatusServiceChannel>(strand_, std::move(messenger)))
+            , serviceEventHandler_(std::move(serviceEventHandler))
+            , isRunning_(false)
     {
         this->navigationEvent_ = navigationEvent;
     }
 
     NavigationStatusService::~NavigationStatusService(){
-        delete channel_;
+//        delete channel_;
     }
 
     void NavigationStatusService::start()
     {
-        strand_.dispatch([this]() {
+        isRunning_ = true;
+        strand_.dispatch([this, self = this->shared_from_this()]() {
             if(Log::isInfo()) Log_i("start");
-            channel_->receive(this);
+            channel_->receive(this->shared_from_this());
         });
     }
 
     void NavigationStatusService::stop()
     {
         if(Log::isInfo()) Log_i("stop");
+        isRunning_ = false;
     }
 
     void NavigationStatusService::fillFeatures(aasdk::proto::messages::ServiceDiscoveryResponse& response)
@@ -60,39 +64,44 @@ namespace service
         response.set_status(status);
 
         auto promise = aasdk::channel::SendPromise::defer(strand_);
-        promise->then([]() {}, std::bind(&NavigationStatusService::onChannelError, this, std::placeholders::_1));
+        promise->then([]() {}, std::bind(&NavigationStatusService::onChannelError, this->shared_from_this(), std::placeholders::_1));
         channel_->sendChannelOpenResponse(response, std::move(promise));
 
-        channel_->receive(this);
+        channel_->receive(this->shared_from_this());
     }
 
 
     void NavigationStatusService::onChannelError(const aasdk::error::Error& e)
     {
-        Log_e("channel error: %s", e.what());
+        if (!isRunning_){
+            if (Log::isWarn()) Log_w("Received error %s but is not running (maybe is stopping?), ignore it", e.what());
+            return;
+        }
+//        Log_e("channel error: %s", e.what());
+//        serviceEventHandler_->onError(e);
     }
 
     void NavigationStatusService::onStatusUpdate(const aasdk::proto::messages::NavigationStatus& navStatus)
     {
         if(Log::isInfo()) Log_i("Navigation Status Update, Status: %s", (navStatus.has_status() ? aasdk::proto::messages::NavigationStatus_Enum_Name(navStatus.status()).c_str() : "") );
         navigationEvent_->navigationStatusUpdate(navStatus);
-        channel_->receive(this);
+        channel_->receive(this->shared_from_this());
     }
 
     void NavigationStatusService::onTurnEvent(const aasdk::proto::messages::NavigationTurnEvent& turnEvent)
     {
-        if (Log::isVerbose()) Log_v("%s", turnEvent.Utf8DebugString().c_str());
+        if (Log::isVerbose() && Log::logProtocol()) Log_v("%s", turnEvent.Utf8DebugString().c_str());
         if(Log::isInfo()) Log_i("Turn Event, Street: %s, Maneuver: %s %s", (turnEvent.has_street_name() && !turnEvent.street_name().empty() ? turnEvent.street_name().c_str() : "") , (turnEvent.has_maneuverdirection() ? aasdk::proto::enums::ManeuverDirection_Enum_Name(turnEvent.maneuverdirection()).c_str() : ""), (turnEvent.has_maneuvertype() ? aasdk::proto::enums::ManeuverType_Enum_Name(turnEvent.maneuvertype()).c_str() : ""));
         navigationEvent_->navigationTurnEvent(turnEvent);
-        channel_->receive(this);
+        channel_->receive(this->shared_from_this());
     }
 
     void NavigationStatusService::onDistanceEvent(const aasdk::proto::messages::NavigationDistanceEvent& distanceEvent)
     {
-        if (Log::isVerbose()) Log_v("%s", distanceEvent.Utf8DebugString().c_str());
+        if (Log::isVerbose() && Log::logProtocol()) Log_v("%s", distanceEvent.Utf8DebugString().c_str());
         if(Log::isInfo()) Log_i("Distance Event, Distance (meters): %d, Time To Turn (seconds): %d, Distance: %d" /*(%s)*/, (distanceEvent.has_meters() ? distanceEvent.meters() : -1), (distanceEvent.has_timetostepseconds() ? distanceEvent.timetostepseconds() : -1), (distanceEvent.has_distancetostepmillis() ? distanceEvent.distancetostepmillis()/1000.0 : -1) /*, (distanceEvent.has_distanceunit() ? aasdk::proto::enums::DistanceUnit_Enum_Name(distanceEvent.distanceunit()).c_str() : "")*/ );
         navigationEvent_->navigationDistanceEvent(distanceEvent);
-        channel_->receive(this);
+        channel_->receive(this->shared_from_this());
     }
 
 }

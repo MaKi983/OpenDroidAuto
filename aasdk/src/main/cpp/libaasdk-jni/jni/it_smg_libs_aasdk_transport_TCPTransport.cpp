@@ -9,7 +9,7 @@ JTCPTransport::JTCPTransport(JNIEnv *env, jobject jtcptransport, jobject jtcpend
 
     JTCPEndpoint::Pointer jTCPEndpoint = JTCPEndpoint::getJTCPEndpoint(env, jtcpendpoint);
 
-    transport_ = new TCPTransport(JRuntime::ioService(), jTCPEndpoint->getTCPEnpoint());
+    transport_ = std::make_shared<TCPTransport>(JRuntime::ioService(), jTCPEndpoint->getTCPEnpoint());
 }
 
 JTCPTransport::Pointer JTCPTransport::getJTCPTransport(JNIEnv *env, jobject jtcptransport) {
@@ -21,7 +21,7 @@ ITransport::Pointer JTCPTransport::getTransport() {
 }
 
 JTCPTransport::~JTCPTransport() {
-    delete transport_;
+//    transport_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@ namespace control
 class IControlServiceChannel
 {
 public:
-    typedef IControlServiceChannel* Pointer;
+    typedef std::shared_ptr<IControlServiceChannel> Pointer;
 
     IControlServiceChannel() = default;
     virtual ~IControlServiceChannel() = default;

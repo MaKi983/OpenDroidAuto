@@ -17,7 +17,7 @@ namespace av
 class IAVInputServiceChannelEventHandler
 {
 public:
-    typedef IAVInputServiceChannelEventHandler* Pointer;
+    typedef std::shared_ptr<IAVInputServiceChannelEventHandler> Pointer;
 
     IAVInputServiceChannelEventHandler() = default;
     virtual ~IAVInputServiceChannelEventHandler() = default;

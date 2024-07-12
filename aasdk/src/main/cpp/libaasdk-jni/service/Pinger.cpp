@@ -17,7 +17,7 @@ Pinger::Pinger(boost::asio::io_service& ioService, time_t duration)
 
 void Pinger::ping(Promise::Pointer promise)
 {
-    strand_.dispatch([this, promise = std::move(promise)]() mutable {
+    strand_.dispatch([this, self = this->shared_from_this(), promise = std::move(promise)]() mutable {
         cancelled_ = false;
 
         if(promise_ != nullptr)
@@ -30,14 +30,14 @@ void Pinger::ping(Promise::Pointer promise)
 
             promise_ = std::move(promise);
             timer_.expires_from_now(boost::posix_time::milliseconds(duration_));
-            timer_.async_wait(strand_.wrap(std::bind(&Pinger::onTimerExceeded, this, std::placeholders::_1)));
+            timer_.async_wait(strand_.wrap(std::bind(&Pinger::onTimerExceeded, this->shared_from_this(), std::placeholders::_1)));
         }
     });
 }
 
 void Pinger::pong()
 {
-    strand_.dispatch([this]() {
+    strand_.dispatch([this, self = this->shared_from_this()]() {
         ++pongsCount_;
     });
 }
@@ -61,7 +61,7 @@ void Pinger::onTimerExceeded(const boost::system::error_code& error)
         promise_->resolve();
     }
 
-    promise_ = nullptr;
+    promise_.reset();
 }
 
 void Pinger::cancel()

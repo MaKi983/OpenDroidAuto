@@ -55,12 +55,12 @@ JAndroidAutoEntity::JAndroidAutoEntity(JNIEnv *env, jobject jandroidautoentity, 
 
     configuration::IConfiguration::Pointer config = getConfiguration(env, jconfig);
 
-    androidAutoEntity_ = new AndroidAutoEntity(JRuntime::ioService(), jCryptor->getCryptor(), jMessenger->getMessenger(), config, serviceList, jPinger->getPinger());
+    androidAutoEntity_ = std::make_shared<AndroidAutoEntity>(JRuntime::ioService(), jCryptor->getCryptor(), jMessenger->getMessenger(), config, serviceList, jPinger->getPinger());
 }
 
 JAndroidAutoEntity::~JAndroidAutoEntity() {
-    delete androidAutoEntity_;
-    delete eventHandler_;
+    androidAutoEntity_.reset();
+//    delete eventHandler_;
 }
 
 JAndroidAutoEntity::Pointer JAndroidAutoEntity::getJAndroidAutoEntity(JNIEnv *env, jobject jandroidautoentity) {
@@ -143,7 +143,7 @@ void JAndroidAutoEntity::stop() {
 
 void JAndroidAutoEntity::start(jobject jeventhandler) {
     eventHandler_ = new JAndroidAutoEntityEventHandler(getJniEnv(), jeventhandler);
-    androidAutoEntity_->start(*eventHandler_);
+    androidAutoEntity_->start(eventHandler_);
 }
 
 void JAndroidAutoEntity::requestShutdown() {

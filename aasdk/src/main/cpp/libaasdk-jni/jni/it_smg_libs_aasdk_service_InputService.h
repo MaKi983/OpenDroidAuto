@@ -12,13 +12,16 @@ public:
 
     JInputService(JNIEnv *env, jobject jinputservice, jobject jmessenger, jobject jinputdevice);
 
+    void initJavaMethods() override;
+
     static jfieldID handleId;
     static JInputService::Pointer getJInputService(JNIEnv* env, jobject jinputservice);
     IService::Pointer getService() override;
 
     void start();
     void stop();
+    void onError(const aasdk::error::Error& e) override;
 private:
     InputService::Pointer inputService_;
-
+//    jmethodID onErrorMethodId_;
 };

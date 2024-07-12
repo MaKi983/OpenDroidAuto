@@ -19,7 +19,7 @@ namespace sensor
 class ISensorServiceChannel
 {
 public:
-    typedef ISensorServiceChannel* Pointer;
+    typedef std::shared_ptr<ISensorServiceChannel> Pointer;
 
     ISensorServiceChannel() = default;
     virtual ~ISensorServiceChannel() = default;

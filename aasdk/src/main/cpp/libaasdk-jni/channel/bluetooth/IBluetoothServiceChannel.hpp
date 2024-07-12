@@ -19,7 +19,7 @@ namespace bluetooth
 class IBluetoothServiceChannel
 {
 public:
-    typedef IBluetoothServiceChannel* Pointer;
+    typedef std::shared_ptr<IBluetoothServiceChannel> Pointer;
 
     IBluetoothServiceChannel() = default;
     virtual ~IBluetoothServiceChannel() = default;

@@ -4,16 +4,19 @@ import androidx.annotation.Keep;
 
 import it.smg.libs.aasdk.messenger.Messenger;
 import it.smg.libs.aasdk.projection.IBluetoothDevice;
+import it.smg.libs.common.Log;
 
 public class BluetoothService implements IService {
 
     private static final String TAG = "BluetoothService";
 
     private IBluetoothDevice bluetoothDevice_;
+    private final IAndroidAutoEntityEventHandler eventHandler_;
 
-    public BluetoothService(Messenger messenger, IBluetoothDevice bluetoothDevice) {
+    public BluetoothService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler, IBluetoothDevice bluetoothDevice) {
         handle_ = nativeSetup(messenger, bluetoothDevice);
         bluetoothDevice_ = bluetoothDevice;
+        eventHandler_ = eventHandler;
     }
 
     @Override
@@ -31,6 +34,12 @@ public class BluetoothService implements IService {
         nativeDelete();
         bluetoothDevice_.delete();
         bluetoothDevice_ = null;
+    }
+
+    @Override
+    public void onError(String error, int code){
+        Log.v(TAG, "onError " + error + "/" + code);
+        eventHandler_.onAndroidAutoQuitOnError(error, code);
     }
 
     static {

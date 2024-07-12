@@ -31,7 +31,7 @@ namespace usb
 class IUSBEndpoint
 {
 public:
-    typedef IUSBEndpoint* Pointer;
+    typedef std::shared_ptr<IUSBEndpoint> Pointer;
     typedef io::Promise<size_t> Promise;
 
     IUSBEndpoint() = default;

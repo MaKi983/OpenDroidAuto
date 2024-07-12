@@ -31,7 +31,7 @@ class ISSLWrapper
 {
 public:
     typedef std::pair<BIO*, BIO*> BIOs;
-    typedef ISSLWrapper* Pointer;
+    typedef std::shared_ptr<ISSLWrapper> Pointer;
 
     ISSLWrapper() = default;
     virtual ~ISSLWrapper() = default;

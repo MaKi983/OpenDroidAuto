@@ -12,12 +12,13 @@ namespace messenger
 class IMessageOutStream
 {
 public:
-    typedef IMessageOutStream* Pointer;
+    typedef std::shared_ptr<IMessageOutStream> Pointer;
 
     IMessageOutStream() = default;
     virtual ~IMessageOutStream() = default;
 
     virtual void stream(Message::Pointer message, SendPromise::Pointer promise) = 0;
+//    virtual void stop() = 0;
 };
 
 }

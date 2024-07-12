@@ -20,23 +20,23 @@ public class AndroidAutoEntityFactory {
 
     private static final String TAG = "AndroidAutoEntityFactory";
 
-    public static AndroidAutoEntity create(Context ctx, TCPTransport transport, SurfaceView surfaceView){
+    public static AndroidAutoEntity create(ODAService service, TCPTransport transport, SurfaceView surfaceView){
         Cryptor cryptor = new Cryptor();
 
         Messenger messenger = new Messenger(transport, cryptor);
 
-        Map<ChannelId, IService> serviceList = ServiceFactory.create(messenger, ctx, surfaceView);
+        Map<ChannelId, IService> serviceList = ServiceFactory.create(messenger, service, surfaceView);
         IPinger pinger = new Pinger(5000);
 
         return new AndroidAutoEntity(cryptor, transport, messenger, Settings.instance().car, serviceList, pinger);
     }
 
-    public static AndroidAutoEntity create(Context ctx, USBTransport transport, SurfaceView surfaceView){
+    public static AndroidAutoEntity create(ODAService service, USBTransport transport, SurfaceView surfaceView){
         Cryptor cryptor = new Cryptor();
 
         Messenger messenger = new Messenger(transport, cryptor);
 
-        Map<ChannelId, IService> serviceList = ServiceFactory.create(messenger, ctx, surfaceView);
+        Map<ChannelId, IService> serviceList = ServiceFactory.create(messenger, service, surfaceView);
         IPinger pinger = new Pinger(5000);
 
         return new AndroidAutoEntity(cryptor, transport, messenger, Settings.instance().car, serviceList, pinger);

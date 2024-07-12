@@ -11,7 +11,7 @@ namespace channel
 namespace av
 {
 
-class VideoServiceChannel: public IVideoServiceChannel, public ServiceChannel
+class VideoServiceChannel: public IVideoServiceChannel, public ServiceChannel, public std::enable_shared_from_this<VideoServiceChannel>
 {
 public:
     VideoServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger);
@@ -24,6 +24,7 @@ public:
     messenger::ChannelId getId() const override;
 
 private:
+    using std::enable_shared_from_this<VideoServiceChannel>::shared_from_this;
     void messageHandler(messenger::Message::Pointer message, IVideoServiceChannelEventHandler::Pointer eventHandler);
     void handleAVChannelSetupRequest(const common::DataConstBuffer& payload, IVideoServiceChannelEventHandler::Pointer eventHandler);
     void handleStartIndication(const common::DataConstBuffer& payload, IVideoServiceChannelEventHandler::Pointer eventHandler);
@@ -31,6 +32,8 @@ private:
     void handleChannelOpenRequest(const common::DataConstBuffer& payload, IVideoServiceChannelEventHandler::Pointer eventHandler);
     void handleVideoFocusRequest(const common::DataConstBuffer& payload, IVideoServiceChannelEventHandler::Pointer eventHandler);
     void handleAVMediaWithTimestampIndication(const common::DataConstBuffer& payload, IVideoServiceChannelEventHandler::Pointer eventHandler);
+    void handleAVMediaWithTimestampIndication(const common::Data payload, IVideoServiceChannelEventHandler::Pointer eventHandler);
+    void handleAVMediaIndication(const common::Data payload, IVideoServiceChannelEventHandler::Pointer eventHandler);
 };
 
 }

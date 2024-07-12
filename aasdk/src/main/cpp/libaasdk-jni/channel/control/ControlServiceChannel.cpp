@@ -24,7 +24,7 @@ void ControlServiceChannel::sendVersionRequest(SendPromise::Pointer promise)
 {
     if (Log::isDebug()) Log_d("sendVersionRequest");
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::PLAIN, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::PLAIN, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::VERSION_REQUEST).getData());
 
     common::Data versionBuffer(4, 0);
@@ -39,7 +39,7 @@ void ControlServiceChannel::sendHandshake(common::Data handshakeBuffer, SendProm
 {
     if (Log::isDebug()) Log_d("sendHandshake");
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::PLAIN, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::PLAIN, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::SSL_HANDSHAKE).getData());
     message->insertPayload(handshakeBuffer);
 
@@ -50,7 +50,7 @@ void ControlServiceChannel::sendAuthComplete(const proto::messages::AuthComplete
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendAuthComplete: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::PLAIN, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::PLAIN, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::AUTH_COMPLETE).getData());
     message->insertPayload(response);
 
@@ -61,7 +61,7 @@ void ControlServiceChannel::sendServiceDiscoveryResponse(const proto::messages::
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendServiceDiscoveryResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::SERVICE_DISCOVERY_RESPONSE).getData());
     message->insertPayload(response);
 
@@ -72,7 +72,7 @@ void ControlServiceChannel::sendAudioFocusResponse(const proto::messages::AudioF
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendAudioFocusResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::AUDIO_FOCUS_RESPONSE).getData());
     message->insertPayload(response);
 
@@ -83,7 +83,7 @@ void ControlServiceChannel::sendShutdownRequest(const proto::messages::ShutdownR
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendShutdownRequest: %s", request.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::SHUTDOWN_REQUEST).getData());
     message->insertPayload(request);
 
@@ -94,7 +94,7 @@ void ControlServiceChannel::sendShutdownResponse(const proto::messages::Shutdown
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendShutdownResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::SHUTDOWN_RESPONSE).getData());
     message->insertPayload(response);
 
@@ -105,7 +105,7 @@ void ControlServiceChannel::sendNavigationFocusResponse(const proto::messages::N
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendNavigationFocusResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::NAVIGATION_FOCUS_RESPONSE).getData());
     message->insertPayload(response);
 
@@ -116,7 +116,7 @@ void ControlServiceChannel::sendPingResponse(const proto::messages::PingResponse
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendPingResponse: %s", request.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::PLAIN, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::PLAIN, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::PING_RESPONSE).getData());
     message->insertPayload(request);
 
@@ -127,7 +127,7 @@ void ControlServiceChannel::sendPingRequest(const proto::messages::PingRequest& 
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendPingRequest: %s", request.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::PLAIN, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::PLAIN, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::PING_REQUEST).getData());
     message->insertPayload(request);
 
@@ -137,7 +137,7 @@ void ControlServiceChannel::sendPingRequest(const proto::messages::PingRequest& 
 void ControlServiceChannel::receive(IControlServiceChannelEventHandler::Pointer eventHandler)
 {
     auto receivePromise  = messenger::ReceivePromise::defer(strand_);
-    receivePromise->then(std::bind(&ControlServiceChannel::messageHandler, this, std::placeholders::_1, eventHandler),
+    receivePromise->then(std::bind(&ControlServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IControlServiceChannelEventHandler::onChannelError, eventHandler, std::placeholders::_1));
 
     messenger_->enqueueReceive(channelId_, std::move(receivePromise));

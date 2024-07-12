@@ -7,11 +7,11 @@ jfieldID JPinger::handleId = nullptr;
 JPinger::JPinger(JNIEnv *env, jobject jpinger, int duration)
         : JNIBase(env, jpinger, "JPinger")  {
 
-    pinger_ = new Pinger(JRuntime::ioService(), duration);
+    pinger_ = std::make_shared<Pinger>(JRuntime::ioService(), duration);
 }
 
 JPinger::~JPinger() {
-    delete pinger_;
+//    pinger_.reset();
 }
 
 JPinger::Pointer JPinger::getJPinger(JNIEnv *env, jobject jpinger) {

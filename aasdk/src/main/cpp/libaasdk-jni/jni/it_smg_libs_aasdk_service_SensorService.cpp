@@ -9,11 +9,20 @@ JSensorService::JSensorService(JNIEnv *env, jobject jsensorservice, jobject jmes
 
     JMessenger::Pointer jMessenger = JMessenger::getJMessenger(env, jmessenger);
 
-    sensorService_ = new SensorService(JRuntime::ioService(), jMessenger->getMessenger(), isnight);
+    sensorService_ = std::make_shared<SensorService>(JRuntime::ioService(), jMessenger->getMessenger(), this, isnight);
+}
+
+void JSensorService::initJavaMethods() {
+//    JNIEnv* env = getJniEnv();
+//    jclass cls = env->GetObjectClass(androidClass_);
+//
+//    onErrorMethodId_ = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+//
+//    env->DeleteLocalRef(cls);
 }
 
 JSensorService::~JSensorService() {
-    delete sensorService_;
+//    sensorService_.reset();
 }
 
 JSensorService::Pointer JSensorService::getJSensorService(JNIEnv *env, jobject jinputservice) {
@@ -36,6 +45,17 @@ void JSensorService::stop() {
     sensorService_->stop();
 }
 
+void JSensorService::onError(const aasdk::error::Error &e) {
+    JNIEnv* env = getJniEnv();
+    jstring jstr = env->NewStringUTF(e.what());
+
+    jclass cls = env->GetObjectClass(androidClass_);
+    jmethodID onErrorMethodId = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+    env->CallVoidMethod(androidClass_, onErrorMethodId, jstr, e.getNativeCode());
+
+    env->DeleteLocalRef(cls);
+    env->DeleteLocalRef(jstr);
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C"

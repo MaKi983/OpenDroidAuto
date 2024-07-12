@@ -11,7 +11,16 @@ JInputService::JInputService(JNIEnv *env, jobject jinputervice, jobject jmesseng
     JMessenger::Pointer jMessenger = JMessenger::getJMessenger(env, jmessenger);
     projection::JInputDevice::Pointer jInputDevice = projection::JInputDevice::getJInputDevice(env, jinputdevice);
 
-    inputService_ = new InputService(JRuntime::ioService(), jMessenger->getMessenger(), jInputDevice);
+    inputService_ = std::make_shared<InputService>(JRuntime::ioService(), jMessenger->getMessenger(), jInputDevice, this);
+}
+
+void JInputService::initJavaMethods() {
+//    JNIEnv* env = getJniEnv();
+//    jclass cls = env->GetObjectClass(androidClass_);
+//
+//    onErrorMethodId_ = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+//
+//    env->DeleteLocalRef(cls);
 }
 
 JInputService::Pointer JInputService::getJInputService(JNIEnv *env, jobject jinputervice) {
@@ -28,6 +37,18 @@ void JInputService::start() {
 
 void JInputService::stop() {
     inputService_->stop();
+}
+
+void JInputService::onError(const aasdk::error::Error &e) {
+    JNIEnv* env = getJniEnv();
+    jstring jstr = env->NewStringUTF(e.what());
+
+    jclass cls = env->GetObjectClass(androidClass_);
+    jmethodID onErrorMethodId = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+    env->CallVoidMethod(androidClass_, onErrorMethodId, jstr, e.getNativeCode());
+
+    env->DeleteLocalRef(cls);
+    env->DeleteLocalRef(jstr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

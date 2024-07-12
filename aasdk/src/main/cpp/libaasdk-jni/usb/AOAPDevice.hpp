@@ -29,7 +29,7 @@ namespace aasdk
 namespace usb
 {
 
-class AOAPDevice: public IAOAPDevice
+class AOAPDevice: public IAOAPDevice, boost::noncopyable
 {
 public:
     typedef AOAPDevice* Pointer;

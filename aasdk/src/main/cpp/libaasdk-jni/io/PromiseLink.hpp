@@ -30,7 +30,7 @@ namespace io
 {
 
 template<typename SourceResolveArgumentType = void, typename DestinationResolveArgumentType = void>
-class PromiseLink
+class PromiseLink: public std::enable_shared_from_this<PromiseLink<SourceResolveArgumentType, DestinationResolveArgumentType>>
 {
 public:
     typedef std::shared_ptr<PromiseLink<SourceResolveArgumentType, DestinationResolveArgumentType>> Pointer;
@@ -38,7 +38,7 @@ public:
 
     PromiseLink(typename Promise<DestinationResolveArgumentType>::Pointer promise, TransformFunctor transformFunctor)
         : promise_(std::move(promise))
-        , transformFunctor_(new TransformFunctor(std::move(transformFunctor)))
+        , transformFunctor_(std::make_shared<TransformFunctor>(std::move(transformFunctor)))
     {
 
     }
@@ -52,37 +52,34 @@ public:
     }
 
 private:
+    using std::enable_shared_from_this<PromiseLink<SourceResolveArgumentType, DestinationResolveArgumentType>>::shared_from_this;
 
     void resolve(SourceResolveArgumentType argument)
     {
         if(transformFunctor_ != nullptr)
         {
             promise_->resolve((*transformFunctor_)(std::move(argument)));
-            delete transformFunctor_;
+            transformFunctor_.reset();
         }
     }
 
     void reject(const error::Error& e)
     {
-        promise_->reject(std::move(e));
-        if(transformFunctor_ != nullptr)
-        {
-            delete transformFunctor_;
-        }
+        promise_->reject(e);
     }
 
     typename Promise<SourceResolveArgumentType>::ResolveHandler getResolveHandler()
     {
-        return std::bind(&PromiseLink::resolve, this, std::placeholders::_1);
+        return std::bind(&PromiseLink::resolve, this->shared_from_this(), std::placeholders::_1);
     }
 
     typename Promise<SourceResolveArgumentType>::RejectHandler getRejectHandler()
     {
-        return std::bind(&PromiseLink::reject, this, std::placeholders::_1);
+        return std::bind(&PromiseLink::reject, this->shared_from_this(), std::placeholders::_1);
     }
 
     typename Promise<DestinationResolveArgumentType>::Pointer promise_;
-    TransformFunctor* transformFunctor_;
+    std::shared_ptr<TransformFunctor> transformFunctor_;
 };
 
 template<>
@@ -113,7 +110,7 @@ private:
 
     void reject(const error::Error& e)
     {
-        promise_->reject(std::move(e));
+        promise_->reject(e);
     }
 
     Promise<void>::ResolveHandler getResolveHandler()

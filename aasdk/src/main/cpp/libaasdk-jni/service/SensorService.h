@@ -2,16 +2,17 @@
 
 #include "channel/sensor/SensorServiceChannel.hpp"
 #include "IService.hpp"
+#include "IServiceEventHandler.h"
 
 namespace service
 {
 
-class SensorService: public aasdk::channel::sensor::ISensorServiceChannelEventHandler, public IService
+class SensorService: public aasdk::channel::sensor::ISensorServiceChannelEventHandler, public IService, public std::enable_shared_from_this<SensorService>
 {
 public:
-    typedef SensorService* Pointer;
+    typedef std::shared_ptr<SensorService> Pointer;
 
-    SensorService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, bool nightMode=false);
+    SensorService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, IServiceEventHandler::Pointer serviceEventHandler, bool nightMode=false);
     ~SensorService();
 
     void start() override;
@@ -23,12 +24,15 @@ public:
     void setNightMode(bool nightMode);
 
 private:
+    using std::enable_shared_from_this<SensorService>::shared_from_this;
     void sendDrivingStatusUnrestricted();
     void sendNightData();
 
     boost::asio::io_service::strand strand_;
     aasdk::channel::sensor::SensorServiceChannel::Pointer channel_;
     bool nightMode_;
+    IServiceEventHandler::Pointer serviceEventHandler_;
+    bool isRunning_;
 };
 
 }

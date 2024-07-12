@@ -10,13 +10,13 @@ jfieldID JCryptor::handleId = nullptr;
 JCryptor::JCryptor(JNIEnv *env, jobject jcryptor)
         : JNIBase(env, jcryptor, "JCryptor")  {
 
-    aasdk::transport::ISSLWrapper::Pointer sslWrapper = new aasdk::transport::SSLWrapper();
-    cryptor_ = new Cryptor(sslWrapper);
+    aasdk::transport::ISSLWrapper::Pointer sslWrapper = std::make_unique<aasdk::transport::SSLWrapper>();
+    cryptor_ = std::make_unique<Cryptor>(sslWrapper);
     cryptor_->init();
 }
 
 JCryptor::~JCryptor() {
-    delete cryptor_;
+//    cryptor_.reset();
 }
 
 JCryptor::Pointer JCryptor::getJCryptor(JNIEnv *env, jobject jcryptor) {

@@ -18,14 +18,14 @@ JMessenger::JMessenger(JNIEnv *env, jobject jmessenger, aasdk::transport::ITrans
 
     JCryptor::Pointer jCryptor = JCryptor::getJCryptor(env, jcryptor);
 
-    IMessageInStream::Pointer messageInStream = new MessageInStream(JRuntime::ioService(), transport, jCryptor->getCryptor());
-    IMessageOutStream::Pointer messageOutStream = new MessageOutStream(JRuntime::ioService(), transport, jCryptor->getCryptor());
+    IMessageInStream::Pointer messageInStream = std::make_shared<MessageInStream>(JRuntime::ioService(), transport, jCryptor->getCryptor());
+    IMessageOutStream::Pointer messageOutStream = std::make_shared<MessageOutStream>(JRuntime::ioService(), transport, jCryptor->getCryptor());
 
-    messenger_ = new Messenger(JRuntime::ioService(), messageInStream, messageOutStream);
+    messenger_ = std::make_shared<Messenger>(JRuntime::ioService(), messageInStream, messageOutStream);
 }
 
 JMessenger::~JMessenger() {
-    delete messenger_;
+//    messenger_.reset();
 }
 
 JMessenger::Pointer JMessenger::getJMessenger(JNIEnv *env, jobject jmessenger) {

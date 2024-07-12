@@ -15,7 +15,7 @@ namespace sensor
 class ISensorServiceChannelEventHandler
 {
 public:
-    typedef ISensorServiceChannelEventHandler* Pointer;
+    typedef std::shared_ptr<ISensorServiceChannelEventHandler> Pointer;
 
     ISensorServiceChannelEventHandler() = default;
     virtual ~ISensorServiceChannelEventHandler() = default;

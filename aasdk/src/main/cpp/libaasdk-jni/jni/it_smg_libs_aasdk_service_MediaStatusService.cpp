@@ -11,11 +11,20 @@ JMediaStatusService::JMediaStatusService(JNIEnv *env, jobject jmediastatusservic
     JMessenger::Pointer jMessenger = JMessenger::getJMessenger(env, jmessenger);
     projection::JMediaStatusEvent::Pointer jMediaStatusEvent = projection::JMediaStatusEvent::getJMediaStatusEvent(env, jmediastatusevent);
 
-    mediaStatusService_ = new MediaStatusService(JRuntime::ioService(), jMessenger->getMessenger(), jMediaStatusEvent);
+    mediaStatusService_ = std::make_shared<MediaStatusService>(JRuntime::ioService(), jMessenger->getMessenger(), jMediaStatusEvent, this);
+}
+
+void JMediaStatusService::initJavaMethods() {
+//    JNIEnv* env = getJniEnv();
+//    jclass cls = env->GetObjectClass(androidClass_);
+//
+//    onErrorMethodId_ = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+//
+//    env->DeleteLocalRef(cls);
 }
 
 JMediaStatusService::~JMediaStatusService() {
-    delete mediaStatusService_;
+//    mediaStatusService_.reset();
 }
 
 JMediaStatusService::Pointer JMediaStatusService::getJMediaStatusService(JNIEnv *env, jobject jmediastatusservice) {
@@ -34,6 +43,17 @@ void JMediaStatusService::stop() {
     mediaStatusService_->stop();
 }
 
+void JMediaStatusService::onError(const aasdk::error::Error &e) {
+    JNIEnv* env = getJniEnv();
+    jstring jstr = env->NewStringUTF(e.what());
+
+    jclass cls = env->GetObjectClass(androidClass_);
+    jmethodID onErrorMethodId = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+    env->CallVoidMethod(androidClass_, onErrorMethodId, jstr, e.getNativeCode());
+
+    env->DeleteLocalRef(cls);
+    env->DeleteLocalRef(jstr);
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C"

@@ -24,8 +24,6 @@
 #include <stdint.h>
 
 
-namespace aasdk
-{
 namespace common
 {
 
@@ -52,11 +50,13 @@ struct DataConstBuffer
     DataConstBuffer();
     ~DataConstBuffer();
     explicit DataConstBuffer(const DataBuffer& other);
+    DataConstBuffer(DataConstBuffer&& other);
     DataConstBuffer(const Data::value_type* _data, Data::size_type _size, Data::size_type offset = 0);
     DataConstBuffer(const void* _data, Data::size_type _size, Data::size_type offset = 0);
     explicit DataConstBuffer(const Data& _data, Data::size_type offset = 0);
     bool operator==(const std::nullptr_t&) const;
     bool operator==(const DataConstBuffer& buffer) const;
+    DataConstBuffer& operator=(DataConstBuffer&& other);
 
     const Data::value_type* cdata;
     Data::size_type size;
@@ -83,5 +83,4 @@ common::Data createData(const DataConstBuffer& buffer);
 std::string dump(const Data& data);
 std::string dump(const DataConstBuffer& buffer);
 
-}
 }
