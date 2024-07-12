@@ -21,7 +21,7 @@ VideoServiceChannel::VideoServiceChannel(boost::asio::io_service::strand& strand
 void VideoServiceChannel::receive(IVideoServiceChannelEventHandler::Pointer eventHandler)
 {
     auto receivePromise = messenger::ReceivePromise::defer(strand_);
-    receivePromise->then(std::bind(&VideoServiceChannel::messageHandler, this, std::placeholders::_1, eventHandler),
+    receivePromise->then(std::bind(&VideoServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IVideoServiceChannelEventHandler::onChannelError, eventHandler, std::placeholders::_1));
 
     messenger_->enqueueReceive(channelId_, std::move(receivePromise));
@@ -36,7 +36,7 @@ void VideoServiceChannel::sendChannelOpenResponse(const proto::messages::Channel
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendChannelOpenResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::CONTROL);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::CONTROL));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::CHANNEL_OPEN_RESPONSE).getData());
     message->insertPayload(response);
 
@@ -47,7 +47,7 @@ void VideoServiceChannel::sendAVChannelSetupResponse(const proto::messages::AVCh
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendAVChannelSetupResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::AVChannelMessage::SETUP_RESPONSE).getData());
     message->insertPayload(response);
 
@@ -58,7 +58,7 @@ void VideoServiceChannel::sendVideoFocusIndication(const proto::messages::VideoF
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendVideoFocusIndication: %s", indication.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::AVChannelMessage::VIDEO_FOCUS_INDICATION).getData());
     message->insertPayload(indication);
 
@@ -69,7 +69,7 @@ void VideoServiceChannel::sendAVMediaAckIndication(const proto::messages::AVMedi
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendAVMediaAckIndication: %s", indication.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::AVChannelMessage::AV_MEDIA_ACK_INDICATION).getData());
     message->insertPayload(indication);
 
@@ -95,9 +95,11 @@ void VideoServiceChannel::messageHandler(messenger::Message::Pointer message, IV
         break;
     case proto::ids::AVChannelMessage::AV_MEDIA_WITH_TIMESTAMP_INDICATION:
         this->handleAVMediaWithTimestampIndication(payload, std::move(eventHandler));
+//            this->handleAVMediaWithTimestampIndication(std::move(message->getPayload()), std::move(eventHandler));
         break;
     case proto::ids::AVChannelMessage::AV_MEDIA_INDICATION:
         eventHandler->onAVMediaIndication(payload);
+//            this->handleAVMediaIndication(std::move(message->getPayload()), std::move(eventHandler));
         break;
     case proto::ids::ControlMessage::CHANNEL_OPEN_REQUEST:
         this->handleChannelOpenRequest(payload, std::move(eventHandler));
@@ -190,6 +192,30 @@ void VideoServiceChannel::handleAVMediaWithTimestampIndication(const common::Dat
         messenger::Timestamp timestamp(payload);
         if (Log::isVerbose() && Log::logProtocol()) Log_v("handleAVMediaWithTimestampIndication timestamp");
         eventHandler->onAVMediaWithTimestampIndication(timestamp.getValue(), common::DataConstBuffer(payload.cdata, payload.size, sizeof(messenger::Timestamp::ValueType)));
+    }
+    else
+    {
+        eventHandler->onChannelError(error::Error(error::ErrorCode::PARSE_PAYLOAD));
+    }
+}
+
+void VideoServiceChannel::handleAVMediaWithTimestampIndication(const common::Data payload, IVideoServiceChannelEventHandler::Pointer eventHandler)
+{
+    if(payload.size() >= sizeof(messenger::Timestamp::ValueType))
+    {
+        eventHandler->onAVMediaWithTimestampIndication(std::move(payload));
+    }
+    else
+    {
+        eventHandler->onChannelError(error::Error(error::ErrorCode::PARSE_PAYLOAD));
+    }
+}
+
+void VideoServiceChannel::handleAVMediaIndication(const common::Data payload, IVideoServiceChannelEventHandler::Pointer eventHandler)
+{
+    if(payload.size() >= sizeof(messenger::Timestamp::ValueType))
+    {
+        eventHandler->onAVMediaIndication(std::move(payload));
     }
     else
     {

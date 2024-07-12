@@ -8,7 +8,8 @@ ANDROID_LIB := $(EXT_LIB)/$(TARGET_ARCH_ABI)/system/hrv
 LOCAL_MODULE    := common
 
 LOCAL_SRC_FILES := Log.cpp \
-                   JNIBase.cpp
+                   JNIBase.cpp \
+                   Data.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/include \
                     $(EXT_LIB)/include/base \

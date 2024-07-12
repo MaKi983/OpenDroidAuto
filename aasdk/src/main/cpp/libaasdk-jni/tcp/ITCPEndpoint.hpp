@@ -12,9 +12,9 @@ namespace tcp
 class ITCPEndpoint
 {
 public:
-    typedef ITCPEndpoint* Pointer;
+    typedef std::shared_ptr<ITCPEndpoint> Pointer;
     typedef io::Promise<size_t> Promise;
-    typedef boost::asio::ip::tcp::socket* SocketPointer;
+    typedef std::shared_ptr<boost::asio::ip::tcp::socket> SocketPointer;
 
     virtual ~ITCPEndpoint() = default;
 

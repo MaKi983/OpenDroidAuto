@@ -1,10 +1,8 @@
 #pragma once
 
-#include <jni.h>
 #include <sys/types.h>
 #include "OMXSource.h"
 #include "OMXDecoder.h"
-#include <JNIBase.h>
 #include <thread>
 #include <android/looper.h>
 
@@ -13,11 +11,11 @@ struct ScreenSize {
     int width = 0;
 };
 
-class OMXVideoCodec : JNIBase {
+class OMXVideoCodec {
 public:
     typedef OMXVideoCodec* Pointer;
 
-    OMXVideoCodec(JNIEnv *env, jobject androidApp);
+    OMXVideoCodec();
 
     status_t init(int fps);
     void shutdown();
@@ -25,20 +23,23 @@ public:
 
     OMXSource::Pointer source();
     OMXDecoder::Pointer decoder();
+    void queueBuffer(common::DataConstBuffer& b, int64_t timestamp);
 
-    void setSps(unsigned char* buf, int len);
+    void setSps(common::DataConstBuffer &b);
 
-    ~OMXVideoCodec();
-
-protected:
-    void initJavaMethods() { };
-
+//    ~OMXVideoCodec();
 private:
     void init_omxDecoderThread();
+    void init_feedBufferThread();
+    static int looperCallback(int fd, int events, void* data);
+
+    ALooper* bufferThreadLooper_;
+    int messagePipe_[2];
 
     OMXSource::Pointer omxSource_;
     OMXDecoder::Pointer omxDecoder_;
 
+    std::thread feedBufferThread_;
     std::thread omxDecoderThread_;
     std::mutex codecMutex_;
     std::condition_variable omxDecoderCond_;
@@ -49,4 +50,6 @@ private:
     sp<ANativeWindow> nativeWindow_;
     ScreenSize screenSize_;
     int fps_;
+
+    Packet::Pointer tmpPacket_;
 };

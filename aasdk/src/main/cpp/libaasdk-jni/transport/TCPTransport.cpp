@@ -15,10 +15,10 @@ TCPTransport::TCPTransport(boost::asio::io_service& ioService, tcp::ITCPEndpoint
 void TCPTransport::enqueueReceive(common::DataBuffer buffer)
 {
     auto receivePromise = tcp::ITCPEndpoint::Promise::defer(receiveStrand_);
-    receivePromise->then([this](auto bytesTransferred) {
+    receivePromise->then([this, self = this->shared_from_this()](auto bytesTransferred) {
             this->receiveHandler(bytesTransferred);
         },
-        [this](auto e) {
+        [this, self = this->shared_from_this()](auto e) {
             this->rejectReceivePromises(e);
         });
 
@@ -29,10 +29,10 @@ void TCPTransport::enqueueSend(SendQueue::iterator queueElement)
 {
     auto sendPromise = tcp::ITCPEndpoint::Promise::defer(sendStrand_);
 
-    sendPromise->then([this, queueElement](auto) {
+    sendPromise->then([this, self = this->shared_from_this(), queueElement](auto) {
         this->sendHandler(queueElement, error::Error());
     },
-    [this, queueElement](auto e) {
+    [this, self = this->shared_from_this(), queueElement](auto e) {
         this->sendHandler(queueElement, e);
     });
 

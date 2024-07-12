@@ -16,7 +16,7 @@ namespace av
 class IMediaStatusServiceChannelEventHandler
 {
 public:
-    typedef IMediaStatusServiceChannelEventHandler* Pointer;
+    typedef std::shared_ptr<IMediaStatusServiceChannelEventHandler> Pointer;
 
     IMediaStatusServiceChannelEventHandler() = default;
     virtual ~IMediaStatusServiceChannelEventHandler() = default;

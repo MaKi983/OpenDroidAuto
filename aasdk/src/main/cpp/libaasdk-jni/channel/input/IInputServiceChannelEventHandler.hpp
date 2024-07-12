@@ -15,7 +15,7 @@ namespace input
 class IInputServiceChannelEventHandler
 {
 public:
-    typedef IInputServiceChannelEventHandler* Pointer;
+    typedef std::shared_ptr<IInputServiceChannelEventHandler> Pointer;
 
     IInputServiceChannelEventHandler() = default;
     virtual ~IInputServiceChannelEventHandler() = default;

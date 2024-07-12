@@ -7,8 +7,8 @@ public class MediaAudioService extends AudioService {
 
     private static final String TAG = "MediaAudioService";
 
-    public MediaAudioService(Messenger messenger, IAudioOutput audioOutput) {
-        super(audioOutput);
+    public MediaAudioService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler, IAudioOutput audioOutput) {
+        super(audioOutput, eventHandler);
 
         handle_ = nativeSetup(messenger, audioOutput);
     }

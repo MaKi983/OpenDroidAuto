@@ -21,9 +21,9 @@ Cryptor::Cryptor(transport::ISSLWrapper::Pointer sslWrapper)
 
 }
 
-Cryptor::~Cryptor(){
-    delete sslWrapper_;
-}
+//Cryptor::~Cryptor(){
+//    delete sslWrapper_;
+//}
 
 void Cryptor::init()
 {

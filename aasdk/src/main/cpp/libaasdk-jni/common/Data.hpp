@@ -32,8 +32,6 @@ namespace common
 typedef std::vector<uint8_t> Data;
 
 static constexpr size_t cStaticDataSize = 1 * 1024 * 1024;
-//static std::atomic<int> dataBufferCounter{0};
-//static std::atomic<int> dataConstBufferCounter{0};
 
 struct DataBuffer
 {

@@ -8,7 +8,7 @@ namespace service
     class IPinger
     {
     public:
-        typedef IPinger* Pointer;
+        typedef std::shared_ptr<IPinger> Pointer;
         typedef aasdk::io::Promise<void> Promise;
 
         virtual ~IPinger() = default;

@@ -32,6 +32,7 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
 
     public static final String START_ACTION = "it.smg.hu.service.ODAService.START_ACTION";
     public static final String STOP_ACTION = "it.smg.hu.service.ODAService.STOP_ACTION";
+    public static final String STOP_VIDEO_INDICATION = "it.smg.hu.service.ODAService.STOP_VIDEO_INDICATION";
     public static final String FORCE_CLOSE_ACTION = "it.smg.hu.service.ODAService.FORCE_CLOSE_ACTION";
 
     public static final String EXTRA_START_MODE = "startMode";
@@ -53,6 +54,8 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
 
     private Handler mainHandler_;
 
+    private boolean isRunning_;
+
     public ODAService() {}
 
     @Override
@@ -68,7 +71,6 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         mainHandler_ = new Handler(Looper.getMainLooper());
 
         localBroadcastManager_ = LocalBroadcastManager.getInstance(this);
-
     }
 
     public void startUsb(SurfaceView surfaceView){
@@ -76,6 +78,7 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
             Looper.prepare();
 
             if (usbManager_.aoapDevice() != null) {
+                isRunning_ = true;
                 if (Log.isVerbose()) Log.v(TAG, "aoap device available, start in usb mode");
                 try {
                     LibUsbDevice device = usbManager_.aoapDevice();
@@ -84,7 +87,7 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
                         AOAPDevice aoapDevice = AOAPDevice.create(device);
                         if (Log.isInfo()) Log.i(TAG, "create AOAP device");
 
-                        androidAutoEntity_ = AndroidAutoEntityFactory.create(getApplicationContext(), new USBTransport(aoapDevice), surfaceView);
+                        androidAutoEntity_ = AndroidAutoEntityFactory.create(this, new USBTransport(aoapDevice), surfaceView);
                         androidAutoEntity_.start(this);
                     } else {
                         Log.e(TAG, "Error in open usb device");
@@ -108,9 +111,10 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
 
             String ipAddress = wifiManager_.getIpAddress();
             if (ipAddress != null) {
+                isRunning_ = true;
                 if (Log.isInfo()) Log.i(TAG, "Connect to ip " + ipAddress);
                 TCPEndpoint tcpEndpoint = new TCPEndpoint(ipAddress);
-                androidAutoEntity_ = AndroidAutoEntityFactory.create(getApplicationContext(), new TCPTransport(tcpEndpoint), surfaceView);
+                androidAutoEntity_ = AndroidAutoEntityFactory.create(this, new TCPTransport(tcpEndpoint), surfaceView);
                 androidAutoEntity_.start(this);
             }
             if (Log.isInfo()) Log.i(TAG, "start wifi thead completed");
@@ -133,6 +137,13 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
     }
 
     public void stop(){
+        if (!isRunning_) {
+            if (Log.isInfo()) Log.i(TAG, "service not running, already stopped?");
+            return;
+        }
+
+        isRunning_ = false;
+
         if (Log.isInfo()) Log.i(TAG, "Stop");
         if (androidAutoEntity_ != null) {
             androidAutoEntity_.stop();
@@ -189,6 +200,13 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         });
 
         stop();
+    }
+
+    @Override
+    public void onAVChannelStopIndication() {
+        if (Log.isInfo()) Log.i(TAG, "stop video indication");
+        Intent stopIntent = new Intent(ODAService.STOP_VIDEO_INDICATION);
+        localBroadcastManager_.sendBroadcast(stopIntent);
     }
 
     public class ServiceBinder extends Binder {

@@ -29,7 +29,7 @@ namespace usb
 class IAOAPDevice
 {
 public:
-    typedef IAOAPDevice* Pointer;
+    typedef std::shared_ptr<IAOAPDevice> Pointer;
 
     IAOAPDevice() = default;
     virtual ~IAOAPDevice() = default;

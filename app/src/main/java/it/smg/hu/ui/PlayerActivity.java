@@ -83,7 +83,8 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
     @Override
     public void onBackPressed() {
         if (Log.isDebug()) Log.d(TAG, "onBackPressed");
-        odaService_.shutdown();
+        odaService_.stop();
+//        odaService_.shutdown();
     }
 
     @Override
@@ -144,6 +145,7 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
         if (Log.isDebug()) Log.d(TAG, "Registering LocalReceiver");
         IntentFilter localFilter = new IntentFilter();
         localFilter.addAction(ODAService.STOP_ACTION);
+        localFilter.addAction(ODAService.STOP_VIDEO_INDICATION);
         localReceiver_ = new LocalReceiver();
         localBroadcastManager_.registerReceiver(localReceiver_, localFilter);
     }
@@ -206,6 +208,8 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
             if (Log.isDebug()) Log.d(TAG, "received action " + intent.getAction());
             if (ODAService.STOP_ACTION.equalsIgnoreCase(intent.getAction())){
                 finish();
+            } else if (ODAService.STOP_VIDEO_INDICATION.equalsIgnoreCase(intent.getAction())){
+                moveTaskToBack(true);
             }
         }
     }

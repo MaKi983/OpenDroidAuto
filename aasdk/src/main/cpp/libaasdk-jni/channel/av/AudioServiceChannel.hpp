@@ -12,7 +12,7 @@ namespace channel
 namespace av
 {
 
-class AudioServiceChannel: public IAudioServiceChannel, public ServiceChannel
+class AudioServiceChannel: public IAudioServiceChannel, public ServiceChannel, public std::enable_shared_from_this<AudioServiceChannel>
 {
 public:
     AudioServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger,  messenger::ChannelId channelId);
@@ -24,12 +24,16 @@ public:
     messenger::ChannelId getId() const override;
 
 private:
+    using std::enable_shared_from_this<AudioServiceChannel>::shared_from_this;
     void messageHandler(messenger::Message::Pointer message, IAudioServiceChannelEventHandler::Pointer eventHandler);
     void handleAVChannelSetupRequest(const common::DataConstBuffer& payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
     void handleStartIndication(const common::DataConstBuffer& payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
     void handleStopIndication(const common::DataConstBuffer& payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
     void handleChannelOpenRequest(const common::DataConstBuffer& payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
     void handleAVMediaWithTimestampIndication(const common::DataConstBuffer& payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
+    void handleAVMediaWithTimestampIndication(const common::Data payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
+//    void handleAVMediaIndication(const common::DataConstBuffer& payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
+    void handleAVMediaIndication(const common::Data payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
 };
 
 }

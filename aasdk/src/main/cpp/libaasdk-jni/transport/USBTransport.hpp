@@ -12,7 +12,7 @@ namespace transport
 class USBTransport: public Transport
 {
 public:
-    typedef USBTransport *Pointer;
+//    typedef USBTransport *Pointer;
 
     USBTransport(boost::asio::io_service& ioService, usb::IAOAPDevice::Pointer aoapDevice);
 

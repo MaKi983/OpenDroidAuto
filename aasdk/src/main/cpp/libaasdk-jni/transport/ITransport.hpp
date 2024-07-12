@@ -13,7 +13,7 @@ namespace transport
 class ITransport
 {
 public:
-    typedef ITransport* Pointer;
+    typedef std::shared_ptr<ITransport> Pointer;
     typedef io::Promise<common::Data> ReceivePromise;
     typedef io::Promise<void> SendPromise;
 

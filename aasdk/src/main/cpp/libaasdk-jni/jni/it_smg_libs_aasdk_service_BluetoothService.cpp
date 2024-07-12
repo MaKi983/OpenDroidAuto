@@ -11,11 +11,20 @@ JBluetoothService::JBluetoothService(JNIEnv *env, jobject jbluetoothservice, job
     JMessenger::Pointer jMessenger = JMessenger::getJMessenger(env, jmessenger);
     projection::JBluetoothDevice::Pointer jBluetoothDevice = projection::JBluetoothDevice::getJBluetoothDevice(env, jbluetoothdevice);
 
-    bluetoothService_ = new BluetoothService(JRuntime::ioService(), jMessenger->getMessenger(), jBluetoothDevice);
+    bluetoothService_ = std::make_shared<BluetoothService>(JRuntime::ioService(), jMessenger->getMessenger(), jBluetoothDevice, this);
+}
+
+void JBluetoothService::initJavaMethods() {
+//    JNIEnv* env = getJniEnv();
+//    jclass cls = env->GetObjectClass(androidClass_);
+//
+//    onErrorMethodId_ = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+//
+//    env->DeleteLocalRef(cls);
 }
 
 JBluetoothService::~JBluetoothService() {
-    delete bluetoothService_;
+//    bluetoothService_.reset();
 }
 
 JBluetoothService::Pointer JBluetoothService::getJBluetoothService(JNIEnv *env, jobject jbluetoothservice) {
@@ -32,6 +41,18 @@ void JBluetoothService::start() {
 
 void JBluetoothService::stop() {
     bluetoothService_->stop();
+}
+
+void JBluetoothService::onError(const aasdk::error::Error &e) {
+    JNIEnv* env = getJniEnv();
+    jstring jstr = env->NewStringUTF(e.what());
+
+    jclass cls = env->GetObjectClass(androidClass_);
+    jmethodID onErrorMethodId = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+    env->CallVoidMethod(androidClass_, onErrorMethodId, jstr, e.getNativeCode());
+
+    env->DeleteLocalRef(cls);
+    env->DeleteLocalRef(jstr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

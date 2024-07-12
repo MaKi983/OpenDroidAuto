@@ -14,9 +14,9 @@ namespace service {
 
 class AndroidAutoEntity
         : public IAndroidAutoEntity,
-          public aasdk::channel::control::IControlServiceChannelEventHandler {
+          public aasdk::channel::control::IControlServiceChannelEventHandler, public std::enable_shared_from_this<AndroidAutoEntity> {
 public:
-    typedef AndroidAutoEntity *Pointer;
+    typedef std::shared_ptr<AndroidAutoEntity> Pointer;
 
     AndroidAutoEntity(boost::asio::io_service &ioService,
                       aasdk::messenger::ICryptor::Pointer cryptor,
@@ -27,7 +27,7 @@ public:
 
     ~AndroidAutoEntity() override;
 
-    void start(IAndroidAutoEntityEventHandler &eventHandler) override;
+    void start(IAndroidAutoEntityEventHandler::Pointer eventHandler) override;
 
     void stop() override;
 
@@ -60,6 +60,8 @@ public:
     onVoiceSessionRequest(const aasdk::proto::messages::VoiceSessionRequest &request) override;
 
 private:
+    using std::enable_shared_from_this<AndroidAutoEntity>::shared_from_this;
+    
     void triggerQuit();
     void triggerQuitOnError(const aasdk::error::Error& e);
 

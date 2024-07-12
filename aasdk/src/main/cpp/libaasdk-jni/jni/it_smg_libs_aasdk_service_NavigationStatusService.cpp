@@ -11,11 +11,20 @@ JNavigationStatusService::JNavigationStatusService(JNIEnv *env, jobject jnavigat
     JMessenger::Pointer jMessenger = JMessenger::getJMessenger(env, jmessenger);
     projection::JNavigationStatusEvent::Pointer jNavigationStatusEvent = projection::JNavigationStatusEvent::getJNavigationStatusEvent(env, jnavigationstatusevent);
 
-    navigationStatusService_ = new NavigationStatusService(JRuntime::ioService(), jMessenger->getMessenger(), jNavigationStatusEvent);
+    navigationStatusService_ = std::make_shared<NavigationStatusService>(JRuntime::ioService(), jMessenger->getMessenger(), jNavigationStatusEvent, this);
+}
+
+void JNavigationStatusService::initJavaMethods() {
+//    JNIEnv* env = getJniEnv();
+//    jclass cls = env->GetObjectClass(androidClass_);
+//
+//    onErrorMethodId_ = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+//
+//    env->DeleteLocalRef(cls);
 }
 
 JNavigationStatusService::~JNavigationStatusService() {
-    delete navigationStatusService_;
+//    navigationStatusService_.reset();
 }
 
 JNavigationStatusService::Pointer JNavigationStatusService::getJNavigationStatusService(JNIEnv *env, jobject jnavigationstatusservice) {
@@ -34,6 +43,17 @@ void JNavigationStatusService::stop() {
     navigationStatusService_->stop();
 }
 
+void JNavigationStatusService::onError(const aasdk::error::Error &e) {
+    JNIEnv* env = getJniEnv();
+    jstring jstr = env->NewStringUTF(e.what());
+
+    jclass cls = env->GetObjectClass(androidClass_);
+    jmethodID onErrorMethodId = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+    env->CallVoidMethod(androidClass_, onErrorMethodId, jstr, e.getNativeCode());
+
+    env->DeleteLocalRef(cls);
+    env->DeleteLocalRef(jstr);
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C"

@@ -11,7 +11,7 @@ namespace channel
 namespace input
 {
 
-class InputServiceChannel: public IInputServiceChannel, public ServiceChannel
+class InputServiceChannel: public IInputServiceChannel, public ServiceChannel, public std::enable_shared_from_this<InputServiceChannel>
 {
  public:
     InputServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger);
@@ -23,6 +23,7 @@ class InputServiceChannel: public IInputServiceChannel, public ServiceChannel
     messenger::ChannelId getId() const override;
 
 private:
+    using std::enable_shared_from_this<InputServiceChannel>::shared_from_this;
     void messageHandler(messenger::Message::Pointer message, IInputServiceChannelEventHandler::Pointer eventHandler);
     void handleBindingRequest(const common::DataConstBuffer& payload, IInputServiceChannelEventHandler::Pointer eventHandler);
     void handleChannelOpenRequest(const common::DataConstBuffer& payload, IInputServiceChannelEventHandler::Pointer eventHandler);

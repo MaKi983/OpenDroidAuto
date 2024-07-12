@@ -11,7 +11,7 @@ namespace messenger
 class ICryptor
 {
 public:
-    typedef ICryptor* Pointer;
+    typedef std::shared_ptr<ICryptor> Pointer;
 
     ICryptor() = default;
     virtual ~ICryptor() = default;

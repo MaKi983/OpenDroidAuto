@@ -17,7 +17,7 @@ namespace av
 class IMediaStatusServiceChannel
 {
 public:
-    typedef IMediaStatusServiceChannel* Pointer;
+    typedef std::shared_ptr<IMediaStatusServiceChannel> Pointer;
 
     IMediaStatusServiceChannel() = default;
     virtual ~IMediaStatusServiceChannel() = default;

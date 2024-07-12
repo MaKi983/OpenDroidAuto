@@ -8,7 +8,7 @@ JUSBTransport::JUSBTransport(JNIEnv *env, jobject jusbtransport, jobject jaoapde
         : JNIBase(env, jusbtransport, "JUSBTransport"){
     JAOAPDevice::Pointer jAOAPDevice = JAOAPDevice::getJAOAPDevice(env, jaoapdevice);
 
-    transport_ = new USBTransport(JRuntime::ioService(), jAOAPDevice->getAOAPDevice());
+    transport_ = std::make_shared<USBTransport>(JRuntime::ioService(), jAOAPDevice->getAOAPDevice());
 }
 
 JUSBTransport::Pointer JUSBTransport::getJUSBTransport(JNIEnv *env, jobject jusbtransport) {
@@ -20,7 +20,7 @@ ITransport::Pointer JUSBTransport::getTransport() {
 }
 
 JUSBTransport::~JUSBTransport() {
-    delete transport_;
+//    transport_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

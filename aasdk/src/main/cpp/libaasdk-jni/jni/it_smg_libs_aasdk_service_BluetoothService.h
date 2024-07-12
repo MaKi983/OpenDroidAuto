@@ -13,13 +13,16 @@ public:
     JBluetoothService(JNIEnv *env, jobject jbluetoothservice, jobject jmessenger, jobject jbluetoothdevice);
     ~JBluetoothService();
 
+    void initJavaMethods() override;
+
     static jfieldID handleId;
     static JBluetoothService::Pointer getJBluetoothService(JNIEnv* env, jobject jbluetoothservice);
     IService::Pointer getService() override;
 
     void start();
     void stop();
+    void onError(const aasdk::error::Error& e) override;
 private:
     BluetoothService::Pointer bluetoothService_;
-
+//    jmethodID onErrorMethodId_;
 };

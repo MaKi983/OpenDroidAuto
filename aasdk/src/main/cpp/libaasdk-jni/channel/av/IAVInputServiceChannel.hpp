@@ -20,7 +20,7 @@ namespace av
 class IAVInputServiceChannel
 {
 public:
-    typedef IAVInputServiceChannel* Pointer;
+    typedef std::shared_ptr<IAVInputServiceChannel> Pointer;
 
     IAVInputServiceChannel() = default;
     virtual ~IAVInputServiceChannel() = default;

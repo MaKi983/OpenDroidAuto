@@ -14,33 +14,33 @@ AndroidAutoEntity::AndroidAutoEntity(boost::asio::io_service& ioService,
         : strand_(ioService)
         , cryptor_(std::move(cryptor))
         , messenger_(std::move(messenger))
-        , controlServiceChannel_(nullptr)
+        , controlServiceChannel_(std::make_shared<aasdk::channel::control::ControlServiceChannel>(strand_, messenger_))
         , config_(std::move(config))
         , serviceList_(std::move(serviceList))
         , pinger_(std::move(pinger))
         , eventHandler_(nullptr)
 {
-    controlServiceChannel_ = new aasdk::channel::control::ControlServiceChannel(strand_, messenger_);
+    //controlServiceChannel_ = std::make_shared<aasdk::channel::control::ControlServiceChannel>(strand_, messenger_);
 }
 
 AndroidAutoEntity::~AndroidAutoEntity()
 {
     if(Log::isDebug()) Log_d("destroy.");
     delete config_;
-    delete controlServiceChannel_;
+//    delete controlServiceChannel_;
 }
 
-void AndroidAutoEntity::start(IAndroidAutoEntityEventHandler& eventHandler)
+void AndroidAutoEntity::start(IAndroidAutoEntityEventHandler::Pointer eventHandler)
 {
-    strand_.dispatch([this, eventHandler = &eventHandler]() {
+    strand_.dispatch([this, self = this->shared_from_this(), eventHandler = eventHandler]() {
         if(Log::isInfo()) Log_i("start");
         eventHandler_ = eventHandler;
 
         auto versionRequestPromise = aasdk::channel::SendPromise::defer(strand_);
-        versionRequestPromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
+        versionRequestPromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
         controlServiceChannel_->sendVersionRequest(std::move(versionRequestPromise));
 
-        controlServiceChannel_->receive(this);
+        controlServiceChannel_->receive(this->shared_from_this());
     });
 }
 
@@ -48,6 +48,7 @@ void AndroidAutoEntity::stop()
 {
     if(Log::isInfo()) Log_i("stop");
 
+    delete eventHandler_;
     eventHandler_ = nullptr;
 }
 
@@ -58,9 +59,9 @@ void AndroidAutoEntity::sendShutdownRequest() {
     shutdownRequest.set_reason(aasdk::proto::enums::ShutdownReason::QUIT);
 
     auto sendShutdownRequestPromise = aasdk::channel::SendPromise::defer(strand_);
-    sendShutdownRequestPromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
+    sendShutdownRequestPromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
     controlServiceChannel_->sendShutdownRequest(shutdownRequest, std::move(sendShutdownRequestPromise));
-    controlServiceChannel_->receive(this);
+    controlServiceChannel_->receive(this->shared_from_this());
 }
 
 void AndroidAutoEntity::onVersionResponse(uint16_t majorCode, uint16_t minorCode, aasdk::proto::enums::VersionResponseStatus::Enum status)
@@ -81,9 +82,9 @@ void AndroidAutoEntity::onVersionResponse(uint16_t majorCode, uint16_t minorCode
             cryptor_->doHandshake();
 
             auto handshakePromise = aasdk::channel::SendPromise::defer(strand_);
-            handshakePromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
+            handshakePromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
             controlServiceChannel_->sendHandshake(cryptor_->readHandshakeBuffer(), std::move(handshakePromise));
-            controlServiceChannel_->receive(this);
+            controlServiceChannel_->receive(this->shared_from_this());
         }
         catch(const aasdk::error::Error& e)
         {
@@ -103,7 +104,7 @@ void AndroidAutoEntity::onHandshake(const aasdk::common::DataConstBuffer& payloa
             if(Log::isInfo()) Log_i("continue handshake");
 
             auto handshakePromise = aasdk::channel::SendPromise::defer(strand_);
-            handshakePromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
+            handshakePromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
             controlServiceChannel_->sendHandshake(cryptor_->readHandshakeBuffer(), std::move(handshakePromise));
         }
         else
@@ -114,11 +115,11 @@ void AndroidAutoEntity::onHandshake(const aasdk::common::DataConstBuffer& payloa
             authCompleteIndication.set_status(aasdk::proto::enums::Status::OK);
 
             auto authCompletePromise = aasdk::channel::SendPromise::defer(strand_);
-            authCompletePromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
+            authCompletePromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
             controlServiceChannel_->sendAuthComplete(authCompleteIndication, std::move(authCompletePromise));
         }
 
-        controlServiceChannel_->receive(this);
+        controlServiceChannel_->receive(this->shared_from_this());
     }
     catch(const aasdk::error::Error& e)
     {
@@ -149,9 +150,9 @@ void AndroidAutoEntity::onServiceDiscoveryRequest(const aasdk::proto::messages::
     if(Log::isInfo()) Log_i("Fill features done");
 
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
+    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
     controlServiceChannel_->sendServiceDiscoveryResponse(serviceDiscoveryResponse, std::move(promise));
-    controlServiceChannel_->receive(this);
+    controlServiceChannel_->receive(this->shared_from_this());
 }
 
 void AndroidAutoEntity::onAudioFocusRequest(const aasdk::proto::messages::AudioFocusRequest& request)
@@ -166,9 +167,9 @@ void AndroidAutoEntity::onAudioFocusRequest(const aasdk::proto::messages::AudioF
     response.set_audio_focus_state(audioFocusState);
 
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
+    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
     controlServiceChannel_->sendAudioFocusResponse(response, std::move(promise));
-    controlServiceChannel_->receive(this);
+    controlServiceChannel_->receive(this->shared_from_this());
 }
 
 void AndroidAutoEntity::onShutdownRequest(const aasdk::proto::messages::ShutdownRequest& request)
@@ -177,8 +178,8 @@ void AndroidAutoEntity::onShutdownRequest(const aasdk::proto::messages::Shutdown
 
     aasdk::proto::messages::ShutdownResponse response;
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then(std::bind(&AndroidAutoEntity::triggerQuit, this),
-                  std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
+    promise->then(std::bind(&AndroidAutoEntity::triggerQuit, this->shared_from_this()),
+                  std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
 
     controlServiceChannel_->sendShutdownResponse(response, std::move(promise));
 }
@@ -196,9 +197,9 @@ void AndroidAutoEntity::onNavigationFocusRequest(const aasdk::proto::messages::N
     response.set_type(2);
 
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
+    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
     controlServiceChannel_->sendNavigationFocusResponse(response, std::move(promise));
-    controlServiceChannel_->receive(this);
+    controlServiceChannel_->receive(this->shared_from_this());
 }
 
 void AndroidAutoEntity::onVoiceSessionRequest(const aasdk::proto::messages::VoiceSessionRequest& request)
@@ -206,8 +207,8 @@ void AndroidAutoEntity::onVoiceSessionRequest(const aasdk::proto::messages::Voic
     if(Log::isDebug()) Log_d("Voice session request, type: %s", ((request.type() == 1) ? "START" : ((request.type() == 2) ? "STOP" : "UNKNOWN")));
 
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
-    controlServiceChannel_->receive(this);
+    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
+    controlServiceChannel_->receive(this->shared_from_this());
 }
 
 void AndroidAutoEntity::onPingRequest(const aasdk::proto::messages::PingRequest& request)
@@ -215,15 +216,15 @@ void AndroidAutoEntity::onPingRequest(const aasdk::proto::messages::PingRequest&
     aasdk::proto::messages::PingResponse response;
     response.set_timestamp(request.timestamp());
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
+    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
     controlServiceChannel_->sendPingResponse(response, std::move(promise));
-    controlServiceChannel_->receive(this);
+    controlServiceChannel_->receive(this->shared_from_this());
 }
 
 void AndroidAutoEntity::onPingResponse(const aasdk::proto::messages::PingResponse& response)
 {
     pinger_->pong();
-    controlServiceChannel_->receive(this);
+    controlServiceChannel_->receive(this->shared_from_this());
 }
 
 void AndroidAutoEntity::onChannelError(const aasdk::error::Error& e)
@@ -251,7 +252,7 @@ void AndroidAutoEntity::triggerQuit()
 void AndroidAutoEntity::schedulePing()
 {
     auto promise = IPinger::Promise::defer(strand_);
-    promise->then([this]() {
+    promise->then([this, self = this->shared_from_this()]() {
                       this->sendPing();
                       this->schedulePing();
                   },
@@ -270,7 +271,7 @@ void AndroidAutoEntity::schedulePing()
 void AndroidAutoEntity::sendPing()
 {
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this, std::placeholders::_1));
+    promise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
 
     aasdk::proto::messages::PingRequest request;
     auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch());

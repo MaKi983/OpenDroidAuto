@@ -5,7 +5,7 @@
 namespace service
 {
 
-class Pinger: public IPinger
+class Pinger: public IPinger, public std::enable_shared_from_this<Pinger>
 {
 public:
     Pinger(boost::asio::io_service& ioService, time_t duration);
@@ -15,6 +15,7 @@ public:
     void cancel() override;
 
 private:
+    using std::enable_shared_from_this<Pinger>::shared_from_this;
 
     void onTimerExceeded(const boost::system::error_code& error);
 

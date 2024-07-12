@@ -22,7 +22,7 @@ SensorServiceChannel::SensorServiceChannel(boost::asio::io_service::strand& stra
 void SensorServiceChannel::receive(ISensorServiceChannelEventHandler::Pointer eventHandler)
 {
     auto receivePromise = messenger::ReceivePromise::defer(strand_);
-    receivePromise->then(std::bind(&SensorServiceChannel::messageHandler, this, std::placeholders::_1, eventHandler),
+    receivePromise->then(std::bind(&SensorServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&ISensorServiceChannelEventHandler::onChannelError, eventHandler, std::placeholders::_1));
 
     messenger_->enqueueReceive(channelId_, std::move(receivePromise));
@@ -37,7 +37,7 @@ void SensorServiceChannel::sendChannelOpenResponse(const proto::messages::Channe
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendChannelOpenResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::CONTROL);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::CONTROL));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::CHANNEL_OPEN_RESPONSE).getData());
     message->insertPayload(response);
 
@@ -69,7 +69,7 @@ void SensorServiceChannel::sendSensorEventIndication(const proto::messages::Sens
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendSensorEventIndication: %s", indication.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::SensorChannelMessage::SENSOR_EVENT_INDICATION).getData());
     message->insertPayload(indication);
 
@@ -80,7 +80,7 @@ void SensorServiceChannel::sendSensorStartResponse(const proto::messages::Sensor
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendSensorStartResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::SensorChannelMessage::SENSOR_START_RESPONSE).getData());
     message->insertPayload(response);
 

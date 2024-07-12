@@ -240,6 +240,8 @@ public class Settings {
     }
 
     public class Audio extends Base {
+        public final static String AUDIO_CODEC = "audio_codec";
+
         public final static String MEDIA_ENABLE_CHANNEL = "media_enable_channel";
         public final static String MEDIA_SAMPLERATE = "media_samplerate";
         public final static String MEDIA_SAMPLESIZE = "media_samplesize";
@@ -260,6 +262,8 @@ public class Settings {
         public final static String MIC_CHANNELCOUNT = "mic_channelcount";
         public final static String MIC_SOURCE = "mic_source";
 
+        public final static int AUDIO_CODEC_DEFAULT_VALUE = 1; //Android AudioTrack
+
         public final static boolean MEDIA_ENABLE_CHANNEL_DEFAULT_VALUE = true;
         public final static int MEDIA_SAMPLERATE_DEFAULT_VALUE = 48000;
         public final static int MEDIA_SAMPLESIZE_DEFAULT_VALUE = 16; // 16bit
@@ -279,6 +283,13 @@ public class Settings {
         public final static int MIC_SAMPLESIZE_DEFAULT_VALUE = 16; // 16bit
         public final static int MIC_CHANNELCOUNT_DEFAULT_VALUE = 1; //AudioFormat.CHANNEL_OUT_MONO;
         public final static int MIC_SOURCE_DEFAULT_VALUE = 1; // 1 = MIC
+
+        public int audioCodec(){
+            return get(AUDIO_CODEC,AUDIO_CODEC_DEFAULT_VALUE);
+        }
+        public void audioCodec(int value){
+            set(AUDIO_CODEC, value);
+        }
 
         public boolean musicChannelEnabled(){
             return SP.getBoolean(MEDIA_ENABLE_CHANNEL, MEDIA_ENABLE_CHANNEL_DEFAULT_VALUE);

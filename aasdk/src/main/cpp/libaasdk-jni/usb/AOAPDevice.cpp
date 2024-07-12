@@ -14,11 +14,11 @@ AOAPDevice::AOAPDevice(LibUsbDevice::Pointer libUsbDevice, boost::asio::io_servi
     , interfaceDescriptor_(interfaceDescriptor)
 {
     if((interfaceDescriptor->endpoint[0].bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK) == LIBUSB_ENDPOINT_IN) {
-        inEndpoint_ = new LibUsbEndpoint(libUsbDevice_, ioService, &interfaceDescriptor_->endpoint[0]);
-        outEndpoint_ = new LibUsbEndpoint(libUsbDevice_, ioService, &interfaceDescriptor_->endpoint[1]);
+        inEndpoint_ = std::make_shared<LibUsbEndpoint>(libUsbDevice_, ioService, &interfaceDescriptor_->endpoint[0]);
+        outEndpoint_ = std::make_shared<LibUsbEndpoint>(libUsbDevice_, ioService, &interfaceDescriptor_->endpoint[1]);
     } else {
-        inEndpoint_ = new LibUsbEndpoint(libUsbDevice_, ioService, &interfaceDescriptor_->endpoint[1]);
-        outEndpoint_ = new LibUsbEndpoint(libUsbDevice_, ioService, &interfaceDescriptor_->endpoint[0]);
+        inEndpoint_ = std::make_shared<LibUsbEndpoint>(libUsbDevice_, ioService, &interfaceDescriptor_->endpoint[1]);
+        outEndpoint_ = std::make_shared<LibUsbEndpoint>(libUsbDevice_, ioService, &interfaceDescriptor_->endpoint[0]);
     }
 }
 
@@ -30,8 +30,8 @@ AOAPDevice::~AOAPDevice()
     libUsbDevice_->releaseInterface(interfaceDescriptor_->bInterfaceNumber);
     libUsbDevice_->resetDevice();
 
-    delete inEndpoint_;
-    delete outEndpoint_;
+    inEndpoint_.reset();
+    outEndpoint_.reset();
 }
 
 IUSBEndpoint& AOAPDevice::getInEndpoint()
@@ -69,7 +69,7 @@ IAOAPDevice::Pointer AOAPDevice::create(LibUsbDevice::Pointer libUsbDevice, boos
         throw error::Error(error::ErrorCode::USB_CLAIM_INTERFACE, result);
     }
 
-    return new AOAPDevice(libUsbDevice, ioService, interfaceDescriptor);
+    return std::make_unique<AOAPDevice>(libUsbDevice, ioService, interfaceDescriptor);
 }
 
 }

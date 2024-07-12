@@ -25,7 +25,7 @@ MediaStatusServiceChannel::MediaStatusServiceChannel(boost::asio::io_service::st
 void MediaStatusServiceChannel::receive(IMediaStatusServiceChannelEventHandler::Pointer eventHandler)
 {
     auto receivePromise = messenger::ReceivePromise::defer(strand_);
-    receivePromise->then(std::bind(&MediaStatusServiceChannel::messageHandler, this, std::placeholders::_1, eventHandler),
+    receivePromise->then(std::bind(&MediaStatusServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IMediaStatusServiceChannelEventHandler::onChannelError, eventHandler,std::placeholders::_1));
 
     messenger_->enqueueReceive(channelId_, std::move(receivePromise));
@@ -39,7 +39,7 @@ messenger::ChannelId MediaStatusServiceChannel::getId() const
 void MediaStatusServiceChannel::sendChannelOpenResponse(const proto::messages::ChannelOpenResponse& response, SendPromise::Pointer promise)
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendChannelOpenResponse: %s", response.Utf8DebugString().c_str());
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::CONTROL);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::CONTROL));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::CHANNEL_OPEN_RESPONSE).getData());
     message->insertPayload(response);
 

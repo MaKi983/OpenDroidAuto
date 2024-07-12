@@ -13,6 +13,8 @@ public:
     JSensorService(JNIEnv *env, jobject jsensorservice, jobject jmessenger, bool isnight);
     ~JSensorService();
 
+    void initJavaMethods() override;
+
     static jfieldID handleId;
     static JSensorService::Pointer getJSensorService(JNIEnv* env, jobject jinputservice);
     IService::Pointer getService() override;
@@ -20,7 +22,8 @@ public:
     void sendNightMode(bool isNight);
     void start();
     void stop();
+    void onError(const aasdk::error::Error& e) override;
 private:
     SensorService::Pointer sensorService_;
-
+//    jmethodID onErrorMethodId_;
 };

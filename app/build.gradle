@@ -63,6 +63,7 @@ dependencies {
     implementation project(path: ':common')
     implementation project(path: ':aasdk')
     implementation project(path: ':omxvideocodec')
+    implementation project(path: ':slesaudiocodec')
     implementation 'androidx.multidex:multidex:2.0.1'
 
     testImplementation 'junit:junit:4.+'

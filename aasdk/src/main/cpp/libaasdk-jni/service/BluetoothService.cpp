@@ -6,29 +6,33 @@
 namespace service
 {
 
-BluetoothService::BluetoothService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IBluetoothDevice::Pointer bluetoothDevice)
+BluetoothService::BluetoothService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IBluetoothDevice::Pointer bluetoothDevice, IServiceEventHandler::Pointer serviceEventHandler)
         : strand_(ioService)
-        , channel_(new aasdk::channel::bluetooth::BluetoothServiceChannel(strand_, std::move(messenger)))
+        , channel_(std::make_shared<aasdk::channel::bluetooth::BluetoothServiceChannel>(strand_, std::move(messenger)))
+        , serviceEventHandler_(std::move(serviceEventHandler))
         , bluetoothDevice_(std::move(bluetoothDevice))
+        , isRunning_(false)
 {
 
 }
 
 BluetoothService::~BluetoothService(){
-    delete channel_;
+//    delete channel_;
 }
 
 void BluetoothService::start()
 {
-    strand_.dispatch([this]() {
+    isRunning_ = true;
+    strand_.dispatch([this, self = this->shared_from_this()]() {
         if(Log::isInfo()) Log_i("start");
-        channel_->receive(this);
+        channel_->receive(this->shared_from_this());
     });
 }
 
 void BluetoothService::stop()
 {
     if(Log::isInfo()) Log_i("stop");
+    isRunning_ = false;
     bluetoothDevice_->stop();
 }
 
@@ -63,10 +67,10 @@ void BluetoothService::onChannelOpenRequest(const aasdk::proto::messages::Channe
     response.set_status(status);
 
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&BluetoothService::onChannelError, this, std::placeholders::_1));
+    promise->then([]() {}, std::bind(&BluetoothService::onChannelError, this->shared_from_this(), std::placeholders::_1));
     channel_->sendChannelOpenResponse(response, std::move(promise));
 
-    channel_->receive(this);
+    channel_->receive(this->shared_from_this());
 }
 
 void BluetoothService::onBluetoothPairingRequest(const aasdk::proto::messages::BluetoothPairingRequest& request)
@@ -81,15 +85,20 @@ void BluetoothService::onBluetoothPairingRequest(const aasdk::proto::messages::B
     response.set_status(isPaired ? aasdk::proto::enums::BluetoothPairingStatus::OK : aasdk::proto::enums::BluetoothPairingStatus::FAIL);
 
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&BluetoothService::onChannelError, this, std::placeholders::_1));
+    promise->then([]() {}, std::bind(&BluetoothService::onChannelError, this->shared_from_this(), std::placeholders::_1));
     channel_->sendBluetoothPairingResponse(response, std::move(promise));
 
-    channel_->receive(this);
+    channel_->receive(this->shared_from_this());
 }
 
 void BluetoothService::onChannelError(const aasdk::error::Error& e)
 {
-    Log_e("channel error: %s", e.what());
+    if (!isRunning_){
+        if (Log::isWarn()) Log_w("Received error %s but is not running (maybe is stopping?), ignore it", e.what());
+        return;
+    }
+//    Log_e("channel error: %s", e.what());
+//    serviceEventHandler_->onError(e);
 }
 
 }

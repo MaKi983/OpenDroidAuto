@@ -12,11 +12,20 @@ JSpeechAudioService::JSpeechAudioService(JNIEnv *env, jobject jspeechaudioservic
     JMessenger::Pointer jMessenger = JMessenger::getJMessenger(env, jmessenger);
     projection::JAudioOutput::Pointer jAudioOutput = projection::JAudioOutput::getJAudioOutput(env, jaudiooutput);
 
-    audioService_ = new SpeechAudioService(JRuntime::ioService(), jMessenger->getMessenger(), jAudioOutput);
+    audioService_ = std::make_shared<SpeechAudioService>(JRuntime::ioService(), jMessenger->getMessenger(), jAudioOutput, this);
+}
+
+void JSpeechAudioService::initJavaMethods() {
+//    JNIEnv* env = getJniEnv();
+//    jclass cls = env->GetObjectClass(androidClass_);
+//
+//    onErrorMethodId_ = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+//
+//    env->DeleteLocalRef(cls);
 }
 
 JSpeechAudioService::~JSpeechAudioService() {
-    delete audioService_;
+//    audioService_.reset();
 }
 
 JSpeechAudioService::Pointer JSpeechAudioService::getJSpeechAudioService(JNIEnv *env, jobject jspeechaudioservice) {
@@ -35,6 +44,17 @@ void JSpeechAudioService::stop() {
     audioService_->stop();
 }
 
+void JSpeechAudioService::onError(const aasdk::error::Error &e) {
+    JNIEnv* env = getJniEnv();
+    jstring jstr = env->NewStringUTF(e.what());
+
+    jclass cls = env->GetObjectClass(androidClass_);
+    jmethodID onErrorMethodId = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
+    env->CallVoidMethod(androidClass_, onErrorMethodId, jstr, e.getNativeCode());
+
+    env->DeleteLocalRef(cls);
+    env->DeleteLocalRef(jstr);
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C"

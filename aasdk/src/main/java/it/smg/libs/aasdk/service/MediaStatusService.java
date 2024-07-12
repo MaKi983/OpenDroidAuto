@@ -3,16 +3,19 @@ package it.smg.libs.aasdk.service;
 import it.smg.libs.aasdk.messenger.Messenger;
 import it.smg.libs.aasdk.projection.IMediaStatusEvent;
 import it.smg.libs.aasdk.projection.INavigationStatusEvent;
+import it.smg.libs.common.Log;
 
 public class MediaStatusService implements IService {
 
     private static final String TAG = "MediaStatusService";
 
     private IMediaStatusEvent mediaStatusEvent_;
+    private final IAndroidAutoEntityEventHandler eventHandler_;
 
-    public MediaStatusService(Messenger messenger, IMediaStatusEvent mediaStatusEvent) {
+    public MediaStatusService(Messenger messenger, IAndroidAutoEntityEventHandler eventHandler, IMediaStatusEvent mediaStatusEvent) {
         handle_ = nativeSetup(messenger, mediaStatusEvent);
         mediaStatusEvent_ = mediaStatusEvent;
+        eventHandler_ = eventHandler;
     }
 
     @Override
@@ -30,6 +33,12 @@ public class MediaStatusService implements IService {
         nativeDelete();
         mediaStatusEvent_.delete();
         mediaStatusEvent_ = null;
+    }
+
+    @Override
+    public void onError(String error, int code){
+        Log.v(TAG, "onError " + error + "/" + code);
+        eventHandler_.onAndroidAutoQuitOnError(error, code);
     }
 
     static {

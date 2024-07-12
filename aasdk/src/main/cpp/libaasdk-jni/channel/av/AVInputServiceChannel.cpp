@@ -22,7 +22,7 @@ AVInputServiceChannel::AVInputServiceChannel(boost::asio::io_service::strand& st
 void AVInputServiceChannel::receive(IAVInputServiceChannelEventHandler::Pointer eventHandler)
 {
     auto receivePromise = messenger::ReceivePromise::defer(strand_);
-    receivePromise->then(std::bind(&AVInputServiceChannel::messageHandler, this, std::placeholders::_1, eventHandler),
+    receivePromise->then(std::bind(&AVInputServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IAVInputServiceChannelEventHandler::onChannelError, eventHandler, std::placeholders::_1));
 
     messenger_->enqueueReceive(channelId_, std::move(receivePromise));
@@ -32,7 +32,7 @@ void AVInputServiceChannel::sendChannelOpenResponse(const proto::messages::Chann
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendChannelOpenResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::CONTROL);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::CONTROL));
     message->insertPayload(messenger::MessageId(proto::ids::ControlMessage::CHANNEL_OPEN_RESPONSE).getData());
     message->insertPayload(response);
 
@@ -43,7 +43,7 @@ void AVInputServiceChannel::sendAVChannelSetupResponse(const proto::messages::AV
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendAVChannelSetupResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::AVChannelMessage::SETUP_RESPONSE).getData());
     message->insertPayload(response);
 
@@ -86,7 +86,7 @@ void AVInputServiceChannel::sendAVInputOpenResponse(const proto::messages::AVInp
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendAVInputOpenResponse: %s", response.Utf8DebugString().c_str());
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::AVChannelMessage::AV_INPUT_OPEN_RESPONSE).getData());
     message->insertPayload(response);
 
@@ -97,7 +97,7 @@ void AVInputServiceChannel::sendAVMediaWithTimestampIndication(messenger::Timest
 {
     if (Log::isVerbose() && Log::logProtocol()) Log_v("sendAVMediaWithTimestampIndication");
 
-    auto message = std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC);
+    auto message(std::make_shared<messenger::Message>(channelId_, messenger::EncryptionType::ENCRYPTED, messenger::MessageType::SPECIFIC));
     message->insertPayload(messenger::MessageId(proto::ids::AVChannelMessage::AV_MEDIA_WITH_TIMESTAMP_INDICATION).getData());
 
     auto timestampData = messenger::Timestamp(timestamp).getData();

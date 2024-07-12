@@ -20,7 +20,7 @@ namespace input
 class IInputServiceChannel
 {
 public:
-    typedef IInputServiceChannel* Pointer;
+    typedef std::shared_ptr<IInputServiceChannel> Pointer;
 
     IInputServiceChannel() = default;
     virtual ~IInputServiceChannel() = default;

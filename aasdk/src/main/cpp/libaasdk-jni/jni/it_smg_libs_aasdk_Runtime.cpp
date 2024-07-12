@@ -38,19 +38,26 @@ void JRuntime::stopIOServiceWorkers() {
     if(Log::isDebug()) Log_d("stopping IOService Workers");
     i = 0;
 
+    if (!ioService_.stopped()) {
+        if(Log::isDebug()) Log_d("stop ioService");
+        ioService_.stop();
+    }
+
+    if(Log::isDebug()) Log_d("stop all threads");
     auto iter = threadPool_.begin();
     while (iter != threadPool_.end()){
         iter->detach();
+        if (iter->joinable()){
+            if(Log::isDebug()) Log_d("join thread");
+            iter->join();
+        }
         threadPool_.erase(iter);
     }
 
-    if (!ioService_.stopped()) {
-        if(Log::isDebug()) Log_d("stop all threads");
-        ioService_.stop();
-        ioService_.reset();
-    }
-
     if(Log::isDebug()) Log_d("clear threadpool");
+    threadPool_.clear();
+
+    ioService_.reset();
 }
 
 void JRuntime::startIOServiceWorkers() {
@@ -61,7 +68,7 @@ void JRuntime::startIOServiceWorkers() {
         JNIEnv* env;
         JNIBase::javaAttachThread("IOService Worker", &env);
 
-        initJavaExecptionHandler(env);
+//        initJavaExecptionHandler(env);
 
         {
             std::unique_lock<std::mutex> lock(m);

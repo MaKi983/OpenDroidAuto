@@ -11,7 +11,7 @@ namespace channel
 namespace bluetooth
 {
 
-class BluetoothServiceChannel: public IBluetoothServiceChannel, public ServiceChannel
+class BluetoothServiceChannel: public IBluetoothServiceChannel, public ServiceChannel, public std::enable_shared_from_this<BluetoothServiceChannel>
 {
 public:
     BluetoothServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger);
@@ -22,6 +22,7 @@ public:
     void sendBluetoothPairingResponse(const proto::messages::BluetoothPairingResponse& response, SendPromise::Pointer promise) override;
 
 private:
+    using std::enable_shared_from_this<BluetoothServiceChannel>::shared_from_this;
     void messageHandler(messenger::Message::Pointer message, IBluetoothServiceChannelEventHandler::Pointer eventHandler);
     void handleChannelOpenRequest(const common::DataConstBuffer& payload, IBluetoothServiceChannelEventHandler::Pointer eventHandler);
     void handleBluetoothPairingRequest(const common::DataConstBuffer& payload, IBluetoothServiceChannelEventHandler::Pointer eventHandler);

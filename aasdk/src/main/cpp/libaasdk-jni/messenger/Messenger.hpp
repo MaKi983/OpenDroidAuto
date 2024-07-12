@@ -13,7 +13,7 @@ namespace aasdk
 namespace messenger
 {
 
-class Messenger: public IMessenger, boost::noncopyable
+class Messenger: public IMessenger, public std::enable_shared_from_this<Messenger>, boost::noncopyable
 {
 public:
     Messenger(boost::asio::io_service& ioService, IMessageInStream::Pointer messageInStream, IMessageOutStream::Pointer messageOutStream);
@@ -23,6 +23,7 @@ public:
     void stop() override;
 
 private:
+    using std::enable_shared_from_this<Messenger>::shared_from_this;
     typedef std::list<std::pair<Message::Pointer, SendPromise::Pointer>> ChannelSendQueue;
     void doSend();
     void inStreamMessageHandler(Message::Pointer message);

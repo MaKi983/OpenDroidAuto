@@ -17,7 +17,7 @@ namespace navigation
 class INavigationStatusServiceChannelEventHandler
 {
 public:
-    typedef INavigationStatusServiceChannelEventHandler* Pointer;
+    typedef std::shared_ptr<INavigationStatusServiceChannelEventHandler> Pointer;
 
     INavigationStatusServiceChannelEventHandler() = default;
     virtual ~INavigationStatusServiceChannelEventHandler() = default;

@@ -139,6 +139,7 @@ public class DayNightSensor implements ISensor, LocationListener {
             if (Log.isDebug()) Log.d(TAG, "remove handler callbacks");
             handler_.removeCallbacks(timeCallback_);
         }
+        if (Log.isDebug()) Log.d(TAG, "done");
     }
 
     @Override

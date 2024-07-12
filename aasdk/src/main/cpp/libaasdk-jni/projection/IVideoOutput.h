@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <messenger/Timestamp.hpp>
 #include "proto/VideoFPSEnum.pb.h"
 #include "proto/VideoResolutionEnum.pb.h"
 #include "common/Data.hpp"
@@ -23,7 +24,7 @@ public:
 
     virtual bool open() = 0;
     virtual bool init() = 0;
-    virtual void write(uint64_t timestamp, const aasdk::common::DataConstBuffer& buffer) = 0;
+    virtual void write(aasdk::messenger::Timestamp::ValueType timestamp, const aasdk::common::DataConstBuffer& buffer) = 0;
     virtual void stop() = 0;
     virtual aasdk::proto::enums::VideoFPS::Enum getVideoFPS() = 0;
     virtual aasdk::proto::enums::VideoResolution::Enum getVideoResolution() = 0;

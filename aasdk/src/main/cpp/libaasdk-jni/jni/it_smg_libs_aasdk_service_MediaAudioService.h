@@ -13,13 +13,16 @@ public:
     JMediaAudioService(JNIEnv *env, jobject jmediaaudioservice, jobject jmessenger, jobject jaudiooutput);
     ~JMediaAudioService();
 
+    void initJavaMethods() override;
+
     static jfieldID handleId;
     static JMediaAudioService::Pointer getJMediaAudioService(JNIEnv* env, jobject jmediaaudioservice);
     IService::Pointer getService() override;
 
     void start();
     void stop();
+    void onError(const aasdk::error::Error& e) override;
 private:
     AudioService::Pointer audioService_;
-
+//    jmethodID onErrorMethodId_;
 };

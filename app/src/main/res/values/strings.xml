@@ -38,6 +38,7 @@
 	<string name="input_settings_mic_source">Source Type</string>
 
 	<string name="audio_settings">Audio Settings</string>
+	<string name="audio_settings_audiocodec">Audio Codec Type</string>
 	<string name="audio_settings_mic_format">Microphone Format</string>
 
 	<string name="advanced_settings">Advanced</string>

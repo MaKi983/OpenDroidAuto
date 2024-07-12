@@ -28,7 +28,7 @@ IAOAPDevice::Pointer JAOAPDevice::getAOAPDevice() {
 }
 
 JAOAPDevice::~JAOAPDevice() {
-    delete aoapDevice_;
+//    aoapDevice_.reset();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////

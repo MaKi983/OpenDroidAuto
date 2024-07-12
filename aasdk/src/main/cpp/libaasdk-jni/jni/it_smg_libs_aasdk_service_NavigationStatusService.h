@@ -13,13 +13,16 @@ public:
     JNavigationStatusService(JNIEnv *env, jobject jnavigationstatusservice, jobject jmessenger, jobject jnavigationstatusevent);
     ~JNavigationStatusService();
 
+    void initJavaMethods() override;
+
     static jfieldID handleId;
     static JNavigationStatusService::Pointer getJNavigationStatusService(JNIEnv* env, jobject jnavigationstatusservice);
     IService::Pointer getService() override;
 
     void start();
     void stop();
+    void onError(const aasdk::error::Error& e) override;
 private:
     NavigationStatusService::Pointer navigationStatusService_;
-
+//    jmethodID onErrorMethodId_;
 };

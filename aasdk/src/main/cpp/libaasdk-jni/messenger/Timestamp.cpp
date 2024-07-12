@@ -16,8 +16,8 @@ Timestamp::Timestamp(ValueType stamp)
 
 Timestamp::Timestamp(const common::DataConstBuffer& buffer)
 {
-//    const ValueType& timestampBig = reinterpret_cast<const ValueType&>(buffer.cdata[0]);
-    const ValueType& timestampBig = reinterpret_cast<const ValueType&>(buffer.cdata);
+    const ValueType& timestampBig = reinterpret_cast<const ValueType&>(buffer.cdata[0]);
+//    const ValueType& timestampBig = reinterpret_cast<const ValueType&>(buffer.cdata);
     stamp_ = boost::endian::big_to_native(timestampBig);
 }
 

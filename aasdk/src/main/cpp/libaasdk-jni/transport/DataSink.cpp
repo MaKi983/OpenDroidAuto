@@ -28,8 +28,8 @@ void DataSink::commit(common::Data::size_type size)
         throw error::Error(error::ErrorCode::DATA_SINK_COMMIT_OVERFLOW);
     }
 
-    common::Data data(size, 0);
-    std::copy(data_.begin(), data_.begin() + size, data.begin());
+//    common::Data data(size, 0);
+//    std::copy(data_.begin(), data_.begin() + size, data.begin());
 
     data_.erase_end((cChunkSize - size));
 }

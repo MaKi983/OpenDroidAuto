@@ -53,7 +53,8 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
     }
 
     public void shutdown(){
-        nativeRequestShutdown();
+//        nativeRequestShutdown();
+        stop();
     }
 
     @Override
@@ -75,9 +76,11 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
 
     @Override
     public void stop() {
-        Runtime.stopThreads();
-
         nativeStop();
+
+        for (IService service : serviceList_.values()) {
+            service.stop();
+        }
 
         if (pinger_ != null) {
             pinger_.cancel();
@@ -85,9 +88,7 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
         messenger_.stop();
         transport_.stop();
 
-        for (IService service : serviceList_.values()) {
-            service.stop();
-        }
+        Runtime.stopThreads();
     }
 
     public void delete(){

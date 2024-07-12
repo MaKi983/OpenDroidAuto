@@ -10,11 +10,11 @@ jfieldID JTCPEndpoint::handleId = nullptr;
 JTCPEndpoint::JTCPEndpoint(JNIEnv *env, jobject jtcpendpoint, std::string ipAddress)
         : JNIBase(env, jtcpendpoint, "JTCPEndpoint"){
     ITCPEndpoint::SocketPointer socket = connect(env, JRuntime::ioService(), ipAddress);
-    tcpEndpoint_ = new TCPEndpoint(tcpWrapper_, socket);
+    tcpEndpoint_ = std::make_shared<TCPEndpoint>(tcpWrapper_, socket);
 }
 
 JTCPEndpoint::~JTCPEndpoint(){
-    delete tcpEndpoint_;
+//    tcpEndpoint_.reset();
 }
 
 JTCPEndpoint::Pointer JTCPEndpoint::getJTCPEndpoint(JNIEnv *env, jobject jtcpendpoint) {
@@ -22,7 +22,7 @@ JTCPEndpoint::Pointer JTCPEndpoint::getJTCPEndpoint(JNIEnv *env, jobject jtcpend
 }
 
 ITCPEndpoint::SocketPointer JTCPEndpoint::connect(JNIEnv* env, boost::asio::io_service& ioService, std::string ipAddress){
-    auto socket = new boost::asio::ip::tcp::socket(ioService);
+    auto socket = std::make_shared<boost::asio::ip::tcp::socket>(ioService);
 
     try {
         boost::system::error_code ec = tcpWrapper_.connect(*socket, ipAddress, 5277);
@@ -34,7 +34,7 @@ ITCPEndpoint::SocketPointer JTCPEndpoint::connect(JNIEnv* env, boost::asio::io_s
             char msg [512] = {0};
             snprintf (msg, sizeof (msg), "Error in tcp connection, ip: %s -> error: %s", ipAddress.c_str(), ec.message().c_str());
             Log_e(msg);
-            delete socket;
+            socket.reset();
             throwConnectException(env, msg);
             return nullptr;
         }
@@ -43,7 +43,7 @@ ITCPEndpoint::SocketPointer JTCPEndpoint::connect(JNIEnv* env, boost::asio::io_s
         char msg [512] = {0};
         snprintf (msg, sizeof (msg), "Error in tcp connection, ip: %s -> error: %s", ipAddress.c_str(), se.what());
         Log_e(msg);
-        delete socket;
+        socket.reset();
         throwConnectException(env, msg);
         return nullptr;
     }

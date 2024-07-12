@@ -5,25 +5,29 @@
 namespace service
 {
 
-AudioService::AudioService(boost::asio::io_service& ioService, aasdk::channel::av::IAudioServiceChannel::Pointer channel, projection::IAudioOutput::Pointer audioOutput)
+AudioService::AudioService(boost::asio::io_service& ioService, aasdk::channel::av::IAudioServiceChannel::Pointer channel, projection::IAudioOutput::Pointer audioOutput, IServiceEventHandler::Pointer serviceEventHandler)
         : strand_(ioService)
-        , channel_(channel)
+        , channel_(std::move(channel))
+        , serviceEventHandler_(std::move(serviceEventHandler))
         , audioOutput_(std::move(audioOutput))
         , session_(-1)
+        , isRunning_(false)
 {
 }
 
 void AudioService::start()
 {
-    strand_.dispatch([this]() {
+    isRunning_ = true;
+    strand_.dispatch([this, self = this->shared_from_this()]() {
         if(Log::isInfo()) Log_i("%s / start", aasdk::messenger::channelIdToString(channel_->getId()).c_str());
-        channel_->receive(this);
+        channel_->receive(this->shared_from_this());
     });
 }
 
 void AudioService::stop()
 {
     if(Log::isInfo()) Log_i("%s / stop", aasdk::messenger::channelIdToString(channel_->getId()).c_str());
+    isRunning_ = false;
     audioOutput_->stop();
 }
 
@@ -79,9 +83,9 @@ void AudioService::onChannelOpenRequest(const aasdk::proto::messages::ChannelOpe
     response.set_status(status);
 
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&AudioService::onChannelError, this, std::placeholders::_1));
+    promise->then([]() {}, std::bind(&AudioService::onChannelError, this->shared_from_this(), std::placeholders::_1));
     channel_->sendChannelOpenResponse(response, std::move(promise));
-    channel_->receive(this);
+    channel_->receive(this->shared_from_this());
 }
 
 void AudioService::onAVChannelSetupRequest(const aasdk::proto::messages::AVChannelSetupRequest& request)
@@ -100,9 +104,9 @@ void AudioService::onAVChannelSetupRequest(const aasdk::proto::messages::AVChann
     response.add_configs(0);
 
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&AudioService::onChannelError, this, std::placeholders::_1));
+    promise->then([]() {}, std::bind(&AudioService::onChannelError, this->shared_from_this(), std::placeholders::_1));
     channel_->sendAVChannelSetupResponse(response, std::move(promise));
-    channel_->receive(this);
+    channel_->receive(this->shared_from_this());
 }
 
 void AudioService::onAVChannelStartIndication(const aasdk::proto::messages::AVChannelStartIndication& indication)
@@ -112,7 +116,7 @@ void AudioService::onAVChannelStartIndication(const aasdk::proto::messages::AVCh
 
     session_ = indication.session();
     audioOutput_->start();
-    channel_->receive(this);
+    channel_->receive(this->shared_from_this());
 }
 
 void AudioService::onAVChannelStopIndication(const aasdk::proto::messages::AVChannelStopIndication& indication)
@@ -122,12 +126,61 @@ void AudioService::onAVChannelStopIndication(const aasdk::proto::messages::AVCha
 
     session_ = -1;
     audioOutput_->suspend();
-    channel_->receive(this);
+    channel_->receive(this->shared_from_this());
+}
+
+void AudioService::onAVMediaWithTimestampIndication(const aasdk::common::Data data)
+{
+//    if (Log::isVerbose()) Log_v("t= %lld buffer= %hhu", timestamp, buffer.size);
+//    strand_.post([self = this, timestamp = std::move(timestamp), buffer = std::move(buffer)]() mutable {
+//        self->audioOutput_->write(timestamp, buffer);
+//
+//        aasdk::proto::messages::AVMediaAckIndication indication;
+//        indication.set_session(self->session_);
+//        indication.set_value(1);
+//
+//        auto promise = aasdk::channel::SendPromise::defer(self->strand_);
+//        promise->then([]() {}, std::bind(&AudioService::onChannelError, self, std::placeholders::_1));
+//        self->channel_->sendAVMediaAckIndication(indication, std::move(promise));
+//    });
+//
+//
+//    channel_->receive(this);
+    if (Log::isVerbose()) Log_v("onAVMediaWithTimestampIndication");
+
+    strand_.post([this, self = this->shared_from_this(), data = std::move(data)]() mutable {
+        aasdk::messenger::MessageId messageId(data);
+        aasdk::common::DataConstBuffer buffer(data, messageId.getSizeOf());
+        aasdk::messenger::Timestamp timestamp(buffer);
+        if (Log::isVerbose()) Log_v("onAVMediaWithTimestampIndication timestamp %lld", timestamp);
+        aasdk::common::DataConstBuffer b(buffer.cdata, buffer.size, sizeof(aasdk::messenger::Timestamp::ValueType));
+        if (Log::isVerbose() && Log::logProtocol()) Log_v("onAVMediaWithTimestampIndication %s", aasdk::common::dump(b).c_str());
+
+        audioOutput_->write(timestamp.getValue(), b);
+
+//        aasdk::proto::messages::AVMediaAckIndication indication;
+//        indication.set_session(self->session_);
+//        indication.set_value(1);
+//
+//        auto promise = aasdk::channel::SendPromise::defer(self->strand_);
+//        promise->then([]() {}, std::bind(&AudioService::onChannelError, self, std::placeholders::_1));
+//        self->channel_->sendAVMediaAckIndication(indication, std::move(promise));
+    });
+
+    aasdk::proto::messages::AVMediaAckIndication indication;
+    indication.set_session(session_);
+    indication.set_value(1);
+
+    auto promise = aasdk::channel::SendPromise::defer(strand_);
+    promise->then([]() {}, std::bind(&AudioService::onChannelError, this->shared_from_this(), std::placeholders::_1));
+    channel_->sendAVMediaAckIndication(indication, std::move(promise));
+
+    channel_->receive(this->shared_from_this());
 }
 
 void AudioService::onAVMediaWithTimestampIndication(aasdk::messenger::Timestamp::ValueType timestamp, const aasdk::common::DataConstBuffer& buffer)
 {
-    if (Log::isVerbose()) Log_v("t= %" PRIu64 " buffer= %hhu", timestamp, buffer.size);
+    channel_->receive(this->shared_from_this());
 
     audioOutput_->write(timestamp, buffer);
 
@@ -136,9 +189,10 @@ void AudioService::onAVMediaWithTimestampIndication(aasdk::messenger::Timestamp:
     indication.set_value(1);
 
     auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&AudioService::onChannelError, this, std::placeholders::_1));
+    promise->then([]() {}, std::bind(&AudioService::onChannelError, this->shared_from_this(), std::placeholders::_1));
     channel_->sendAVMediaAckIndication(indication, std::move(promise));
-    channel_->receive(this);
+
+//    channel_->receive(this->shared_from_this());
 }
 
 void AudioService::onAVMediaIndication(const aasdk::common::DataConstBuffer& buffer)
@@ -146,9 +200,35 @@ void AudioService::onAVMediaIndication(const aasdk::common::DataConstBuffer& buf
     this->onAVMediaWithTimestampIndication(0, buffer);
 }
 
+void AudioService::onAVMediaIndication(const aasdk::common::Data data)
+{
+    strand_.post([this, self = this->shared_from_this(), data = std::move(data)]() mutable {
+        aasdk::messenger::MessageId messageId(data);
+        aasdk::common::DataConstBuffer b(data, messageId.getSizeOf());
+        if (Log::isVerbose() && Log::logProtocol()) Log_v("onAVMediaWithTimestampIndication %s", aasdk::common::dump(b).c_str());
+
+        audioOutput_->write(0, b);
+    });
+
+    aasdk::proto::messages::AVMediaAckIndication indication;
+    indication.set_session(session_);
+    indication.set_value(1);
+
+    auto promise = aasdk::channel::SendPromise::defer(strand_);
+    promise->then([]() {}, std::bind(&AudioService::onChannelError, this->shared_from_this(), std::placeholders::_1));
+    channel_->sendAVMediaAckIndication(indication, std::move(promise));
+
+    channel_->receive(this->shared_from_this());
+}
+
 void AudioService::onChannelError(const aasdk::error::Error& e)
 {
-    Log_e("%s / channel error: %s", aasdk::messenger::channelIdToString(channel_->getId()).c_str(), e.what());
+    if (!isRunning_){
+        if (Log::isWarn()) Log_w("Received error %s but is not running (maybe is stopping?), ignore it", e.what());
+        return;
+    }
+//    Log_e("%s / channel error: %s", aasdk::messenger::channelIdToString(channel_->getId()).c_str(), e.what());
+//    serviceEventHandler_->onError(e);
 }
 
 }
