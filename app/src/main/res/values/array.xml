@@ -31,6 +31,16 @@
         <item>NIGHT</item>
     </string-array>
 
+    <string-array name="audio_codec_labels">
+        <item>Android AudioTrack</item>
+        <item>SLES Custom Codec (experimental)</item>
+    </string-array>
+
+    <integer-array name="audio_codec_values">
+        <item>1</item>
+        <item>2</item>
+    </integer-array>
+
     <!-- See android.media.MediaRecorder -->
     <string-array name="mic_source_labels">
         <item>DEFAULT</item>

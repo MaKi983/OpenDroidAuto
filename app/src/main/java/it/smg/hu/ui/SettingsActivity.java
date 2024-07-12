@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import it.smg.hu.R;
 import it.smg.hu.ui.settings.AdvancedFragment;
+import it.smg.hu.ui.settings.AudioFragment;
 import it.smg.hu.ui.settings.CarFragment;
 import it.smg.hu.ui.settings.VideoFragment;
 
@@ -18,7 +19,7 @@ public class SettingsActivity extends FragmentActivity {
     private ImageButton carImage;
     private ImageButton advancedImage;
     private ImageButton videoImage;
-//    private ImageButton audioImage;
+    private ImageButton audioImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,13 +51,13 @@ public class SettingsActivity extends FragmentActivity {
                         .commit()
         );
 
-//        audioImage = findViewById(R.id.audio_settings);
-//        audioImage.setOnClickListener(
-//                listener -> getSupportFragmentManager()
-//                        .beginTransaction()
-//                        .replace(R.id.main_content, new AudioFragment())
-//                        .commit()
-//        );
+        audioImage = findViewById(R.id.audio_settings);
+        audioImage.setOnClickListener(
+                listener -> getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.main_content, new AudioFragment())
+                        .commit()
+        );
 
         getSupportFragmentManager().beginTransaction().replace(R.id.main_content, new CarFragment()).commit();
     }
