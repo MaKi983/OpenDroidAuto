@@ -25,6 +25,7 @@ status_t JOMXVideoCodec::init(int fps){
 
 void JOMXVideoCodec::shutdown(){
     omxVideoCodec_->shutdown();
+    if (Log::isVerbose()) Log_v("shutdown complete");
 }
 
 void JOMXVideoCodec::queueBuffer(common::DataConstBuffer &b, int64_t timestamp) {
@@ -36,6 +37,7 @@ void JOMXVideoCodec::setSps(common::DataConstBuffer &b){
 }
 
 JOMXVideoCodec::~JOMXVideoCodec() {
+    if (Log::isVerbose()) Log_v("delete omxVideoCodec_");
     delete omxVideoCodec_;
 }
 
@@ -84,12 +86,13 @@ Java_it_smg_libs_omxvideocodec_OMXVideoCodec_nativeDelete(JNIEnv *env, jobject t
     JOMXVideoCodec::Pointer jOMXVideoCodec = JOMXVideoCodec::getJOMXVideoCodec(env, thiz);
     jOMXVideoCodec->shutdown();
     delete jOMXVideoCodec;
+    if (Log::isVerbose()) Log_v("deleted");
 }
 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_it_smg_libs_omxvideocodec_OMXVideoCodec_nativeConsume(JNIEnv *env, jobject thiz, jobject buf, int len, jlong t) {
+Java_it_smg_libs_omxvideocodec_OMXVideoCodec_nativeConsume(JNIEnv *env, jobject thiz, jobject buf, jint len, jlong t) {
     JOMXVideoCodec::Pointer jOMXVideoCodec = JOMXVideoCodec::getJOMXVideoCodec(env, thiz);
 
     jbyte *bufferData = (jbyte *) env->GetDirectBufferAddress(buf);

@@ -25,6 +25,7 @@ public:
     uint32_t getChannelCount() override;
     uint32_t getSampleRate() override;
 
+    ~JAudioOutput();
 private:
     jmethodID startMethodId_;
     jmethodID stopMethodId_;
@@ -34,6 +35,10 @@ private:
     jmethodID getSampleSizeMethodId_;
     jmethodID getChannelCountMethodId_;
     jmethodID getSampleRateMethodId_;
+
+    jclass byteBufferCls_;
+    jmethodID bbOrderID_;
+    jobject bbNativeByteOrderObj_;
 };
 
 }

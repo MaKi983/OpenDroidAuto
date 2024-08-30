@@ -14,6 +14,7 @@ public:
 
     void queueBuffer(common::DataConstBuffer& b, int64_t timestamp);
     void stop();
+    void start();
 
     ~JSLESAudioCodec();
 

@@ -25,6 +25,7 @@ public:
     size_t getScreenDPI() override;
     Rect getVideoMargins() override;
 
+    ~JVideoOutput();
 private:
     jmethodID openMethodId_;
     jmethodID initMethodId_;
@@ -34,6 +35,10 @@ private:
     jmethodID getVideoResolutionMethodId_;
     jmethodID getScreenDPIMethodId_;
     jmethodID getVideoMarginsMethodId_;
+
+    jclass byteBufferCls_;
+    jmethodID bbOrderID_;
+    jobject bbNativeByteOrderObj_;
 };
 
 }

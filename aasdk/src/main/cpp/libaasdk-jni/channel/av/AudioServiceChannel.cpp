@@ -83,11 +83,9 @@ void AudioServiceChannel::messageHandler(messenger::Message::Pointer message, IA
         break;
     case proto::ids::AVChannelMessage::AV_MEDIA_WITH_TIMESTAMP_INDICATION:
         this->handleAVMediaWithTimestampIndication(payload, std::move(eventHandler));
-//        this->handleAVMediaWithTimestampIndication(std::move(message->getPayload()), std::move(eventHandler));
         break;
     case proto::ids::AVChannelMessage::AV_MEDIA_INDICATION:
         eventHandler->onAVMediaIndication(payload);
-//        this->handleAVMediaIndication(std::move(message->getPayload()), std::move(eventHandler));
         break;
     case proto::ids::ControlMessage::CHANNEL_OPEN_REQUEST:
         this->handleChannelOpenRequest(payload, std::move(eventHandler));
@@ -163,38 +161,6 @@ void AudioServiceChannel::handleAVMediaWithTimestampIndication(const common::Dat
         messenger::Timestamp timestamp(payload);
         if (Log::isVerbose()) Log_v("handleAVMediaWithTimestampIndication timestamp %lld", timestamp);
         eventHandler->onAVMediaWithTimestampIndication(timestamp.getValue(), common::DataConstBuffer(payload.cdata, payload.size, sizeof(messenger::Timestamp::ValueType)));
-    }
-    else
-    {
-        eventHandler->onChannelError(error::Error(error::ErrorCode::PARSE_PAYLOAD));
-    }
-}
-
-void AudioServiceChannel::handleAVMediaWithTimestampIndication(const common::Data payload, IAudioServiceChannelEventHandler::Pointer eventHandler)
-{
-    if(payload.size() >= sizeof(messenger::Timestamp::ValueType))
-    {
-        eventHandler->onAVMediaWithTimestampIndication(std::move(payload));
-    }
-    else
-    {
-        eventHandler->onChannelError(error::Error(error::ErrorCode::PARSE_PAYLOAD));
-    }
-}
-
-//void AudioServiceChannel::handleAVMediaIndication(const common::DataConstBuffer& payload, IAudioServiceChannelEventHandler::Pointer eventHandler)
-//{
-////    strand_.post([payload = std::move(payload), eventHandler = std::move(eventHandler)]() mutable {
-////    if (Log::isVerbose() && Log::logProtocol()) Log_v("handleAVMediaIndication %s", common::dump(payload).c_str());
-//    eventHandler->onAVMediaIndication(payload);
-////    });
-//}
-
-void AudioServiceChannel::handleAVMediaIndication(const common::Data payload, IAudioServiceChannelEventHandler::Pointer eventHandler)
-{
-    if(payload.size() >= sizeof(messenger::Timestamp::ValueType))
-    {
-        eventHandler->onAVMediaIndication(std::move(payload));
     }
     else
     {

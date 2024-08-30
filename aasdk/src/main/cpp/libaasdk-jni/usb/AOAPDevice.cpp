@@ -69,7 +69,8 @@ IAOAPDevice::Pointer AOAPDevice::create(LibUsbDevice::Pointer libUsbDevice, boos
         throw error::Error(error::ErrorCode::USB_CLAIM_INTERFACE, result);
     }
 
-    return std::make_unique<AOAPDevice>(libUsbDevice, ioService, interfaceDescriptor);
+//    return std::make_unique<AOAPDevice>(libUsbDevice, ioService, interfaceDescriptor);
+    return new AOAPDevice(libUsbDevice, ioService, interfaceDescriptor);
 }
 
 }

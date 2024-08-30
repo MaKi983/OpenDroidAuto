@@ -28,7 +28,7 @@ public class AndroidAutoEntityFactory {
         Map<ChannelId, IService> serviceList = ServiceFactory.create(messenger, service, surfaceView);
         IPinger pinger = new Pinger(5000);
 
-        return new AndroidAutoEntity(cryptor, transport, messenger, Settings.instance().car, serviceList, pinger);
+        return new AndroidAutoEntity(cryptor, transport, messenger, Settings.instance().car, serviceList, pinger, Settings.instance().advanced.threads());
     }
 
     public static AndroidAutoEntity create(ODAService service, USBTransport transport, SurfaceView surfaceView){
@@ -39,6 +39,6 @@ public class AndroidAutoEntityFactory {
         Map<ChannelId, IService> serviceList = ServiceFactory.create(messenger, service, surfaceView);
         IPinger pinger = new Pinger(5000);
 
-        return new AndroidAutoEntity(cryptor, transport, messenger, Settings.instance().car, serviceList, pinger);
+        return new AndroidAutoEntity(cryptor, transport, messenger, Settings.instance().car, serviceList, pinger, Settings.instance().advanced.threads());
     }
 }

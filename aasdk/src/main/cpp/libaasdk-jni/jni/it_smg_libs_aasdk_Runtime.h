@@ -11,7 +11,7 @@ public:
     JRuntime(JNIEnv* env, jobject androidApp);
     ~JRuntime();
 
-    void startIOServiceWorkers();
+    void startIOServiceWorkers(int threads);
     void stopIOServiceWorkers();
 
     static boost::asio::io_service& ioService();

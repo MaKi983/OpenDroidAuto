@@ -6,6 +6,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 
 import androidx.annotation.NonNull;
 
@@ -23,6 +24,7 @@ public class DayNightSensor implements ISensor, LocationListener {
     private int currentState_;
     private TwilightCalculator twilightCalculator_;
     private LocationManager locationManager_;
+    private HandlerThread handlerThread_;
     private Handler handler_;
     private Runnable timeCallback_;
     private Listener listener_;
@@ -63,7 +65,9 @@ public class DayNightSensor implements ISensor, LocationListener {
             currentState_ = IS_DAY;
         }
 
-        handler_ = new Handler();
+        handlerThread_ = new HandlerThread("DayNightSensor-thread");
+        handlerThread_.start();
+        handler_ = new Handler(handlerThread_.getLooper());
         timeCallback_ = new Runnable() {
             @Override
             public void run() {
@@ -138,6 +142,9 @@ public class DayNightSensor implements ISensor, LocationListener {
         if (handler_ != null){
             if (Log.isDebug()) Log.d(TAG, "remove handler callbacks");
             handler_.removeCallbacks(timeCallback_);
+            handlerThread_.interrupt();
+            handlerThread_ = null;
+            handler_ = null;
         }
         if (Log.isDebug()) Log.d(TAG, "done");
     }

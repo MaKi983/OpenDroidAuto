@@ -7,25 +7,34 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 import java.nio.ByteBuffer;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import it.smg.hu.config.Settings;
 import it.smg.libs.common.Log;
 
-public class AudioCodec implements IAudioCodec {
+public class AudioCodec implements IAudioCodec, Runnable {
     private static final String TAG = "AudioCodec";
 
+    private String name_;
     private AudioTrack audioTrack_;
     private int sampleRate_;
     private int channelConfig_;
     private int sampleSize_;
-    protected boolean running_;
-    private HandlerThread codecThread_;
-    private Handler codecHandler_;
+    protected AtomicBoolean running_;
 
-    public AudioCodec(int sampleRate, int channelConfig, int sampleSize){
+    private Queue<byte[]> queue_;
+    private Thread codecThread_;
+
+    public AudioCodec(String name, int sampleRate, int channelConfig, int sampleSize){
+        name_ = name;
         sampleRate_ = sampleRate;
         channelConfig_ = channelConfig;
         sampleSize_ = sampleSize;
+        running_ = new AtomicBoolean(false);
+
+        queue_ = new ConcurrentLinkedQueue<>();
     }
 
     private static int channels2num(int channels){
@@ -58,29 +67,19 @@ public class AudioCodec implements IAudioCodec {
 
     @Override
     public void write(ByteBuffer buffer, long timestamp) {
-        if (running_) {
+        if (running_.get()) {
             if (Log.isVerbose()) Log.v(TAG, "buffer size: " + buffer.limit());
-//            if (Log.isVerbose()) Log.v(TAG, buffer);
             final int size = buffer.limit();
             final byte[] data = new byte[size];
             buffer.get(data);
-//            if (Log.isVerbose()) Log.v(TAG, data);
 
-            codecHandler_.post(() -> {
-//                if (Log.isVerbose()) Log.v(TAG, "in thread");
-//                if (Log.isVerbose()) Log.v(TAG, data);
-                audioTrack_.write(data, 0, size);
-            });
+            queue_.add(data);
         }
     }
 
     @Override
     public void start() {
         if (Log.isInfo()) Log.i(TAG, "Start");
-
-        codecThread_ = new HandlerThread("AudioCodec-thread");
-        codecThread_.start();
-        codecHandler_ = new Handler(codecThread_.getLooper());
 
         if (audioTrack_ == null) {
             try {
@@ -95,18 +94,30 @@ public class AudioCodec implements IAudioCodec {
             if (Log.isInfo()) Log.i(TAG, "initialized");
         }
 
+        codecThread_ = new Thread(this);
+        codecThread_.setName(name_);
+        codecThread_.start();
+
         if (audioTrack_ != null) {
             audioTrack_.play();
         }
 
-        running_ = true;
+        running_.set(true);
     }
 
     @Override
     public void stop() {
         if (Log.isInfo()) Log.i(TAG, "Stop");
-        if (running_) {
-            running_ = false;
+        if (running_.get()) {
+            running_.set(false);
+
+            if (codecThread_ != null){
+                try {
+                    codecThread_.join();
+                    if (Log.isDebug()) Log.d(TAG + "_" + codecThread_.getName(), "thread joined");
+                } catch (InterruptedException e) {}
+                codecThread_ = null;
+            }
 
             if (audioTrack_ != null) {
                 if (audioTrack_.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
@@ -119,15 +130,24 @@ public class AudioCodec implements IAudioCodec {
 
             if (Log.isInfo()) Log.i(TAG, "audtiotrack released");
 
-//           codecHandler_.getLooper().quit();
-
-            if (codecThread_ != null) {
-                if (Log.isDebug()) Log.d(TAG, "interrupt codecThread_");
-                codecThread_.interrupt();
-                codecThread_ = null;
-            }
-            codecHandler_ = null;
+            queue_.clear();
+            if (Log.isDebug()) Log.d(TAG, "queue empty");
         }
     }
 
+    @Override
+    public void delete() {
+    }
+
+    @Override
+    public void run() {
+        if (Log.isVerbose()) Log.v(TAG + "_" + codecThread_.getName(), "running thread");
+        while (running_.get()) {
+            byte[] data = queue_.poll();
+            if (data != null){
+                audioTrack_.write(data, 0, data.length);
+            }
+        }
+        if (Log.isVerbose()) Log.v(TAG + "_" + codecThread_.getName(), "thread ended");
+    }
 }

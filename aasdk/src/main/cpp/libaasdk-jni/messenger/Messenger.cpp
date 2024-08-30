@@ -31,6 +31,7 @@ Messenger::~Messenger(){
 void Messenger::enqueueReceive(ChannelId channelId, ReceivePromise::Pointer promise)
 {
     if (isStopping_) {
+        if (Log::isInfo()) Log_i("Messenger stopped");
         return;
     }
 
@@ -59,6 +60,7 @@ void Messenger::enqueueReceive(ChannelId channelId, ReceivePromise::Pointer prom
 void Messenger::enqueueSend(Message::Pointer message, SendPromise::Pointer promise)
 {
     if (isStopping_) {
+        if (Log::isInfo()) Log_i("Messenger stopped");
         return;
     }
 
@@ -136,7 +138,7 @@ void Messenger::stop()
 {
     if (Log::isInfo()) Log_i("Stop messenger");
 
-//    isStopping_ = true;
+    isStopping_ = true;
 //    messageOutStream_->stop();
 //    messageInStream_->stop();
 //    receiveStrand_.dispatch([this, self = this->shared_from_this()]() {

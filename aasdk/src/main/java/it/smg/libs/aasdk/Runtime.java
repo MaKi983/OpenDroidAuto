@@ -10,7 +10,7 @@ public class Runtime {
 
     private static native long nativeInit();
     private static native void nativeFinalize(long handle);
-    private static native void nativeStartIOServiceWorker(long handle);
+    private static native void nativeStartIOServiceWorker(long handle, int threads);
     private static native void nativeStopIOServiceWorker(long handle);
 
     private static long handle;
@@ -38,8 +38,8 @@ public class Runtime {
         Runtime.exceptionHandler = exceptionHandler;
     }
 
-    public static void startThreads(){
-        nativeStartIOServiceWorker(handle);
+    public static void startThreads(int threads){
+        nativeStartIOServiceWorker(handle, threads);
     }
 
     public static void stopThreads(){

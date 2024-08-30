@@ -23,7 +23,7 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
     private ICarConfiguration config_;
     private Map<ChannelId, IService> serviceList_;
 
-    public AndroidAutoEntity(Cryptor cryptor, Transport transport, Messenger messenger, ICarConfiguration config, Map<ChannelId, IService> serviceList, IPinger pinger) {
+    public AndroidAutoEntity(Cryptor cryptor, Transport transport, Messenger messenger, ICarConfiguration config, Map<ChannelId, IService> serviceList, IPinger pinger, int threads) {
         cryptor_ = cryptor;
         transport_ = transport;
         messenger_ = messenger;
@@ -31,7 +31,7 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
         config_ = config;
         pinger_ = pinger;
 
-        Runtime.startThreads();
+        Runtime.startThreads(threads);
 
         handle_ = nativeSetup(cryptor_, messenger_, new ArrayList<>(serviceList_.values()), config_, pinger_);
     }
@@ -78,6 +78,11 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
     public void stop() {
         nativeStop();
 
+        Runtime.stopThreads();
+
+        messenger_.stop();
+        transport_.stop();
+
         for (IService service : serviceList_.values()) {
             service.stop();
         }
@@ -85,10 +90,8 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
         if (pinger_ != null) {
             pinger_.cancel();
         }
-        messenger_.stop();
-        transport_.stop();
 
-        Runtime.stopThreads();
+
     }
 
     public void delete(){

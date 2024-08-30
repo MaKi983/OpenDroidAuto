@@ -19,8 +19,6 @@ VideoService::VideoService(boost::asio::io_service& ioService, aasdk::messenger:
 }
 
 VideoService::~VideoService(){
-//    delete channel_;
-//    delete eventHandler_;
 }
 
 void VideoService::start()
@@ -37,7 +35,6 @@ void VideoService::stop()
     if(Log::isInfo()) Log_i("Stop");
     isRunning_ = false;
     videoOutput_->stop();
-    Log_v("stopped");
 }
 
 void VideoService::onChannelOpenRequest(const aasdk::proto::messages::ChannelOpenRequest& request)
@@ -64,7 +61,7 @@ void VideoService::onAVChannelSetupRequest(const aasdk::proto::messages::AVChann
 
     if(Log::isDebug()) Log_d("Setup request, config index: %d", request.config_index());
     const aasdk::proto::enums::AVChannelSetupStatus::Enum status = videoOutput_->init() ? aasdk::proto::enums::AVChannelSetupStatus::OK : aasdk::proto::enums::AVChannelSetupStatus::FAIL;
-    if(Log::isDebug()) Log_d("Setup status: %d", status);
+    if(Log::isDebug()) Log_d("Setup status: %s", aasdk::proto::enums::AVChannelSetupStatus::Enum_Name(status).c_str());
 
     aasdk::proto::messages::AVChannelSetupResponse response;
     response.set_media_status(status);
@@ -100,78 +97,7 @@ void VideoService::onAVChannelStopIndication(const aasdk::proto::messages::AVCha
 
 void VideoService::onAVMediaWithTimestampIndication(aasdk::messenger::Timestamp::ValueType timestamp, const aasdk::common::DataConstBuffer& buffer)
 {
-//    videoOutput_->write(timestamp, buffer);
-
-    aasdk::proto::messages::AVMediaAckIndication indication;
-    indication.set_session(session_);
-    indication.set_value(1);
-
-    auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&VideoService::onChannelError, this->shared_from_this(), std::placeholders::_1));
-    channel_->sendAVMediaAckIndication(indication, std::move(promise));
-
-    channel_->receive(this->shared_from_this());
-
     videoOutput_->write(timestamp, buffer);
-}
-
-void VideoService::onAVMediaWithTimestampIndication(const aasdk::common::Data data)
-{
-//    if (Log::isVerbose()) Log_v("t= %lld buffer= %hhu", timestamp, buffer.size);
-//    strand_.post([self = this, timestamp = std::move(timestamp), buffer = std::move(buffer)]() mutable {
-//        self->audioOutput_->write(timestamp, buffer);
-//
-//        aasdk::proto::messages::AVMediaAckIndication indication;
-//        indication.set_session(self->session_);
-//        indication.set_value(1);
-//
-//        auto promise = aasdk::channel::SendPromise::defer(self->strand_);
-//        promise->then([]() {}, std::bind(&AudioService::onChannelError, self, std::placeholders::_1));
-//        self->channel_->sendAVMediaAckIndication(indication, std::move(promise));
-//    });
-//
-//
-//    channel_->receive(this);
-
-    strand_.post([this, self = this->shared_from_this(), data = std::move(data)]() mutable {
-        aasdk::messenger::MessageId messageId(data);
-        aasdk::common::DataConstBuffer buffer(data, messageId.getSizeOf());
-        aasdk::messenger::Timestamp timestamp(buffer);
-        if (Log::isVerbose()) Log_v("onAVMediaWithTimestampIndication timestamp %lld", timestamp);
-        aasdk::common::DataConstBuffer b(buffer.cdata, buffer.size, sizeof(aasdk::messenger::Timestamp::ValueType));
-        if (Log::isVerbose() && Log::logProtocol()) Log_v("onAVMediaWithTimestampIndication %s", aasdk::common::dump(b).c_str());
-
-        videoOutput_->write(timestamp.getValue(), b);
-
-//        aasdk::proto::messages::AVMediaAckIndication indication;
-//        indication.set_session(self->session_);
-//        indication.set_value(1);
-//
-//        auto promise = aasdk::channel::SendPromise::defer(self->strand_);
-//        promise->then([]() {}, std::bind(&AudioService::onChannelError, self, std::placeholders::_1));
-//        self->channel_->sendAVMediaAckIndication(indication, std::move(promise));
-    });
-
-    aasdk::proto::messages::AVMediaAckIndication indication;
-    indication.set_session(session_);
-    indication.set_value(1);
-
-    auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&VideoService::onChannelError, this->shared_from_this(), std::placeholders::_1));
-    channel_->sendAVMediaAckIndication(indication, std::move(promise));
-
-    channel_->receive(this->shared_from_this());
-}
-
-void VideoService::onAVMediaIndication(const aasdk::common::Data data)
-{
-    strand_.post([this, self = this->shared_from_this(), data = std::move(data)]() mutable {
-        aasdk::messenger::MessageId messageId(data);
-        aasdk::common::DataConstBuffer b(data, messageId.getSizeOf());
-        if (Log::isVerbose() && Log::logProtocol()) Log_v("onAVMediaWithTimestampIndication %s", aasdk::common::dump(b).c_str());
-
-        videoOutput_->write(0, b);
-    });
 
     aasdk::proto::messages::AVMediaAckIndication indication;
     indication.set_session(session_);

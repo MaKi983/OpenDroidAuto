@@ -8,129 +8,52 @@
 #define NUM_BUFFERS 5
 
 SLESAudioCodec::SLESAudioCodec(int sampleRate, int channelConfig, int sampleSize):
-    slesStream_(nullptr), decoderThreadRunning_(false), decoderThreadInitialized_(false), decoderThreadQuitFlag_(false),
-    sampleRate_(sampleRate), sampleSize_(sampleSize), channelConfig_(channelConfig), idx_(0), curIdx_(0), curTs_(1), curSize_(0), playerReady_(true),
-    isRunning_(false), curPacket_(nullptr)
+    slesStream_(nullptr), sampleRate_(sampleRate), sampleSize_(sampleSize), channelConfig_(channelConfig),
+    curPacket_(nullptr), pbuffers_(20)
 {
-    init();
+    openAudioDevice();
 }
 
 SLESAudioCodec::~SLESAudioCodec() {
     Log_i("destructor");
 }
 
-void SLESAudioCodec::init(){
-    if (Log::isInfo()) Log_i("start decoderThread");
-
-    feedBufferThread_ = std::thread(&SLESAudioCodec::init_feedBufferThread, this);
-    decoderThread_ = std::thread(&SLESAudioCodec::init_decoderThread, this);
-
-    std::unique_lock<std::mutex> lock(dmutex_);
-    while (!decoderThreadInitialized_){
-        dcond_.wait(lock);
-    }
-    lock.unlock();
-    Log_i("decoderThread ready");
-}
+//void SLESAudioCodec::init(){
+//    if (Log::isInfo()) Log_i("start decoderThread");
+//
+//    decoderThread_ = std::thread(&SLESAudioCodec::init_decoderThread, this);
+//
+//    std::unique_lock<std::mutex> lock(dmutex_);
+//    while (!decoderThreadInitialized_){
+//        dcond_.wait(lock);
+//    }
+//    lock.unlock();
+//    Log_i("decoderThread ready");
+//}
 
 // open the android audio device for input and/or output
 void SLESAudioCodec::openAudioDevice() {
-//    OPENSL_STREAM *p;
-//    p = (OPENSL_STREAM *) calloc(sizeof(OPENSL_STREAM),1);
-//
-//    p->inchannels = inchannels;
-//    p->outchannels = outchannels;
-//    p->sr = sr;
-//    p->inlock = createThreadLock();
-//    p->outlock = createThreadLock();
-
     slesStream_ = new SLESStream();
-
-//    if((p->outBufSamples = bufferframes*outchannels) != 0) {
-//        if((p->outputBuffer[0] = (short *) calloc(p->outBufSamples, sizeof(short))) == NULL ||
-//           (p->outputBuffer[1] = (short *) calloc(p->outBufSamples, sizeof(short))) == NULL) {
-//            closeAudioDevice();
-//            return;
-//        }
-//    }
-//
-//    if((p->inBufSamples = bufferframes*inchannels) != 0){
-//        if((p->inputBuffer[0] = (short *) calloc(p->inBufSamples, sizeof(short))) == NULL ||
-//           (p->inputBuffer[1] = (short *) calloc(p->inBufSamples, sizeof(short))) == NULL){
-//            closeAudioDevice();
-//            return;
-//        }
-//    }
-
-//    p->currentInputIndex = 0;
-//    p->currentOutputBuffer  = 0;
-//    p->currentInputIndex = p->inBufSamples;
-//    p->currentInputBuffer = 0;
 
     if(createEngine() != SL_RESULT_SUCCESS) {
         closeAudioDevice();
         return;
     }
 
-//    if(openSLRecOpen(p) != SL_RESULT_SUCCESS) {
-//        closeAudioDevice();
-//        return;
-//    }
-
     if(createAudioPlayer() != SL_RESULT_SUCCESS) {
         closeAudioDevice();
         return;
     }
-
-//    notifyThreadLock(p->outlock);
-//    notifyThreadLock(p->inlock);
-
-//    p->time = 0.;
 }
 
 // close the android audio device
 void SLESAudioCodec::closeAudioDevice() {
-    isRunning_ = false;
-
-    if (slesStream_ == nullptr)
+   if (slesStream_ == nullptr)
         return;
 
     destroyEngine();
 
-//    if (p->inlock != NULL) {
-//        notifyThreadLock(p->inlock);
-//        destroyThreadLock(p->inlock);
-//        p->inlock = NULL;
-//    }
-//
-//    if (p->outlock != NULL) {
-//        notifyThreadLock(p->outlock);
-//        destroyThreadLock(p->outlock);
-//        p->inlock = NULL;
-//    }
-//
-//    if (p->outputBuffer[0] != NULL) {
-//        free(p->outputBuffer[0]);
-//        p->outputBuffer[0] = NULL;
-//    }
-//
-//    if (p->outputBuffer[1] != NULL) {
-//        free(p->outputBuffer[1]);
-//        p->outputBuffer[1] = NULL;
-//    }
-//
-//    if (p->inputBuffer[0] != NULL) {
-//        free(p->inputBuffer[0]);
-//        p->inputBuffer[0] = NULL;
-//    }
-//
-//    if (p->inputBuffer[1] != NULL) {
-//        free(p->inputBuffer[1]);
-//        p->inputBuffer[1] = NULL;
-//    }
-
     delete slesStream_;
-//    free(p);
 }
 
 // creates the OpenSL ES audio engine
@@ -157,29 +80,28 @@ SLresult SLESAudioCodec::createEngine() {
         return result;
     }
 
+    if (Log::isInfo()) Log_i("Engine created");
+
     return result;
 }
 
 // close the OpenSL IO and destroy the audio engine
 void SLESAudioCodec::destroyEngine()
 {
-    // destroy buffer queue audio player object, and invalidate all associated interfaces
+    SLresult result;
+//    // destroy buffer queue audio player object, and invalidate all associated interfaces
+//    if (slesStream_->bqPlayerBufferQueue != nullptr) {
+//        if (Log::isInfo()) Log_i("clear bqPlayerBufferQueue");
+//        (*slesStream_->bqPlayerBufferQueue)->Clear(slesStream_->bqPlayerBufferQueue);
+//        slesStream_->bqPlayerBufferQueue = nullptr;
+//    }
+
     if (slesStream_->bqPlayerObject != nullptr) {
+        if (Log::isInfo()) Log_i("destroy bqPlayerObject");
         (*slesStream_->bqPlayerObject)->Destroy(slesStream_->bqPlayerObject);
         slesStream_->bqPlayerObject = nullptr;
         slesStream_->bqPlayerPlay = nullptr;
-        (*slesStream_->bqPlayerBufferQueue)->Clear(slesStream_->bqPlayerBufferQueue);
-        slesStream_->bqPlayerBufferQueue = nullptr;
-        slesStream_->bqPlayerEffectSend = nullptr;
     }
-
-//    // destroy audio recorder object, and invalidate all associated interfaces
-//    if (p->recorderObject != NULL) {
-//        (*p->recorderObject)->Destroy(p->recorderObject);
-//        p->recorderObject = NULL;
-//        p->recorderRecord = NULL;
-//        p->recorderBufferQueue = NULL;
-//    }
 
     // destroy output mix object, and invalidate all associated interfaces
     if (slesStream_->outputMixObject != nullptr) {
@@ -244,8 +166,6 @@ SLresult SLESAudioCodec::createAudioPlayer(){
                 break;
             default:
                 break;
-
-                return -1;
         }
 
         const SLInterfaceID ids[] = {SL_IID_VOLUME};
@@ -258,6 +178,10 @@ SLresult SLESAudioCodec::createAudioPlayer(){
 
         // realize the output mix
         result = (*slesStream_->outputMixObject)->Realize(slesStream_->outputMixObject, SL_BOOLEAN_FALSE);
+        if(result != SL_RESULT_SUCCESS) {
+            Log_e("realize outputmix error %d", result);
+            return result;
+        }
 
         SLuint32 speakers;
         if(channels > 1) {
@@ -278,6 +202,7 @@ SLresult SLESAudioCodec::createAudioPlayer(){
 
         // create audio player
         const SLInterfaceID ids1[] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION};
+//        const SLInterfaceID ids1[] = {SL_IID_BUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION};
         const SLboolean req1[] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
         result = (*slesStream_->engineEngine)->CreateAudioPlayer(slesStream_->engineEngine, &(slesStream_->bqPlayerObject), &audioSrc, &audioSnk,
                                                        2, ids1, req1);
@@ -328,40 +253,26 @@ SLresult SLESAudioCodec::createAudioPlayer(){
             Log_e("audio player register callback error %d", result);
             return result;
         }
-
-        // set the player's state to playing
-        result = (*slesStream_->bqPlayerPlay)->SetPlayState(slesStream_->bqPlayerPlay, SL_PLAYSTATE_PLAYING);
+//
+//        // set the player's state to playing
+//        result = (*slesStream_->bqPlayerPlay)->SetPlayState(slesStream_->bqPlayerPlay, SL_PLAYSTATE_PLAYING);
     }
+
+    if (Log::isInfo()) Log_i("Audio Player created");
 
     return result;
 }
 
 // puts a buffer of size samples to the device
 bool SLESAudioCodec::streamAudio() {
+    Log_v("streamAudio");
     if (curPacket_){
         Log_v("delete previous packet");
         delete curPacket_;
     }
 
-    waitForBuffer();
-    Log_v("buffer available");
-
-//    waitForPlayer();
-//    Log_v("player ready");
-
-//    playerReady_ = false;
-//    Log_v("set player busy");
-
     curPacket_ = nextBuffer();
-//    Log_v("next packet");
-//    common::DataConstBuffer b(curPacket_->buffer);
-//    Log_v("%s", common::dump(b).c_str());
-//    const int8_t* buffer = new int8_t[b.size];
-//    memcpy(&buffer, b.cdata, b.size);
-//    common::DataConstBuffer b1(buffer, b.size);
-//    Log_v("%s", common::dump(b1).c_str());
     SLresult result = (*slesStream_->bqPlayerBufferQueue)->Enqueue(slesStream_->bqPlayerBufferQueue, curPacket_->cbuffer.cdata, curPacket_->cbuffer.size);
-
 
     if (result != SL_RESULT_SUCCESS){
         Log_e("enqueue buffer error %d", result);
@@ -370,224 +281,108 @@ bool SLESAudioCodec::streamAudio() {
     }
 
     return true;
-
-////
-////    short *outBuffer;
-////    int i, bufsamps = slesStream_->outBufSamples, index = slesStream_->currentOutputIndex;
-////    if(slesStream_ == nullptr  || bufsamps ==  0)  return 0;
-////    outBuffer = slesStream_->outputBuffer[slesStream_->currentOutputBuffer];
-////
-////    for(i=0; i < size; i++){
-////        outBuffer[index++] = (short)(buffer[i]);
-////        if (index >= slesStream_->outBufSamples) {
-////            waitThreadLock(slesStream_->outlock);
-////            (*slesStream_->bqPlayerBufferQueue)->Enqueue(slesStream_->bqPlayerBufferQueue,
-////                                               outBuffer,bufsamps*sizeof(short));
-////            slesStream_->currentOutputBuffer = (slesStream_->currentOutputBuffer ?  0 : 1);
-////            index = 0;
-////            outBuffer = slesStream_->outputBuffer[slesStream_->currentOutputBuffer];
-////        }
-////    }
-////    slesStream_->currentOutputIndex = index;
-////    slesStream_->time += (double) size/(slesStream_->sr*slesStream_->outchannels);
-//    return i;
-    return result == SL_RESULT_SUCCESS;
-}
-
-void SLESAudioCodec::waitForBuffer(){
-    std::unique_lock<std::mutex> codeclock(dmutex_);
-    while (pbuffers_.empty() && !decoderThreadQuitFlag_) {
-        Log_v("buffers empty");
-        auto t1 = std::chrono::steady_clock::now() + std::chrono::milliseconds(500);
-        dcond_.wait_until(codeclock, t1);
-    }
-}
-
-void SLESAudioCodec::waitForPlayer(){
-    std::unique_lock<std::mutex> lock(pmutex_);
-    Log_v("player %s", playerReady_ ? "true" : "false");
-    while (!playerReady_ && !decoderThreadQuitFlag_) {
-        Log_v("player not ready");
-        auto t1 = std::chrono::steady_clock::now() + std::chrono::milliseconds(500);
-        pcond_.wait_until(lock, t1);
-    }
 }
 
 Packet::Pointer SLESAudioCodec::nextBuffer(){
-    std::unique_lock<std::mutex> codeclock(dmutex_);
-    if (Log::isVerbose()) Log_v("queue size2: %d", pbuffers_.size());
-    Packet::Pointer buffer = pbuffers_.front();
-    pbuffers_.pop();
-    if (Log::isVerbose()) Log_v("queue size3: %d", pbuffers_.size());
+    Packet::Pointer buffer = pbuffers_.pop();
+    if (Log::isVerbose()) Log_v("queue size3: %d", pbuffers_.was_size());
     return buffer;
 }
 
 void SLESAudioCodec::feedBuffer(Packet::Pointer packet) {
     if (Log::isVerbose()) Log_v("feedBuffer");
-    std::unique_lock<std::mutex> lock(dmutex_);
-//    if (!quitFlag_) {
-
     pbuffers_.push(packet);
-    if (Log::isVerbose()) Log_v("feedBuffer queue size1: %d", pbuffers_.size());
-    lock.unlock();
-    dcond_.notify_one();
-//    }
+    if (Log::isVerbose()) Log_v("feedBuffer queue size1: %d", pbuffers_.was_size());
+}
+
+void SLESAudioCodec::start(){
+    // set the player's state to playing
+    if (Log::isInfo()) Log_i("Set state PLAYING");
+    SLresult result = (*slesStream_->bqPlayerPlay)->SetPlayState(slesStream_->bqPlayerPlay, SL_PLAYSTATE_PLAYING);
+    if (result != SL_RESULT_SUCCESS){
+        Log_e("set PLAYING state error %d", result);
+    }
+    streamAudio();
+}
+
+void SLESAudioCodec::stop(){
+    // set the player's state to stop
+    if (Log::isInfo()) Log_i("Set state STOPPED");
+    SLresult result = (*slesStream_->bqPlayerPlay)->SetPlayState(slesStream_->bqPlayerPlay, SL_PLAYSTATE_STOPPED);
+    if (result != SL_RESULT_SUCCESS){
+        Log_e("set stopped state error %d", result);
+    }
+
+    // destroy buffer queue audio player object
+    if (slesStream_->bqPlayerBufferQueue != nullptr) {
+        if (Log::isInfo()) Log_i("clear bqPlayerBufferQueue");
+        result = (*slesStream_->bqPlayerBufferQueue)->Clear(slesStream_->bqPlayerBufferQueue);
+        slesStream_->bqPlayerBufferQueue = nullptr;
+        if (result != SL_RESULT_SUCCESS){
+            Log_e("clear bqPlayerBufferQueue error %d", result);
+        }
+    }
+
+    if (Log::isInfo()) Log_i("clear pbuffers %d", pbuffers_.was_size());
+    while (!pbuffers_.was_empty()){
+        if (Log::isInfo()) Log_i("delete packet");
+        Packet::Pointer p = pbuffers_.pop();
+        delete p;
+    }
 }
 
 void SLESAudioCodec::shutdown(){
-    if (decoderThreadInitialized_) {
-        if (Log::isInfo()) Log_i("Waiting for app thread to finish...");
-
-        isRunning_ = false;
-
-        ALooper_removeFd(bufferThreadLooper_, messagePipe_[0]);
-        close(messagePipe_[0]);
-        close(messagePipe_[1]);
-        ALooper_release(bufferThreadLooper_);
-
-        if (Log::isDebug()) Log_d("Stopping feedBufferThread");
-        if (feedBufferThread_.joinable()){
-            if (Log::isDebug()) Log_d("joining feedBuffe thread");
-            feedBufferThread_.join();
-        }
-
-        decoderThreadQuitFlag_ = true;
-//        if (Log::isDebug()) Log_d("Stop omxSource");
-//        omxSource_->stop();
-
-        if (decoderThreadRunning_) {
-            if (Log::isDebug()) Log_d("Stopping decoderThread");
-
-            if (decoderThread_.joinable()){
-                if (Log::isDebug()) Log_d("joining decoder thread");
-                decoderThread_.join();
-            }
-        }
-
-        usleep(200);
-//        ALooper_removeFd(bufferThreadLooper_, messagePipe_[0]);
-//        close(messagePipe_[0]);
-//        close(messagePipe_[1]);
-//        ALooper_release(bufferThreadLooper_);
-
-        if (Log::isDebug()) Log_d("close audio device");
-        closeAudioDevice();
-
-//        if (Log::isDebug()) Log_d("delete decoder");
-//        delete omxDecoder_;
-    }
+    if (Log::isDebug()) Log_d("close audio device");
+    closeAudioDevice();
 
     if (Log::isInfo()) Log_i("all done");
 }
 
-void SLESAudioCodec::init_decoderThread() {
-    if (Log::isInfo()) Log_i("decoderThread begins");
-
-    JNIEnv* env;
-    JNIBase::javaAttachThread("SLESAudioCodec thread", &env);
-
-    setpriority(PRIO_PROCESS, 0, ANDROID_PRIORITY_AUDIO);
-//    if (priority >= ANDROID_PRIORITY_BACKGROUND) {
-//        set_sched_policy(gettid()(), SP_BACKGROUND);
-//    } else {
-//        set_sched_policy(gettid(), SP_FOREGROUND);
-//    }
-
-    openAudioDevice();
-//    omxSource_ = new OMXSource(screenSize_.width, screenSize_.height, fps_, codecMutex_);
-
-//    if (Log::isDebug()) Log_d("Created OMXSource %p", omxSource_);
-
-    std::unique_lock<std::mutex> lock(dmutex_);
-    decoderThreadRunning_ = true;
-    decoderThreadInitialized_ = true;
-    isRunning_ = true;
-    lock.unlock();
-    dcond_.notify_one();
-
-    streamAudio();
-//    while (!decoderThreadQuitFlag_ && streamAudio()) {
-////        streamAudio();
-//        Log_v("play streaming");
-//    }
-
-//    closeAudioDevice();
-
-//    if (Log::isDebug()) Log_d("Stop omxDecoder");
-//    omxDecoder_->stop();
-
-    if (Log::isInfo()) Log_i("decoderThread ends");
-    decoderThreadRunning_ = false;
-
-    JNIBase::javaDetachThread();
-}
+//void SLESAudioCodec::init_decoderThread() {
+//    if (Log::isInfo()) Log_i("decoderThread begins");
+//
+//    JNIEnv* env;
+//    JNIBase::javaAttachThread("SLESAudioCodec thread", &env);
+//
+//    setpriority(PRIO_PROCESS, 0, ANDROID_PRIORITY_AUDIO);
+//
+//    std::unique_lock<std::mutex> lock(dmutex_);
+//    decoderThreadRunning_ = true;
+//    decoderThreadInitialized_ = true;
+//    isRunning_ = true;
+//    lock.unlock();
+//    dcond_.notify_one();
+//
+//    streamAudio();
+////    while (!decoderThreadQuitFlag_ && streamAudio()) {
+//////        streamAudio();
+////        Log_v("play streaming");
+////    }
+//
+////    closeAudioDevice();
+//
+////    if (Log::isDebug()) Log_d("Stop omxDecoder");
+////    omxDecoder_->stop();
+//
+//    if (Log::isInfo()) Log_i("decoderThread ends");
+//    decoderThreadRunning_ = false;
+//
+//    JNIBase::javaDetachThread();
+//}
 
 void SLESAudioCodec::playerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
     if (Log::isVerbose()) Log_v("playerCallback");
     SLESAudioCodec::Pointer self = (SLESAudioCodec::Pointer) context;
     self->streamAudio();
-//    std::unique_lock<std::mutex> lock(self->pmutex_);
-//    self->playerReady_ = true;
-//    if (Log::isVerbose()) Log_v("playerCallback self->playerReady_ = %s", self->playerReady_?"true":"false");
-//    lock.unlock();
-//    self->pcond_.notify_one();
-}
-
-int SLESAudioCodec::looperCallback(int fd, int events, void *data) {
-    SLESAudioCodec::Pointer self = (SLESAudioCodec::Pointer)data;
-
-    if (!self->isRunning_){
-        if (Log::isWarn()) Log_v("looperCB: codec not running");
-        return 0;
-    }
-
-    common::Data bufferData(SLESAudioCodec::cChunkSize);
-    int size = read(fd, &bufferData[0], SLESAudioCodec::cChunkSize);
-    if (Log::isVerbose()) Log_v("looperCB: readed= %d", size);
-
-    int idx = 0;
-    while (size > 0){
-        Packet::Pointer packet = Packet::fromData(bufferData, idx);
-        int packetSize = packet->packetSize();
-        if (Log::isVerbose()) Log_v("looperCB: packetSize= %d", packetSize);
-//        if (Log::isVerbose()) Log_v("looperCB: size= %d, %s", packet->buffer.size(), common::dump(common::DataConstBuffer(packet->buffer)).c_str());
-        size -= packetSize;
-        idx += packetSize;
-        self->feedBuffer(packet);
-        if (Log::isVerbose()) Log_v("looperCB: remaining size= %d", size);
-    }
-    return 1; // continue listening for events
 }
 
 void SLESAudioCodec::queueBuffer(common::DataConstBuffer& buffer, int64_t timestamp) {
-    if (!isRunning_){
-        if (Log::isWarn()) Log_v("codec not running");
-        return;
-    }
-
     if (Log::isVerbose()) Log_v("buffer size %d", buffer.size);
-//    Log_v("write %s", common::dump(buffer).c_str());
-    common::Data data = Packet::toData(buffer, timestamp);
-    common::DataConstBuffer b(data);
+    common::Data d;
+    common::copy(d, buffer);
 
-    write(messagePipe_[1], &b.cdata[0], b.size);
-}
-
-void SLESAudioCodec::init_feedBufferThread() {
-    Log_v("init_feedBufferThread");
-    setpriority(PRIO_PROCESS, 0, ANDROID_PRIORITY_AUDIO);
-
-    bufferThreadLooper_ = ALooper_prepare(0);
-    ALooper_acquire(bufferThreadLooper_);
-    pipe(messagePipe_);
-    ALooper_addFd(bufferThreadLooper_, messagePipe_[0], ALOOPER_POLL_CALLBACK, ALOOPER_EVENT_INPUT, &SLESAudioCodec::looperCallback, this);
-
-    Log_v("start alooper polling");
-    while (ALooper_pollOnce(0,nullptr, nullptr, nullptr) && !decoderThreadQuitFlag_) {
-//        Log_v("pollOnce");
-    }
-
-    Log_v("init_feedBufferThread finished");
+    Packet::Pointer p = new Packet(d, timestamp, d.size());
+    feedBuffer(p);
 }
 
 

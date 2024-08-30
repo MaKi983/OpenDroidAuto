@@ -8,6 +8,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import java.util.concurrent.Callable;
+
 import it.smg.hu.R;
 import it.smg.hu.config.Settings;
 import it.smg.libs.common.Log;
@@ -47,6 +49,19 @@ public class AdvancedFragment extends BaseSettingsFragment {
         initCheckBox(logProtocol, settings.advanced, Settings.Advanced.ADVANCED_LOG_PROTOCOL, Settings.Advanced.ADVANCED_LOG_PROTOCOL_DEFAULT_VALUE, () -> {
             Log.setLogProtocol(settings.advanced.logProtocol());
             return null;
+        });
+
+        EditText threads = view.findViewById(R.id.num_threads);
+        initEditText(threads, settings.advanced, Settings.Advanced.ADVANCED_THREADS_NUM, Settings.Advanced.ADVANCED_THREADS_NUM_DEFAULT_VALUE, new Callable<Void>() {
+            @Override
+            public Void call() {
+                int value = settings.advanced.threads();
+                if (value == 0 || value > 10) {
+                    settings.advanced.threads(Settings.Advanced.ADVANCED_THREADS_NUM_DEFAULT_VALUE);
+                    threads.setText(Settings.Advanced.ADVANCED_THREADS_NUM_DEFAULT_VALUE);
+                }
+                return null;
+            }
         });
 
         return view;
