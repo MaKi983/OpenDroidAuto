@@ -31,9 +31,6 @@ private:
     void handleStopIndication(const common::DataConstBuffer& payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
     void handleChannelOpenRequest(const common::DataConstBuffer& payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
     void handleAVMediaWithTimestampIndication(const common::DataConstBuffer& payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
-    void handleAVMediaWithTimestampIndication(const common::Data payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
-//    void handleAVMediaIndication(const common::DataConstBuffer& payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
-    void handleAVMediaIndication(const common::Data payload, IAudioServiceChannelEventHandler::Pointer eventHandler);
 };
 
 }
