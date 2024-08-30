@@ -48,7 +48,7 @@
 	<string name="advanced_settings_enablewifi">Enable wifi (only for debug)</string>
 	<string name="advanced_settings_logLevel">Log Level</string>
 	<string name="advanced_settings_logProtocol">Enable Log Protocol (logLevel must be verbose)</string>
-	<string name="advanced_settings_enableautostart">Enable autostart</string>
+	<string name="advanced_settings_threads">Threads num</string>
 	<string name="advanced_settings_sendlog">Send Log</string>
 
 	<string name="settings">Settings</string>

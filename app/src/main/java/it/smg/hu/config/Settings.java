@@ -419,6 +419,7 @@ public class Settings {
         public final static String ADVANCED_ENABLE_WIFI = "enableWiFi";
         public final static String ADVANCED_LOG_LEVEL = "logLevel";
         public final static String ADVANCED_LOG_PROTOCOL = "logProtocol";
+        public final static String ADVANCED_THREADS_NUM = "threads";
         public final static String ADVANCED_AUTOSTART = "autostart";
 
         public final static boolean ADVANCED_ENABLED_DEBUG_DEFAULT_VALUE = false;
@@ -426,6 +427,7 @@ public class Settings {
         public final static boolean ADVANCED_ENABLE_WIFI_DEFAULT_VALUE = false;
         public final static int ADVANCED_LOG_LEVEL_DEFAULT_VALUE = ILog.DEFAULT_LOG_LEVEL;
         public final static boolean ADVANCED_LOG_PROTOCOL_DEFAULT_VALUE = false;
+        public final static int ADVANCED_THREADS_NUM_DEFAULT_VALUE = 4;
         public final static boolean ADVANCED_AUTOSTART_DEFAULT_VALUE = true;
 
         public void logDir(String logDir){
@@ -468,6 +470,13 @@ public class Settings {
             SP.edit().putBoolean(ADVANCED_LOG_PROTOCOL, logProtocol).apply();
         }
 
+        public int threads(){
+            return SP.getInt(ADVANCED_THREADS_NUM, ADVANCED_THREADS_NUM_DEFAULT_VALUE);
+        }
+
+        public void threads(int threads){
+            SP.edit().putInt(ADVANCED_THREADS_NUM, threads).apply();
+        }
     }
 
     public class Base {

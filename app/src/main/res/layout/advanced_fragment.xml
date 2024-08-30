@@ -46,6 +46,24 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:gravity="center"
+        android:labelFor="@id/num_threads"
+        android:textColor="#000"
+        android:text="@string/advanced_settings_threads"/>
+
+    <EditText
+        android:id="@+id/num_threads"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:inputType="number"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:imeOptions="actionDone" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
         android:labelFor="@id/log_dir"
         android:text="@string/advanced_settings_logDir"
         android:textColor="#000"></TextView>

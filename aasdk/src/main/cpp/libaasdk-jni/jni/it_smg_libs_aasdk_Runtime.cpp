@@ -60,7 +60,7 @@ void JRuntime::stopIOServiceWorkers() {
     ioService_.reset();
 }
 
-void JRuntime::startIOServiceWorkers() {
+void JRuntime::startIOServiceWorkers(int threads) {
     if(Log::isDebug()) Log_d("starting IOService Workers");
 
     auto ioServiceWorker = [this]() {
@@ -70,13 +70,7 @@ void JRuntime::startIOServiceWorkers() {
 
 //        initJavaExecptionHandler(env);
 
-        {
-            std::unique_lock<std::mutex> lock(m);
-            ++i;
-            Log_v("i= %d", i.load());
-            v.notify_all();
-        }
-
+        if(Log::isVerbose()) Log_v("start ioService");
         ioService_.run();
 
         // Detach thread
@@ -85,13 +79,11 @@ void JRuntime::startIOServiceWorkers() {
         if(Log::isInfo()) Log_i("ioservice stopped");
     };
 
-    threadPool_.emplace_back(ioServiceWorker);
-    threadPool_.emplace_back(ioServiceWorker);
-    threadPool_.emplace_back(ioServiceWorker);
-    threadPool_.emplace_back(ioServiceWorker);
+    if(Log::isInfo()) Log_i("Starting %d threads", threads);
 
-    std::unique_lock<std::mutex> lock(m);
-    v.wait(lock, [&] { return i == 4; });
+    for (int i = 1; i <= threads; i++) {
+        threadPool_.emplace_back(ioServiceWorker);
+    }
 
     if(Log::isInfo()) Log_i("all ioservice thread started");
 }
@@ -121,9 +113,9 @@ Java_it_smg_libs_aasdk_Runtime_nativeFinalize(JNIEnv *env, jclass clazz, jlong h
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_it_smg_libs_aasdk_Runtime_nativeStartIOServiceWorker(JNIEnv *env, jclass clazz, jlong handle) {
+Java_it_smg_libs_aasdk_Runtime_nativeStartIOServiceWorker(JNIEnv *env, jclass clazz, jlong handle, jint threads) {
     JRuntime::Pointer jRuntime = (JRuntime::Pointer) handle;
-    jRuntime->startIOServiceWorkers();
+    jRuntime->startIOServiceWorkers(threads);
 }
 
 extern "C"
