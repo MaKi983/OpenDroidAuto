@@ -33,6 +33,7 @@ int LibUsbDevice::open(int fd) {
 
 void LibUsbDevice::close() {
     if (handle_) {
+        if (Log::isInfo()) Log_i("libusb_close\n");
         libusb_close(handle_);
         handle_ = nullptr;
     }

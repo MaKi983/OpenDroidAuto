@@ -16,16 +16,9 @@ JAudioInputService::JAudioInputService(JNIEnv *env, jobject jaudioinputservice, 
 }
 
 void JAudioInputService::initJavaMethods() {
-//    JNIEnv* env = getJniEnv();
-//    jclass cls = env->GetObjectClass(androidClass_);
-//
-//    onErrorMethodId_ = env->GetMethodID(cls, "onError", "(Ljava/lang/String;I)V");
-//
-//    env->DeleteLocalRef(cls);
 }
 
 JAudioInputService::~JAudioInputService() {
-//    audioInputService_.reset();
 }
 
 JAudioInputService::Pointer JAudioInputService::getJAudioInputService(JNIEnv *env, jobject jaudioinputservice) {

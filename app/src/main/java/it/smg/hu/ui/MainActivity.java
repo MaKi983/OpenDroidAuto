@@ -201,6 +201,8 @@ public class MainActivity extends FragmentActivity {
         Intent service = new Intent(this, ODAService.class);
         stopService(service);
 
+        Log.shutdown();
+
         finish();
 //        android.os.Process.killProcess(android.os.Process.myPid());
         return;
