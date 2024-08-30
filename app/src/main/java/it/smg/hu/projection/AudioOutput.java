@@ -18,6 +18,13 @@ public abstract class AudioOutput extends it.smg.libs.aasdk.projection.AudioOutp
 
     @Override
     public boolean open() {
+        if (settings_.audio.audioCodec() == 2){
+            if (Log.isInfo()) Log.i(tag(), "Create SLESAudio codec");
+            audioCodec_ = new SLESAudioCodec(tag(), getSampleRate(), getChannelCount(), getSampleSize());
+        } else {
+            if (Log.isInfo()) Log.i(tag(), "Create Android Audio codec");
+            audioCodec_ = new AudioCodec(tag(), getSampleRate(), getChannelCount(), getSampleSize());
+        }
         return true;
     }
 
@@ -28,21 +35,16 @@ public abstract class AudioOutput extends it.smg.libs.aasdk.projection.AudioOutp
 
     @Override
     public void start() {
-        if (settings_.audio.audioCodec() == 2){
-            if (Log.isInfo()) Log.v(tag(), "Create SLESAudio codec");
-            audioCodec_ = new SLESAudioCodec(getSampleRate(), getChannelCount(), getSampleSize());
-        } else {
-            if (Log.isInfo()) Log.v(tag(), "Create Android Audio codec");
-            audioCodec_ = new AudioCodec(getSampleRate(), getChannelCount(), getSampleSize());
+        if (audioCodec_ != null) {
+            audioCodec_.start();
         }
-        audioCodec_.start();
     }
 
     @Override
     public void stop() {
         if (audioCodec_ != null) {
             audioCodec_.stop();
-            audioCodec_ = null;
+//            audioCodec_ = null;
         }
     }
 
@@ -51,6 +53,15 @@ public abstract class AudioOutput extends it.smg.libs.aasdk.projection.AudioOutp
         if (audioCodec_ != null) {
             audioCodec_.stop();
         }
+    }
+
+    @Override
+    public void delete() {
+        if (audioCodec_ != null){
+            audioCodec_.delete();
+            audioCodec_ = null;
+        }
+        super.delete();
     }
 
     public abstract String tag();

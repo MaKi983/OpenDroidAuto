@@ -29,6 +29,17 @@ void JAudioOutput::initJavaMethods() {
     getSampleRateMethodId_ = env->GetMethodID(cls, "getSampleRate", "()I");
 
     env->DeleteLocalRef(cls);
+
+    jclass byteBufferClass = env->FindClass("java/nio/ByteBuffer");
+    byteBufferCls_ = reinterpret_cast<jclass>(env->NewGlobalRef(byteBufferClass));
+    bbOrderID_ = env->GetMethodID(byteBufferCls_, "order", "(Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;");
+    jclass byteOrderClass = env->FindClass("java/nio/ByteOrder");
+    jmethodID boNativeOrderID_ = env->GetStaticMethodID(byteOrderClass, "nativeOrder", "()Ljava/nio/ByteOrder;");
+    jobject nativeByteOrderObj = env->CallStaticObjectMethod(byteOrderClass, boNativeOrderID_);
+    bbNativeByteOrderObj_ = env->NewGlobalRef(nativeByteOrderObj);
+
+    env->DeleteLocalRef(byteBufferClass);
+    env->DeleteLocalRef(byteOrderClass);
 }
 
 bool JAudioOutput::open() {
@@ -73,15 +84,10 @@ uint32_t JAudioOutput::getSampleRate() {
 void JAudioOutput::write(aasdk::messenger::Timestamp::ValueType timestamp, const aasdk::common::DataConstBuffer &buffer) {
     JNIEnv* env = getJniEnv();
 
-    jclass byteBufferClass = env->FindClass("java/nio/ByteBuffer");
-    jmethodID orderID = env->GetMethodID(byteBufferClass, "order", "(Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;");
-    jclass byteOrderClass = env->FindClass("java/nio/ByteOrder");
-    jmethodID nativeOrderID = env->GetStaticMethodID(byteOrderClass, "nativeOrder", "()Ljava/nio/ByteOrder;");
-    jobject nativeByteOrderObj = env->CallStaticObjectMethod(byteOrderClass, nativeOrderID);
     jobject byteBuffer = env->NewDirectByteBuffer((uint8_t *)buffer.cdata, buffer.size);
 
     if (byteBuffer) {
-        jobject me = env->CallObjectMethod(byteBuffer, orderID, nativeByteOrderObj);
+        jobject me = env->CallObjectMethod(byteBuffer, bbOrderID_, bbNativeByteOrderObj_);
         env->DeleteLocalRef(me);
         me = nullptr;
 
@@ -91,14 +97,13 @@ void JAudioOutput::write(aasdk::messenger::Timestamp::ValueType timestamp, const
         byteBuffer = nullptr;
     }
 
-    env->DeleteLocalRef(nativeByteOrderObj);
-    nativeByteOrderObj = nullptr;
+}
 
-    env->DeleteLocalRef(byteBufferClass);
-    byteBufferClass = nullptr;
+JAudioOutput::~JAudioOutput() {
+    JNIEnv* env = getJniEnv();
 
-    env->DeleteLocalRef(byteOrderClass);
-    byteOrderClass = nullptr;
+    env->DeleteGlobalRef(byteBufferCls_);
+    env->DeleteGlobalRef(bbNativeByteOrderObj_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

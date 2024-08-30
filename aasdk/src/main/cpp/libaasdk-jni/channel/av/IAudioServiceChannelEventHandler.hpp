@@ -30,9 +30,7 @@ public:
     virtual void onAVChannelStartIndication(const proto::messages::AVChannelStartIndication& indication) = 0;
     virtual void onAVChannelStopIndication(const proto::messages::AVChannelStopIndication& indication) = 0;
     virtual void onAVMediaWithTimestampIndication(messenger::Timestamp::ValueType, const common::DataConstBuffer& buffer) = 0;
-    virtual void onAVMediaWithTimestampIndication(const common::Data buffer) = 0;
     virtual void onAVMediaIndication(const common::DataConstBuffer& buffer) = 0;
-    virtual void onAVMediaIndication(const common::Data buffer) = 0;
     virtual void onChannelError(const error::Error& e) = 0;
 };
 

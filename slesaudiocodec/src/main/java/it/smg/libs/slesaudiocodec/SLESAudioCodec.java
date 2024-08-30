@@ -12,20 +12,10 @@ public class SLESAudioCodec {
     private native long nativeSetup(int sampleRate, int channelConfig, int sampleSize);
     private native void nativeConsume(ByteBuffer buf, int len, long t);
     private native void nativeDelete();
-
-//    private native void nativeSurfaceInit(long mNativeHandle, Object surface, int width, int height);
-//    private native long createNativeApp();
-//
-//    private native void nativeFinalize(long mNativeHandle);
-//    private native void nativeConsume(long mNativeHandle, ByteBuffer buf, int len, long t);
-//    private native void nativeSetSps(long mNativeHandle, ByteBuffer buf, int len);
+    private native void nativeStart();
+    private native void nativeStop();
 
     private long handle_ = 0;
-
-//    private Surface surfaceView_;
-//    private int width_;
-//    private int height_;
-//    private int fps_;
 
     static {
         System.loadLibrary("c++_shared");
@@ -35,13 +25,13 @@ public class SLESAudioCodec {
         nativeInit();
     }
 
-    public SLESAudioCodec(int sampleRate, int channelConfig, int sampleSize){
+    public SLESAudioCodec(String name, int sampleRate, int channelConfig, int sampleSize){
         handle_ = nativeSetup(sampleRate, channelConfig, sampleSize);
     }
 
     public boolean init() { return true; }
 
-    public void shutdown() {
+    public void delete() {
         nativeDelete();
         handle_ = 0;
     }
@@ -51,4 +41,13 @@ public class SLESAudioCodec {
         nativeConsume(buf, len, timestamp);
     }
 
+    public void start(){
+        new Thread(()->{
+           nativeStart();
+        }).start();
+    }
+
+    public void stop(){
+        nativeStop();
+    }
 }

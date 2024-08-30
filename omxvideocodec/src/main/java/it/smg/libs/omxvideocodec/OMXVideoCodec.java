@@ -51,6 +51,7 @@ public class OMXVideoCodec {
 
     public void shutdown() {
         nativeDelete();
+        if (Log.isVerbose()) Log.v(TAG, "Native deleted");
         handle_ = 0;
     }
 

@@ -6,4 +6,5 @@ public interface IAudioCodec {
     void write(ByteBuffer buffer, long timestamp);
     void start();
     void stop();
+    void delete();
 }

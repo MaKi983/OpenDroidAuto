@@ -27,19 +27,13 @@ public:
 
     void setSps(common::DataConstBuffer &b);
 
-//    ~OMXVideoCodec();
+    ~OMXVideoCodec();
 private:
     void init_omxDecoderThread();
-    void init_feedBufferThread();
-    static int looperCallback(int fd, int events, void* data);
-
-    ALooper* bufferThreadLooper_;
-    int messagePipe_[2];
 
     OMXSource::Pointer omxSource_;
     OMXDecoder::Pointer omxDecoder_;
 
-    std::thread feedBufferThread_;
     std::thread omxDecoderThread_;
     std::mutex codecMutex_;
     std::condition_variable omxDecoderCond_;
@@ -50,6 +44,4 @@ private:
     sp<ANativeWindow> nativeWindow_;
     ScreenSize screenSize_;
     int fps_;
-
-    Packet::Pointer tmpPacket_;
 };

@@ -18,7 +18,6 @@ AudioInputService::AudioInputService(boost::asio::io_service& ioService, aasdk::
 }
 
 AudioInputService::~AudioInputService(){
-//    delete channel_;
 }
 
 

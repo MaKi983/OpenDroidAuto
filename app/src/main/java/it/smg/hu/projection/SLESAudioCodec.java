@@ -9,15 +9,20 @@ public class SLESAudioCodec implements IAudioCodec {
 
     private it.smg.libs.slesaudiocodec.SLESAudioCodec audioCodec_;
 
+    private String name_;
     private int sampleRate_;
     private int channelConfig_;
     private int sampleSize_;
     protected boolean running_;
 
-    public SLESAudioCodec(int sampleRate, int channelConfig, int sampleSize){
+    public SLESAudioCodec(String name, int sampleRate, int channelConfig, int sampleSize){
+        name_ = name;
         sampleRate_ = sampleRate;
         channelConfig_ = channelConfig;
         sampleSize_ = sampleSize;
+
+        if (Log.isInfo()) Log.i(TAG, name_ + "create audiocodec");
+        audioCodec_ = new it.smg.libs.slesaudiocodec.SLESAudioCodec(name_, sampleRate_, channelConfig_, sampleSize_);
     }
 
     @Override
@@ -31,25 +36,33 @@ public class SLESAudioCodec implements IAudioCodec {
 
     @Override
     public void start() {
-        if (audioCodec_ == null) {
-            audioCodec_ = new it.smg.libs.slesaudiocodec.SLESAudioCodec(sampleRate_, channelConfig_, sampleSize_);
+        if (Log.isInfo()) Log.i(TAG, "Start");
+        if (audioCodec_ != null) {
+            audioCodec_.start();
             running_ = true;
         }
     }
 
     @Override
     public void stop() {
-        if (Log.isInfo()) Log.i(TAG, "Suspend");
+        if (Log.isInfo()) Log.i(TAG, "Stop");
         if (running_) {
             running_ = false;
 
             if (audioCodec_ != null) {
-                audioCodec_.shutdown();
-                audioCodec_ = null;
+                audioCodec_.stop();
             }
 
             if (Log.isInfo()) Log.i(TAG, "audioCodec_ destroyed");
         }
+    }
 
+    @Override
+    public void delete() {
+        if (Log.isInfo()) Log.i(TAG, "Delete");
+        if (audioCodec_ != null) {
+            audioCodec_.delete();
+            audioCodec_ = null;
+        }
     }
 }

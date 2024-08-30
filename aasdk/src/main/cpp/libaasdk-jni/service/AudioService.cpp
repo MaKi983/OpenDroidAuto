@@ -129,59 +129,9 @@ void AudioService::onAVChannelStopIndication(const aasdk::proto::messages::AVCha
     channel_->receive(this->shared_from_this());
 }
 
-void AudioService::onAVMediaWithTimestampIndication(const aasdk::common::Data data)
-{
-//    if (Log::isVerbose()) Log_v("t= %lld buffer= %hhu", timestamp, buffer.size);
-//    strand_.post([self = this, timestamp = std::move(timestamp), buffer = std::move(buffer)]() mutable {
-//        self->audioOutput_->write(timestamp, buffer);
-//
-//        aasdk::proto::messages::AVMediaAckIndication indication;
-//        indication.set_session(self->session_);
-//        indication.set_value(1);
-//
-//        auto promise = aasdk::channel::SendPromise::defer(self->strand_);
-//        promise->then([]() {}, std::bind(&AudioService::onChannelError, self, std::placeholders::_1));
-//        self->channel_->sendAVMediaAckIndication(indication, std::move(promise));
-//    });
-//
-//
-//    channel_->receive(this);
-    if (Log::isVerbose()) Log_v("onAVMediaWithTimestampIndication");
-
-    strand_.post([this, self = this->shared_from_this(), data = std::move(data)]() mutable {
-        aasdk::messenger::MessageId messageId(data);
-        aasdk::common::DataConstBuffer buffer(data, messageId.getSizeOf());
-        aasdk::messenger::Timestamp timestamp(buffer);
-        if (Log::isVerbose()) Log_v("onAVMediaWithTimestampIndication timestamp %lld", timestamp);
-        aasdk::common::DataConstBuffer b(buffer.cdata, buffer.size, sizeof(aasdk::messenger::Timestamp::ValueType));
-        if (Log::isVerbose() && Log::logProtocol()) Log_v("onAVMediaWithTimestampIndication %s", aasdk::common::dump(b).c_str());
-
-        audioOutput_->write(timestamp.getValue(), b);
-
-//        aasdk::proto::messages::AVMediaAckIndication indication;
-//        indication.set_session(self->session_);
-//        indication.set_value(1);
-//
-//        auto promise = aasdk::channel::SendPromise::defer(self->strand_);
-//        promise->then([]() {}, std::bind(&AudioService::onChannelError, self, std::placeholders::_1));
-//        self->channel_->sendAVMediaAckIndication(indication, std::move(promise));
-    });
-
-    aasdk::proto::messages::AVMediaAckIndication indication;
-    indication.set_session(session_);
-    indication.set_value(1);
-
-    auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&AudioService::onChannelError, this->shared_from_this(), std::placeholders::_1));
-    channel_->sendAVMediaAckIndication(indication, std::move(promise));
-
-    channel_->receive(this->shared_from_this());
-}
-
 void AudioService::onAVMediaWithTimestampIndication(aasdk::messenger::Timestamp::ValueType timestamp, const aasdk::common::DataConstBuffer& buffer)
 {
-    channel_->receive(this->shared_from_this());
-
+    if (Log::isVerbose()) Log_v("onAVMediaWithTimestampIndication");
     audioOutput_->write(timestamp, buffer);
 
     aasdk::proto::messages::AVMediaAckIndication indication;
@@ -192,33 +142,12 @@ void AudioService::onAVMediaWithTimestampIndication(aasdk::messenger::Timestamp:
     promise->then([]() {}, std::bind(&AudioService::onChannelError, this->shared_from_this(), std::placeholders::_1));
     channel_->sendAVMediaAckIndication(indication, std::move(promise));
 
-//    channel_->receive(this->shared_from_this());
+    channel_->receive(this->shared_from_this());
 }
 
 void AudioService::onAVMediaIndication(const aasdk::common::DataConstBuffer& buffer)
 {
     this->onAVMediaWithTimestampIndication(0, buffer);
-}
-
-void AudioService::onAVMediaIndication(const aasdk::common::Data data)
-{
-    strand_.post([this, self = this->shared_from_this(), data = std::move(data)]() mutable {
-        aasdk::messenger::MessageId messageId(data);
-        aasdk::common::DataConstBuffer b(data, messageId.getSizeOf());
-        if (Log::isVerbose() && Log::logProtocol()) Log_v("onAVMediaWithTimestampIndication %s", aasdk::common::dump(b).c_str());
-
-        audioOutput_->write(0, b);
-    });
-
-    aasdk::proto::messages::AVMediaAckIndication indication;
-    indication.set_session(session_);
-    indication.set_value(1);
-
-    auto promise = aasdk::channel::SendPromise::defer(strand_);
-    promise->then([]() {}, std::bind(&AudioService::onChannelError, this->shared_from_this(), std::placeholders::_1));
-    channel_->sendAVMediaAckIndication(indication, std::move(promise));
-
-    channel_->receive(this->shared_from_this());
 }
 
 void AudioService::onChannelError(const aasdk::error::Error& e)

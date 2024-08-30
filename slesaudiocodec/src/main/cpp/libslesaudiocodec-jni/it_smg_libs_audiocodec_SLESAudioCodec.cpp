@@ -22,10 +22,15 @@ void JSLESAudioCodec::queueBuffer(common::DataConstBuffer &b, int64_t timestamp)
 }
 
 void JSLESAudioCodec::stop() {
-    slesAudioCodec_->shutdown();
+    slesAudioCodec_->stop();
+}
+
+void JSLESAudioCodec::start() {
+    slesAudioCodec_->start();
 }
 
 JSLESAudioCodec::~JSLESAudioCodec() {
+    slesAudioCodec_->shutdown();
     delete slesAudioCodec_;
 }
 
@@ -62,8 +67,21 @@ Java_it_smg_libs_slesaudiocodec_SLESAudioCodec_nativeConsume(JNIEnv *env, jobjec
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_it_smg_libs_slesaudiocodec_SLESAudioCodec_nativeDelete(JNIEnv *env, jobject thiz) {
+Java_it_smg_libs_slesaudiocodec_SLESAudioCodec_nativeStart(JNIEnv *env, jobject thiz) {
+    JSLESAudioCodec::Pointer jSLESAudioCodec = JSLESAudioCodec::getJSLESAudioCodec(env, thiz);
+    jSLESAudioCodec->start();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_it_smg_libs_slesaudiocodec_SLESAudioCodec_nativeStop(JNIEnv *env, jobject thiz) {
     JSLESAudioCodec::Pointer jSLESAudioCodec = JSLESAudioCodec::getJSLESAudioCodec(env, thiz);
     jSLESAudioCodec->stop();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_it_smg_libs_slesaudiocodec_SLESAudioCodec_nativeDelete(JNIEnv *env, jobject thiz) {
+    JSLESAudioCodec::Pointer jSLESAudioCodec = JSLESAudioCodec::getJSLESAudioCodec(env, thiz);
     delete jSLESAudioCodec;
 }
