@@ -4,6 +4,8 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 
+import androidx.annotation.Keep;
+
 import java.nio.charset.Charset;
 
 import it.smg.libs.common.Log;
@@ -100,5 +102,6 @@ public final class LibUsbDevice {
     }
 
     // Native context
+    @Keep
     private long handle_;
 }

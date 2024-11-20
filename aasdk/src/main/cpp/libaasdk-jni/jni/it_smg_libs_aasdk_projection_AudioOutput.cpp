@@ -23,6 +23,7 @@ void JAudioOutput::initJavaMethods() {
     suspendMethodId_ = env->GetMethodID(cls, "suspend", "()V");
     openMethodId_ = env->GetMethodID(cls, "open", "()Z");
     writeMethodId_ = env->GetMethodID(cls, "write", "(JLjava/nio/ByteBuffer;)V" );
+//    writeMethodId_ = env->GetMethodID(cls, "write", "(J[B)V" );
     startMethodId_ = env->GetMethodID(cls, "start", "()V");
     getSampleSizeMethodId_ = env->GetMethodID(cls, "getSampleSize", "()I");
     getChannelCountMethodId_ = env->GetMethodID(cls, "getChannelCount", "()I");
@@ -97,6 +98,12 @@ void JAudioOutput::write(aasdk::messenger::Timestamp::ValueType timestamp, const
         byteBuffer = nullptr;
     }
 
+//    jbyteArray jbuf = env->NewByteArray(buffer.size);
+//    env->SetByteArrayRegion(jbuf, 0, buffer.size, (const jbyte*)reinterpret_cast<const char*>(buffer.cdata));
+//
+//    env->CallVoidMethod(androidClass_, writeMethodId_, timestamp, jbuf, buffer.size);
+//    env->DeleteLocalRef(jbuf);
+
 }
 
 JAudioOutput::~JAudioOutput() {
@@ -121,7 +128,7 @@ Java_it_smg_libs_aasdk_projection_AudioOutput_nativeInit(JNIEnv *env, jclass cla
 extern "C"
 JNIEXPORT jlong JNICALL
         Java_it_smg_libs_aasdk_projection_AudioOutput_nativeSetup(JNIEnv *env, jobject thiz) {
-    JAudioOutput::Pointer jAudioOutput = new JAudioOutput(env, thiz);
+    auto jAudioOutput = new JAudioOutput(env, thiz);
     return (jlong)((size_t)jAudioOutput);
 }
 

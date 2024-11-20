@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.service;
 
+import androidx.annotation.Keep;
+
 import it.smg.libs.aasdk.messenger.Messenger;
 import it.smg.libs.aasdk.projection.ISensor;
 import it.smg.libs.common.Log;
@@ -57,6 +59,7 @@ public class SensorService implements IService, ISensor.Listener {
     private native void nativeDelete();
     private native void sendNightMode(boolean isNight);
 
+    @Keep
     protected long handle_;
 
 }

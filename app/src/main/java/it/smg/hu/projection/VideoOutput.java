@@ -44,25 +44,25 @@ public abstract class VideoOutput extends it.smg.libs.aasdk.projection.VideoOutp
         }
     }
 
-    @Override
-    public int getVideoFPS() {
-        return fps_;
-    }
-
-    @Override
-    public int getVideoResolution() {
-        return resolution_;
-    }
-
-    @Override
-    public int getScreenDPI() {
-        return dpi_;
-    }
-
-    @Override
-    public Rect getVideoMargins() {
-        return margin_;
-    }
+//    @Override
+//    public int getVideoFPS() {
+//        return fps_;
+//    }
+//
+//    @Override
+//    public int getVideoResolution() {
+//        return resolution_;
+//    }
+//
+//    @Override
+//    public int getScreenDPI() {
+//        return dpi_;
+//    }
+//
+//    @Override
+//    public Rect getVideoMargins() {
+//        return margin_;
+//    }
 
     protected abstract String tag();
 }

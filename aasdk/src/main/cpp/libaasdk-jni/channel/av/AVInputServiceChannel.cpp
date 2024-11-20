@@ -21,7 +21,7 @@ AVInputServiceChannel::AVInputServiceChannel(boost::asio::io_service::strand& st
 
 void AVInputServiceChannel::receive(IAVInputServiceChannelEventHandler::Pointer eventHandler)
 {
-    auto receivePromise = messenger::ReceivePromise::defer(strand_);
+    auto receivePromise = messenger::ReceivePromise::defer(strand_, "AVInputServiceChannel_messageHandler");
     receivePromise->then(std::bind(&AVInputServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IAVInputServiceChannelEventHandler::onChannelError, eventHandler, std::placeholders::_1));
 
@@ -77,7 +77,7 @@ void AVInputServiceChannel::messageHandler(messenger::Message::Pointer message, 
         break;
     default:
         Log_e("message not handled: %d", messageId.getId());
-        this->receive(std::move(eventHandler));
+//        this->receive(std::move(eventHandler));
         break;
     }
 }

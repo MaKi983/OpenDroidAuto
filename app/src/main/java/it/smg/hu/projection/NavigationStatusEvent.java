@@ -1,5 +1,7 @@
 package it.smg.hu.projection;
 
+import androidx.annotation.Keep;
+
 import it.smg.hu.config.Settings;
 import it.smg.hu.ui.PlayerActivity;
 import it.smg.hu.ui.notification.NotificationFactory;
@@ -9,8 +11,8 @@ public class NavigationStatusEvent extends it.smg.libs.aasdk.projection.Navigati
 
     private static final String TAG = "NavigationStatusEvent";
 
-    private Settings settings_;
-    private NotificationFactory notificationFactory_;
+    private final Settings settings_;
+    private final NotificationFactory notificationFactory_;
 
     private TurnEvent turnEvent_;
     private DistanceEvent distanceEvent_;
@@ -20,6 +22,7 @@ public class NavigationStatusEvent extends it.smg.libs.aasdk.projection.Navigati
         notificationFactory_ = NotificationFactory.instance();
     }
 
+    @Keep
     @Override
     public void navigationStatusUpdate(NavigationStatus navigationStatus) {
         if (!settings_.video.showNavigationNotification()) {
@@ -29,6 +32,7 @@ public class NavigationStatusEvent extends it.smg.libs.aasdk.projection.Navigati
         if (Log.isDebug()) Log.d(TAG, "navigationStatusUpdate: " + navigationStatus);
     }
 
+    @Keep
     @Override
     public void navigationTurnEvent(TurnEvent turnEvent) {
         if (!settings_.video.showNavigationNotification()) {
@@ -44,6 +48,7 @@ public class NavigationStatusEvent extends it.smg.libs.aasdk.projection.Navigati
         }
     }
 
+    @Keep
     @Override
     public void navigationDistanceEvent(DistanceEvent distanceEvent) {
         if (!settings_.video.showNavigationNotification()) {

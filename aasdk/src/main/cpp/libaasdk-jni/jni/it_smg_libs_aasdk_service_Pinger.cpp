@@ -41,7 +41,7 @@ Java_it_smg_libs_aasdk_service_Pinger_nativeInit(JNIEnv *env, jclass clazz) {
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_service_Pinger_nativeSetup(JNIEnv *env, jobject thiz, jint duration) {
-    JPinger::Pointer jPinger = new JPinger(env, thiz, duration);
+    auto jPinger = new JPinger(env, thiz, duration);
     return (jlong)((size_t)jPinger);
 }
 

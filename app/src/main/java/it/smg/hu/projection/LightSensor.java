@@ -13,7 +13,7 @@ public class LightSensor implements ISensor, SensorEventListener {
 
     private static final String TAG = "LightSensor";
 
-    private Context context_;
+    private final Context context_;
     private Listener listener_;
     private int currentState_;
 

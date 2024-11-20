@@ -39,7 +39,7 @@ Java_it_smg_libs_aasdk_transport_TCPTransport_nativeInit(JNIEnv *env, jclass cla
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_transport_TCPTransport_nativeSetup(JNIEnv *env, jobject thiz, jobject jtcpendpoint) {
-    JTCPTransport::Pointer jtcptransport = new JTCPTransport(env, thiz, jtcpendpoint);
+    auto jtcptransport = new JTCPTransport(env, thiz, jtcpendpoint);
     return (jlong)((size_t)jtcptransport);
 }
 

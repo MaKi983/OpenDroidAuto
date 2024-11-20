@@ -211,7 +211,7 @@ LOCAL_SHARED_LIBRARIES := common
 LOCAL_LDLIBS += -lz -llog -landroid
 
 LOCAL_CPPFLAGS += -fexceptions
-LOCAL_CFLAGS := -pthread -funwind-tables -Wl,--no-merge-exidx-entries -fno-omit-frame-pointer
+#LOCAL_CFLAGS := -pthread -funwind-tables -Wl,--no-merge-exidx-entries -fno-omit-frame-pointer
 LOCAL_ARM_NEON := true
 
 include $(BUILD_SHARED_LIBRARY)

@@ -20,7 +20,7 @@ VideoServiceChannel::VideoServiceChannel(boost::asio::io_service::strand& strand
 
 void VideoServiceChannel::receive(IVideoServiceChannelEventHandler::Pointer eventHandler)
 {
-    auto receivePromise = messenger::ReceivePromise::defer(strand_);
+    auto receivePromise = messenger::ReceivePromise::defer(strand_, "VideoServiceChannel_messageHandler");
     receivePromise->then(std::bind(&VideoServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IVideoServiceChannelEventHandler::onChannelError, eventHandler, std::placeholders::_1));
 
@@ -107,7 +107,7 @@ void VideoServiceChannel::messageHandler(messenger::Message::Pointer message, IV
         break;
     default:
         Log_e("message not handled %d", messageId.getId());
-        this->receive(std::move(eventHandler));
+//        this->receive(std::move(eventHandler));
         break;
     }
 }
@@ -188,7 +188,7 @@ void VideoServiceChannel::handleAVMediaWithTimestampIndication(const common::Dat
     {
         if (Log::isVerbose() && Log::logProtocol()) Log_v("handleAVMediaWithTimestampIndication");
         messenger::Timestamp timestamp(payload);
-        if (Log::isVerbose() && Log::logProtocol()) Log_v("handleAVMediaWithTimestampIndication timestamp");
+        if (Log::isVerbose() && Log::logProtocol()) Log_v("handleAVMediaWithTimestampIndication timestamp %lld", timestamp.getValue());
         eventHandler->onAVMediaWithTimestampIndication(timestamp.getValue(), common::DataConstBuffer(payload.cdata, payload.size, sizeof(messenger::Timestamp::ValueType)));
     }
     else

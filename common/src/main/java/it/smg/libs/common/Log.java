@@ -1,5 +1,7 @@
 package it.smg.libs.common;
 
+import androidx.annotation.Keep;
+
 import java.nio.ByteBuffer;
 
 public class Log {
@@ -26,6 +28,7 @@ public class Log {
         return log_;
     }
 
+    @Keep
     public static int logLevel() { return log_.logLevel_(); }
 
     public static void setLogLevel(int logLevel){
@@ -33,6 +36,7 @@ public class Log {
         nativeInit();
     }
 
+    @Keep
     public static boolean logProtocol() { return log_.logProtocol_(); }
 
     public static void setLogProtocol(boolean logProtocol){

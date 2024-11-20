@@ -5,8 +5,6 @@
 #include <messenger/IMessenger.hpp>
 #include <messenger/IMessageInStream.hpp>
 #include <messenger/IMessageOutStream.hpp>
-#include <messenger/ChannelReceiveMessageQueue.hpp>
-#include <messenger/ChannelReceivePromiseQueue.hpp>
 
 namespace aasdk
 {
@@ -21,11 +19,15 @@ public:
     void enqueueReceive(ChannelId channelId, ReceivePromise::Pointer promise) override;
     void enqueueSend(Message::Pointer message, SendPromise::Pointer promise) override;
     void stop() override;
+    void startReceive() override;
 
 private:
     using std::enable_shared_from_this<Messenger>::shared_from_this;
-    typedef std::list<std::pair<Message::Pointer, SendPromise::Pointer>> ChannelSendQueue;
-    void doSend();
+    typedef std::unordered_map<ChannelId, ReceivePromise::Pointer> ChannelReceivePromiseQueue;
+	typedef std::list<std::pair<Message::Pointer, SendPromise::Pointer>> ChannelSendQueue;
+	
+	void doSend();
+    void doReceive();
     void inStreamMessageHandler(Message::Pointer message);
     void outStreamMessageHandler(ChannelSendQueue::iterator queueElement);
     void rejectReceivePromiseQueue(const error::Error& e);
@@ -37,8 +39,7 @@ private:
     IMessageOutStream::Pointer messageOutStream_;
 
     ChannelReceivePromiseQueue channelReceivePromiseQueue_;
-    ChannelReceiveMessageQueue channelReceiveMessageQueue_;
-    ChannelSendQueue channelSendPromiseQueue_;
+	ChannelSendQueue channelSendPromiseQueue_;
 
     bool isStopping_;
 };

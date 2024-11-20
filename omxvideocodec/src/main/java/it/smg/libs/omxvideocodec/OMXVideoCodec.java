@@ -2,6 +2,8 @@ package it.smg.libs.omxvideocodec;
 
 import android.view.Surface;
 
+import androidx.annotation.Keep;
+
 import java.nio.ByteBuffer;
 
 import it.smg.libs.common.Log;
@@ -18,6 +20,7 @@ public class OMXVideoCodec {
     private native void nativeConsume(ByteBuffer buf, int len, long t);
     private native void nativeSetSps(ByteBuffer buf, int len);
 
+    @Keep
     private long handle_ = 0;
 
     private Surface surfaceView_;

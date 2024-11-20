@@ -1,16 +1,21 @@
 #include "OMXVideoCodec.h"
-#include "Log.h"
+#include <Log.h>
 
 #include <unistd.h>
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
-#include <inttypes.h>
+#include <cinttypes>
 #include <chrono>
 #include <sstream>
 #include <iomanip>
 
 OMXVideoCodec::OMXVideoCodec()
-    : fps_(0), omxDecoderThreadRunning_(false), decoderThreadInitialized_(false), decoderThreadQuitFlag_(false){
+    : omxSource_(nullptr)
+    , omxDecoder_(nullptr)
+    , fps_(0)
+    , omxDecoderThreadRunning_(false)
+    , decoderThreadInitialized_(false)
+    , decoderThreadQuitFlag_(false){
 }
 
 OMXVideoCodec::~OMXVideoCodec() {
@@ -73,11 +78,11 @@ void OMXVideoCodec::init_omxDecoderThread() {
 //    JNIEnv* env;
 //    JNIBase::javaAttachThread("OMXCodec thread", &env);
 
-    omxSource_ = new OMXSource(screenSize_.width, screenSize_.height, fps_, codecMutex_);
+    omxSource_ = new OMXSource(screenSize_.width, screenSize_.height, fps_/*, codecMutex_*/);
 
     if (Log::isDebug()) Log_d("Created OMXSource %p", omxSource_);
 
-    omxDecoder_ = new OMXDecoder(codecMutex_);
+    omxDecoder_ = new OMXDecoder(/*codecMutex_*/);
     omxDecoder_->setNativeWindow(nativeWindow_);
     omxDecoder_->setSource(omxSource_);
     omxDecoder_->init();
@@ -127,6 +132,6 @@ void OMXVideoCodec::queueBuffer(common::DataConstBuffer& buffer, int64_t timesta
     common::Data d;
     common::copy(d, buffer);
 
-    Packet::Pointer p = new Packet(d, timestamp, d.size());
+    auto p = new Packet(d, timestamp, d.size());
     source()->queueBuffer(p);
 }

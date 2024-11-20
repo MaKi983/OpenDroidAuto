@@ -9,7 +9,7 @@ jfieldID JTCPEndpoint::handleId = nullptr;
 
 JTCPEndpoint::JTCPEndpoint(JNIEnv *env, jobject jtcpendpoint, std::string ipAddress)
         : JNIBase(env, jtcpendpoint, "JTCPEndpoint"){
-    ITCPEndpoint::SocketPointer socket = connect(env, JRuntime::ioService(), ipAddress);
+    ITCPEndpoint::SocketPointer socket = connect(env, JRuntime::ioService(), std::move(ipAddress));
     tcpEndpoint_ = std::make_shared<TCPEndpoint>(tcpWrapper_, socket);
 }
 
@@ -76,11 +76,11 @@ Java_it_smg_libs_aasdk_tcp_TCPEndpoint_nativeInit(JNIEnv *env, jclass clazz) {
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_tcp_TCPEndpoint_nativeSetup(JNIEnv *env, jobject thiz, jstring jipaddress) {
-    const char* ip_ = env->GetStringUTFChars(jipaddress, NULL);
+    const char* ip_ = env->GetStringUTFChars(jipaddress, nullptr);
     std::string ipAddress(ip_);
     env->ReleaseStringUTFChars(jipaddress, ip_);
 
-    JTCPEndpoint::Pointer jTCPEndpoint = new JTCPEndpoint(env, thiz, ipAddress);
+    auto jTCPEndpoint = new JTCPEndpoint(env, thiz, ipAddress);
     return (jlong)((size_t)jTCPEndpoint);
 }
 

@@ -19,10 +19,11 @@ namespace service
     void MediaStatusService::start()
     {
         isRunning_ = true;
-        strand_.dispatch([this, self = this->shared_from_this()]() {
+//        strand_.dispatch([this, self = this->shared_from_this()]() {
+//        strand_.post([this, self = this->shared_from_this()]() {
             if(Log::isInfo()) Log_i("start");
             channel_->receive(this->shared_from_this());
-        });
+//        });
     }
 
     void MediaStatusService::stop()
@@ -51,11 +52,11 @@ namespace service
         aasdk::proto::messages::ChannelOpenResponse response;
         response.set_status(status);
 
-        auto promise = aasdk::channel::SendPromise::defer(strand_);
+        auto promise = aasdk::channel::SendPromise::defer(strand_, "MediaStatusService_channelOpen");
         promise->then([]() {}, std::bind(&MediaStatusService::onChannelError, this->shared_from_this(), std::placeholders::_1));
         channel_->sendChannelOpenResponse(response, std::move(promise));
 
-        channel_->receive(this->shared_from_this());
+//        channel_->receive(this->shared_from_this());
     }
 
 
@@ -66,21 +67,21 @@ namespace service
             return;
         }
 //        Log_e("channel error: %s", e.what());
-//        serviceEventHandler_->onError(e);
+        serviceEventHandler_->onError(e);
     }
 
     void MediaStatusService::onMetadataUpdate(const aasdk::proto::messages::MediaInfoChannelMetadataData& metadata)
     {
         if(Log::isDebug()) Log_d("Metadata update, track: %s, artist: %s, album: %s, length: %d, album_art: %d bytes", (metadata.has_track_name() ? metadata.track_name().c_str() : ""), (metadata.has_artist_name()?metadata.artist_name().c_str():""), (metadata.has_album_name()?metadata.album_name().c_str():""), (metadata.has_track_length() ? metadata.track_length() : -1), (metadata.has_album_art() ? metadata.album_art().size() : -1));
         mediaEvent_->mediaMetadataUpdate(metadata);
-        channel_->receive(this->shared_from_this());
+//        channel_->receive(this->shared_from_this());
     }
 
     void MediaStatusService::onPlaybackUpdate(const aasdk::proto::messages::MediaInfoChannelPlaybackData& playback)
     {
         if(Log::isDebug()) Log_d("Playback update, source: %s, state: %s, progress: %d", (playback.has_media_source() ? playback.media_source().c_str() : ""), (playback.has_playback_state() ? aasdk::proto::messages::MediaInfoChannelPlaybackData_PlaybackState_Name(playback.playback_state()).c_str() : ""), (playback.has_track_progress() ? playback.track_progress() : -1) );
         mediaEvent_->mediaPlaybackUpdate(playback);
-        channel_->receive(this->shared_from_this());
+//        channel_->receive(this->shared_from_this());
     }
 
 }

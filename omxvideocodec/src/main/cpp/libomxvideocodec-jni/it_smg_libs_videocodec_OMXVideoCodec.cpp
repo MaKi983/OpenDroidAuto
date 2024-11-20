@@ -56,7 +56,7 @@ Java_it_smg_libs_omxvideocodec_OMXVideoCodec_nativeInit(JNIEnv *env, jclass claz
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_omxvideocodec_OMXVideoCodec_nativeSetup(JNIEnv* env, jobject thiz) {
-    JOMXVideoCodec::Pointer jOMXVideoCodec = new JOMXVideoCodec(env, thiz);
+    auto jOMXVideoCodec = new JOMXVideoCodec(env, thiz);
     return (jlong)((size_t)jOMXVideoCodec);
 }
 
@@ -72,10 +72,8 @@ Java_it_smg_libs_omxvideocodec_OMXVideoCodec_nativeSurfaceInit(JNIEnv *env, jobj
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_it_smg_libs_omxvideocodec_OMXVideoCodec_nativeDecoderInit(JNIEnv *env, jobject thiz, jint fps) {
-    status_t ret = 1;
-
     JOMXVideoCodec::Pointer jOMXVideoCodec = JOMXVideoCodec::getJOMXVideoCodec(env, thiz);
-    ret = jOMXVideoCodec->init(fps);
+    status_t ret = jOMXVideoCodec->init(fps);
 
     return ret == 0 ? JNI_TRUE : JNI_FALSE;
 }
@@ -95,9 +93,9 @@ JNIEXPORT void JNICALL
 Java_it_smg_libs_omxvideocodec_OMXVideoCodec_nativeConsume(JNIEnv *env, jobject thiz, jobject buf, jint len, jlong t) {
     JOMXVideoCodec::Pointer jOMXVideoCodec = JOMXVideoCodec::getJOMXVideoCodec(env, thiz);
 
-    jbyte *bufferData = (jbyte *) env->GetDirectBufferAddress(buf);
+    auto *bufferData = (jbyte *) env->GetDirectBufferAddress(buf);
     common::DataConstBuffer buffer(bufferData, len);
-    int64_t timestamp = static_cast<int64_t>(t);
+    auto timestamp = static_cast<int64_t>(t);
 
     jOMXVideoCodec->queueBuffer(buffer, timestamp);
 }
@@ -107,7 +105,7 @@ JNIEXPORT void JNICALL
 Java_it_smg_libs_omxvideocodec_OMXVideoCodec_nativeSetSps(JNIEnv *env, jobject thiz, jobject buf, jint len) {
     JOMXVideoCodec::Pointer jOMXVideoCodec = JOMXVideoCodec::getJOMXVideoCodec(env, thiz);
 
-    jbyte *bufferData = (jbyte *) env->GetDirectBufferAddress(buf);
+    auto *bufferData = (jbyte *) env->GetDirectBufferAddress(buf);
     common::DataConstBuffer buffer(bufferData, len);
 
     jOMXVideoCodec->setSps(buffer);

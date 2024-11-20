@@ -2,6 +2,8 @@ package it.smg.libs.aasdk.service;
 
 import android.content.Context;
 
+import androidx.annotation.Keep;
+
 import it.smg.libs.aasdk.messenger.Messenger;
 import it.smg.libs.aasdk.projection.IVideoOutput;
 import it.smg.libs.common.Log;
@@ -66,5 +68,6 @@ public class VideoService implements IService {
     private native void nativeGainFocus();
     private native void nativeDelete();
 
+    @Keep
     protected long handle_;
 }

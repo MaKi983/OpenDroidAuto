@@ -22,7 +22,7 @@ namespace navigation
 
     void NavigationStatusServiceChannel::receive(INavigationStatusServiceChannelEventHandler::Pointer eventHandler)
     {
-        auto receivePromise = messenger::ReceivePromise::defer(strand_);
+        auto receivePromise = messenger::ReceivePromise::defer(strand_, "NavigationStatusServiceChannel_messageHandler");
         receivePromise->then(std::bind(&NavigationStatusServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                              std::bind(&INavigationStatusServiceChannelEventHandler::onChannelError, eventHandler,std::placeholders::_1));
 
@@ -68,7 +68,7 @@ namespace navigation
                 break;
             default:
                 Log_e("message not handled: %d - %s", messageId.getId(), dump(payload).c_str());
-                this->receive(std::move(eventHandler));
+//                this->receive(std::move(eventHandler));
                 break;
         }
     }

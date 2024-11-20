@@ -37,9 +37,11 @@
 	<string name="input_audio_settings">Microphone Settings</string>
 	<string name="input_settings_mic_source">Source Type</string>
 
+	<string name="conn_settings">Connectivity Settings</string>
+	<string name="conn_settings_enableAd2p">Enable AD2P</string>
+	<string name="conn_settings_enableHfp">Enable HFP</string>
+
 	<string name="audio_settings">Audio Settings</string>
-	<string name="audio_settings_audiocodec">Audio Codec Type</string>
-	<string name="audio_settings_mic_format">Microphone Format</string>
 
 	<string name="advanced_settings">Advanced</string>
 	<string name="advanced_settings_logDir">External log directory</string>

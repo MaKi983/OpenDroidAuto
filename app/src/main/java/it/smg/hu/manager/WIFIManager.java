@@ -23,11 +23,10 @@ public class WIFIManager {
     public static final String EXTRA_SSID = "ssid";
 
     private static WIFIManager instance_;
-    private LocalBroadcastManager localBroadcastManager_;
+    private final LocalBroadcastManager localBroadcastManager_;
 
-    private Context ctx_;
+    private final Context ctx_;
     private String ipAddress_;
-    private String networkSSID_;
 
     private Thread serverThread;
 
@@ -73,14 +72,15 @@ public class WIFIManager {
 
     private boolean isConnected(){
         ConnectivityManager connManager = (ConnectivityManager) ctx_.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        return mWifi.isConnected();
+        NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        return wifi.isConnected();
     }
 
     public void checkNetwork(){
         synchronized (this) {
 
             boolean isConnected = isConnected();
+            String networkSSID_;
             if (isConnected) {
                 ipAddress_ = ipAddress();
                 networkSSID_ = networkSSID();

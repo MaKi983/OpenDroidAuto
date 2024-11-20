@@ -31,6 +31,6 @@ JNIEXPORT void JNICALL Java_it_smg_libs_aasdk_usb_LibUsb_nativeInit(JNIEnv* env,
 
 extern "C"
 JNIEXPORT jlong JNICALL Java_it_smg_libs_aasdk_usb_LibUsb_nativeSetup(JNIEnv* env, jobject thiz) {
-    JLibUsb::Pointer jlibusb = new JLibUsb(env, thiz);
+    auto jlibusb = new JLibUsb(env, thiz);
     return (jlong)((size_t)jlibusb);
 }

@@ -38,7 +38,7 @@ Java_it_smg_libs_aasdk_transport_USBTransport_nativeInit(JNIEnv *env, jclass cla
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_transport_USBTransport_nativeSetup(JNIEnv *env, jobject thiz, jobject jaoapdevice) {
-    JUSBTransport::Pointer jusbtransport = new JUSBTransport(env, thiz, jaoapdevice);
+    auto jusbtransport = new JUSBTransport(env, thiz, jaoapdevice);
     return (jlong)((size_t)jusbtransport);
 }
 

@@ -84,7 +84,7 @@ void JRuntime::startIOServiceWorkers(int threads) {
     for (int i = 1; i <= threads; i++) {
         threadPool_.emplace_back(ioServiceWorker);
     }
-
+    std::this_thread::sleep_for (std::chrono::seconds(1));
     if(Log::isInfo()) Log_i("all ioservice thread started");
 }
 
@@ -100,28 +100,28 @@ Java_it_smg_libs_aasdk_Runtime_nativeInit(JNIEnv *env, jclass clazz) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     //env->GetJavaVM(&JNIBase::javaVM);
-    JRuntime::Pointer jruntime = new JRuntime(env, clazz);
+    auto jruntime = new JRuntime(env, clazz);
     return (jlong)((size_t)jruntime);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_it_smg_libs_aasdk_Runtime_nativeFinalize(JNIEnv *env, jclass clazz, jlong handle) {
-    JRuntime::Pointer jRuntime = (JRuntime::Pointer) handle;
+    auto jRuntime = (JRuntime::Pointer) handle;
     delete jRuntime;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_it_smg_libs_aasdk_Runtime_nativeStartIOServiceWorker(JNIEnv *env, jclass clazz, jlong handle, jint threads) {
-    JRuntime::Pointer jRuntime = (JRuntime::Pointer) handle;
+    auto jRuntime = (JRuntime::Pointer) handle;
     jRuntime->startIOServiceWorkers(threads);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_it_smg_libs_aasdk_Runtime_nativeStopIOServiceWorker(JNIEnv *env, jclass clazz, jlong handle) {
-    JRuntime::Pointer jRuntime = (JRuntime::Pointer) handle;
+    auto jRuntime = (JRuntime::Pointer) handle;
     jRuntime->stopIOServiceWorkers();
 }
 

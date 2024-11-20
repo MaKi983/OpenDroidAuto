@@ -141,7 +141,7 @@ Java_it_smg_libs_aasdk_projection_MediaStatusEvent_nativeInit(JNIEnv *env, jclas
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_projection_MediaStatusEvent_nativeSetup(JNIEnv *env, jobject thiz) {
-    JMediaStatusEvent::Pointer jMediaStatusEvent = new JMediaStatusEvent(env, thiz);
+    auto jMediaStatusEvent = new JMediaStatusEvent(env, thiz);
     return (jlong)((size_t)jMediaStatusEvent);
 }
 

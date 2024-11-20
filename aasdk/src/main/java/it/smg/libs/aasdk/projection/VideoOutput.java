@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.projection;
 
+import androidx.annotation.Keep;
+
 public abstract class VideoOutput implements IVideoOutput {
 
     protected int fps_;
@@ -11,21 +13,25 @@ public abstract class VideoOutput implements IVideoOutput {
         handle_ = nativeSetup();
     }
 
+    @Keep
     @Override
     public int getVideoFPS() {
         return fps_;
     }
 
+    @Keep
     @Override
     public int getVideoResolution() {
         return resolution_;
     }
 
+    @Keep
     @Override
     public int getScreenDPI() {
         return dpi_;
     }
 
+    @Keep
     @Override
     public Rect getVideoMargins() {
         return margin_;
@@ -44,5 +50,6 @@ public abstract class VideoOutput implements IVideoOutput {
     private native void nativeDelete();
     private static native void nativeInit();
 
+    @Keep
     private long handle_;
 }

@@ -1,6 +1,5 @@
 package it.smg.hu.service;
 
-import android.content.Context;
 import android.view.SurfaceView;
 
 import java.util.Map;

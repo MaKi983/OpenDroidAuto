@@ -62,19 +62,19 @@ public class NavigationUpdateNotification extends Notification {
             byte[] image = new byte[buffer.limit()];
             buffer.get(image);
             BitmapFactory.Options opts = new BitmapFactory.Options();
-            opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
-            opts.inDither = false;
+//            opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
+//            opts.inDither = false;
             Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length, opts);
             if (bmp != null) {
-                ByteArrayOutputStream out = new ByteArrayOutputStream(image.length);
-                bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
-                byte[] imgOk = out.toByteArray();
-
-                Bitmap bmpOk = BitmapFactory.decodeByteArray(imgOk, 0, imgOk.length);
-                if (bmpOk != null) {
-//                imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 256, 256, false));
-                    imageView.setImageBitmap(bmpOk);
-                }
+//                ByteArrayOutputStream out = new ByteArrayOutputStream(image.length);
+//                bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+//                byte[] imgOk = out.toByteArray();
+//
+//                Bitmap bmpOk = BitmapFactory.decodeByteArray(imgOk, 0, imgOk.length);
+//                if (bmpOk != null) {
+                imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 256, 256, false));
+//                    imageView.setImageBitmap(bmpOk);
+//                }
             }
         }
 

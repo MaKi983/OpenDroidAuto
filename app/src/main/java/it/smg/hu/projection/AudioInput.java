@@ -2,6 +2,8 @@ package it.smg.hu.projection;
 
 import android.media.AudioRecord;
 
+import androidx.annotation.Keep;
+
 import java.nio.ByteBuffer;
 
 import it.smg.hu.config.Settings;
@@ -25,6 +27,7 @@ public class AudioInput extends it.smg.libs.aasdk.projection.AudioInput {
         channelConfig_ = settings_.audio.micChannelCount();
     }
 
+    @Keep
     @Override
     public boolean open() {
         bufferSize_ = AudioRecord.getMinBufferSize(sampleRate_, channelConfig_, sampleSizeFromInt(sampleSize_));
@@ -43,17 +46,19 @@ public class AudioInput extends it.smg.libs.aasdk.projection.AudioInput {
         }
     }
 
+    @Keep
     @Override
     public boolean isActive() {
         return isActive_;
     }
 
+    @Keep
     @Override
     public int read(ByteBuffer buffer) {
-        int read = audioRecord_.read(buffer,  buffer.limit());
-        return read;
+        return audioRecord_.read(buffer,  buffer.limit());
     }
 
+    @Keep
     @Override
     public boolean start() {
         audioRecord_ = new AudioRecord(sourceType_, sampleRate_, channelConfig_, sampleSizeFromInt(sampleSize_), bufferSize_ * 4);
@@ -74,6 +79,7 @@ public class AudioInput extends it.smg.libs.aasdk.projection.AudioInput {
         }
     }
 
+    @Keep
     @Override
     public void stop() {
         if (Log.isInfo()) Log.i(TAG, "stop");

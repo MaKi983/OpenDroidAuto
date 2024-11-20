@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.projection;
 
+import androidx.annotation.Keep;
+
 import java.nio.ByteBuffer;
 
 public interface INavigationStatusEvent {
@@ -11,6 +13,7 @@ public interface INavigationStatusEvent {
 
     void delete();
 
+    @Keep
     enum DistanceUnit {
         UNKNOWN,
         METERS,
@@ -22,6 +25,7 @@ public interface INavigationStatusEvent {
         YARDS
     }
 
+    @Keep
     enum NavigationStatus {
         UNAVAILABLE,
         ACTIVE,
@@ -29,6 +33,7 @@ public interface INavigationStatusEvent {
         REROUTING
     }
 
+    @Keep
     enum ManeuverDirection {
         UNKNOWN,
         LEFT,
@@ -36,6 +41,7 @@ public interface INavigationStatusEvent {
         UNSPECIFIED
     }
 
+    @Keep
     enum ManeuverType {
         UNKNOWN,
         DEPART,
@@ -57,6 +63,7 @@ public interface INavigationStatusEvent {
         DESTINATION
     }
 
+    @Keep
     class TurnEvent {
         public final String street;
         public final ByteBuffer image;
@@ -86,6 +93,7 @@ public interface INavigationStatusEvent {
         }
     }
 
+    @Keep
     class DistanceEvent {
         public final long meters;
         public final long timeToStepSeconds;

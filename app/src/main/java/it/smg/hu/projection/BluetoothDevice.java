@@ -1,9 +1,13 @@
 package it.smg.hu.projection;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
+
+import androidx.annotation.Keep;
 
 import java.util.Set;
 
+import it.smg.hu.config.Settings;
 import it.smg.libs.common.Log;
 
 public class BluetoothDevice extends it.smg.libs.aasdk.projection.BluetoothDevice {
@@ -16,11 +20,13 @@ public class BluetoothDevice extends it.smg.libs.aasdk.projection.BluetoothDevic
         bluetoothAdapter_ = BluetoothAdapter.getDefaultAdapter();
     }
 
+    @Keep
     @Override
     public void stop() {
         if (Log.isDebug()) Log.d(TAG, "stop (do nothing)");
     }
 
+    @Keep
     @Override
     public boolean isPaired(String address) {
         if (Log.isDebug()) Log.d(TAG, "isPaired phoneAddress: " + address);
@@ -28,7 +34,7 @@ public class BluetoothDevice extends it.smg.libs.aasdk.projection.BluetoothDevic
         if (address != null && !address.trim().isEmpty()) {
             Set<android.bluetooth.BluetoothDevice> pairedDevices = bluetoothAdapter_.getBondedDevices();
             // If there are paired devices
-            if (pairedDevices.size() > 0) {
+            if (!pairedDevices.isEmpty()) {
                 // Loop through paired devices
                 for (android.bluetooth.BluetoothDevice device : pairedDevices) {
                     // Add the name and address to an array adapter to show in a ListView
@@ -45,11 +51,14 @@ public class BluetoothDevice extends it.smg.libs.aasdk.projection.BluetoothDevic
         return false;
     }
 
+    @Keep
     @Override
     public boolean pair(String address) {
         return true;
     }
 
+    @Keep
+    @SuppressLint("HardwareIds")
     @Override
     public String getLocalAddress() {
         String macAddress = "";
@@ -65,6 +74,7 @@ public class BluetoothDevice extends it.smg.libs.aasdk.projection.BluetoothDevic
         return macAddress;
     }
 
+    @Keep
     @Override
     public boolean isAvailable() {
         if (Log.isDebug()) Log.d(TAG, "isAvailable");
@@ -79,5 +89,17 @@ public class BluetoothDevice extends it.smg.libs.aasdk.projection.BluetoothDevic
             if (Log.isDebug()) Log.d(TAG, "Device enabled");
             return true;
         }
+    }
+
+    @Keep
+    @Override
+    public boolean isEnabledAd2p() {
+        return Settings.instance().connectivity.enableA2dp();
+    }
+
+    @Keep
+    @Override
+    public boolean isEnabledHfp() {
+        return Settings.instance().connectivity.enableHfp();
     }
 }

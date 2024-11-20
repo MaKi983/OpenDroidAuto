@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.service;
 
+import androidx.annotation.Keep;
+
 public class Pinger implements IPinger {
 
     private static final String TAG = "SensorService";
@@ -25,6 +27,7 @@ public class Pinger implements IPinger {
     private native long nativeSetup(int duration);
     private native void nativeDelete();
 
+    @Keep
     protected long handle_;
 
 }

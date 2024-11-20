@@ -59,7 +59,7 @@ Java_it_smg_libs_aasdk_usb_LibUsbDevice_nativeInit(JNIEnv *env, jclass clazz) {
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_usb_LibUsbDevice_nativeSetup(JNIEnv *env, jobject thiz, jobject jlibUsb) {
-    JLibUsbDevice::Pointer jlibusbdevice = new JLibUsbDevice(env, thiz, jlibUsb);
+    auto jlibusbdevice = new JLibUsbDevice(env, thiz, jlibUsb);
     return (jlong)((size_t)jlibusbdevice);
 }
 

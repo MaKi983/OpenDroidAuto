@@ -5,17 +5,14 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.view.SurfaceView;
 import android.widget.Toast;
 
+import androidx.annotation.Keep;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import java.io.IOException;
-
-import it.smg.hu.ODAApplication;
 import it.smg.hu.manager.USBManager;
 import it.smg.hu.manager.WIFIManager;
 import it.smg.hu.ui.notification.NotificationFactory;
@@ -186,11 +183,13 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         return START_STICKY;
     }
 
+    @Keep
     @Override
     public void onAndroidAutoQuit() {
         stop();
     }
 
+    @Keep
     @Override
     public void onAndroidAutoQuitOnError(String error, int nativeErrorCode){
         Log.e(TAG, "closing with error " + error + "(" + nativeErrorCode + ")");
@@ -202,6 +201,7 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         stop();
     }
 
+    @Keep
     @Override
     public void onAVChannelStopIndication() {
         if (Log.isInfo()) Log.i(TAG, "stop video indication");

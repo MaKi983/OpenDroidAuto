@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.service;
 
+import androidx.annotation.Keep;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -119,6 +121,7 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
     private native void nativeDelete();
     private native void nativeRequestShutdown();
 
+    @Keep
     protected long handle_;
 
     private native long nativeSetup(Cryptor cryptor, Messenger messenger, Collection<IService> serviceList, ICarConfiguration config, IPinger pinger);

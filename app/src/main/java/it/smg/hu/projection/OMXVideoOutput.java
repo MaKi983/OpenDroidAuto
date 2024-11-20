@@ -2,6 +2,8 @@ package it.smg.hu.projection;
 
 import android.view.SurfaceView;
 
+import androidx.annotation.Keep;
+
 import java.nio.ByteBuffer;
 
 import it.smg.libs.common.Log;
@@ -36,11 +38,13 @@ public class OMXVideoOutput extends VideoOutput /*implements Runnable*/ {
         }
     }
 
+    @Keep
     @Override
     public boolean open() {
         return true;
     }
 
+    @Keep
     @Override
     public boolean init() {
         videoCodec_ = new OMXVideoCodec(fps_);
@@ -51,6 +55,7 @@ public class OMXVideoOutput extends VideoOutput /*implements Runnable*/ {
         return true;
     }
 
+    @Keep
     @Override
     public void write(long timestamp, ByteBuffer data) {
         if (configured_ && running_) {
@@ -59,6 +64,7 @@ public class OMXVideoOutput extends VideoOutput /*implements Runnable*/ {
         }
     }
 
+    @Keep
     @Override
     public void stop() {
         if(Log.isInfo()) Log.i(TAG, "stop");

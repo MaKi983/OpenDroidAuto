@@ -24,7 +24,7 @@ MediaStatusServiceChannel::MediaStatusServiceChannel(boost::asio::io_service::st
 
 void MediaStatusServiceChannel::receive(IMediaStatusServiceChannelEventHandler::Pointer eventHandler)
 {
-    auto receivePromise = messenger::ReceivePromise::defer(strand_);
+    auto receivePromise = messenger::ReceivePromise::defer(strand_, "MediaStatusServiceChannel_messageHandler");
     receivePromise->then(std::bind(&MediaStatusServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IMediaStatusServiceChannelEventHandler::onChannelError, eventHandler,std::placeholders::_1));
 
@@ -69,7 +69,7 @@ void MediaStatusServiceChannel::messageHandler(messenger::Message::Pointer messa
 
     default:
         Log_e("message not handled %d - %s", messageId.getId(), dump(payload).c_str());
-        this->receive(std::move(eventHandler));
+//        this->receive(std::move(eventHandler));
         break;
     }
 }

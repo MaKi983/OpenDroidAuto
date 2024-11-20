@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.transport;
 
+import androidx.annotation.Keep;
+
 import it.smg.libs.aasdk.tcp.TCPEndpoint;
 
 public class TCPTransport extends Transport {
@@ -32,5 +34,6 @@ public class TCPTransport extends Transport {
     private native void nativeStop();
     private native void nativeDelete();
 
+    @Keep
     private long handle_;
 }

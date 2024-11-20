@@ -15,12 +15,11 @@ Messenger::Messenger(boost::asio::io_service& ioService, IMessageInStream::Point
     , messageOutStream_(std::move(messageOutStream))
     , isStopping_(false)
 {
-
 }
 
 Messenger::~Messenger(){
     channelReceivePromiseQueue_.clear();
-    channelReceiveMessageQueue_.clear();
+//    channelReceiveMessageQueue_.clear();
     channelSendPromiseQueue_.clear();
 //    delete messageInStream_;
 //    delete messageOutStream_;
@@ -30,39 +29,20 @@ Messenger::~Messenger(){
 
 void Messenger::enqueueReceive(ChannelId channelId, ReceivePromise::Pointer promise)
 {
-    if (isStopping_) {
-        if (Log::isInfo()) Log_i("Messenger stopped");
-        return;
-    }
+    if(Log::isDebug()) Log_d("%s / enqueueReceive", channelIdToString(channelId).c_str());
+    channelReceivePromiseQueue_.insert(std::pair<ChannelId, ReceivePromise::Pointer>(channelId, std::move(promise)));
+}
 
-    receiveStrand_.dispatch([this, self = this->shared_from_this(), channelId, promise = std::move(promise)]() mutable {
-        if(Log::isDebug()) Log_d("%s / enqueueReceive", channelIdToString(channelId).c_str());
-        if(!channelReceiveMessageQueue_.empty(channelId))
-        {
-            promise->resolve(std::move(channelReceiveMessageQueue_.pop(channelId)));
-        }
-        else
-        {
-            channelReceivePromiseQueue_.push(channelId, std::move(promise));
-
-            if(channelReceivePromiseQueue_.size() == 1)
-            {
-
-                auto inStreamPromise = ReceivePromise::defer(receiveStrand_);
-                inStreamPromise->then(std::bind(&Messenger::inStreamMessageHandler, this->shared_from_this(), std::placeholders::_1),
-                                     std::bind(&Messenger::rejectReceivePromiseQueue, this->shared_from_this(), std::placeholders::_1));
-                messageInStream_->startReceive(std::move(inStreamPromise));
-            }
-        }
-    });
+void Messenger::startReceive() {
+    doReceive();
 }
 
 void Messenger::enqueueSend(Message::Pointer message, SendPromise::Pointer promise)
 {
-    if (isStopping_) {
-        if (Log::isInfo()) Log_i("Messenger stopped");
-        return;
-    }
+//    if (isStopping_) {
+//        if (Log::isInfo()) Log_i("Messenger stopped");
+//        return;
+//    }
 
     sendStrand_.dispatch([this, self = this->shared_from_this(), message = std::move(message), promise = std::move(promise)]() mutable {
         channelSendPromiseQueue_.emplace_back(std::make_pair(std::move(message), std::move(promise)));
@@ -76,34 +56,42 @@ void Messenger::enqueueSend(Message::Pointer message, SendPromise::Pointer promi
 
 void Messenger::inStreamMessageHandler(Message::Pointer message)
 {
+    doReceive();
+
     auto channelId = message->getChannelId();
+    if (Log::isDebug()) Log_d("%s/inStreamMessageHandler", channelIdToString(channelId).c_str());
+    ReceivePromise::Pointer promise = channelReceivePromiseQueue_.at(channelId);
 
-    if(channelReceivePromiseQueue_.isPending(channelId))
-    {
-        channelReceivePromiseQueue_.pop(channelId)->resolve(std::move(message));
-    }
-    else
-    {
-        channelReceiveMessageQueue_.push(std::move(message));
-    }
-
-    if(!channelReceivePromiseQueue_.empty())
-    {
-        auto inStreamPromise = ReceivePromise::defer(receiveStrand_);
-        inStreamPromise->then(std::bind(&Messenger::inStreamMessageHandler, this->shared_from_this(), std::placeholders::_1),
-                             std::bind(&Messenger::rejectReceivePromiseQueue, this->shared_from_this(), std::placeholders::_1));
-        messageInStream_->startReceive(std::move(inStreamPromise));
-    }
+//    threadPool_.enqueue([message = std::move(message), promise]{
+        promise->resolve(std::move(message));
+//    });
 }
 
-void Messenger::doSend()
-{
-    auto queueElementIter = channelSendPromiseQueue_.begin();
-    auto outStreamPromise = SendPromise::defer(sendStrand_);
-    outStreamPromise->then(std::bind(&Messenger::outStreamMessageHandler, this->shared_from_this(), queueElementIter),
-                           std::bind(&Messenger::rejectSendPromiseQueue, this->shared_from_this(), std::placeholders::_1));
+void Messenger::doReceive() {
+    receiveStrand_.dispatch([this, self = this->shared_from_this()]() {
+        if (Log::isDebug()) Log_d("doReceive");
+        auto inStreamPromise = ReceivePromise::defer(receiveStrand_, "Messenger_doReceive");
+        inStreamPromise->then(
+                std::bind(&Messenger::inStreamMessageHandler, this->shared_from_this(),
+                          std::placeholders::_1),
+                std::bind(&Messenger::rejectReceivePromiseQueue, this->shared_from_this(),
+                          std::placeholders::_1));
+        messageInStream_->startReceive(std::move(inStreamPromise));
+    });
+}
 
-    messageOutStream_->stream(std::move(queueElementIter->first), std::move(outStreamPromise));
+void Messenger::doSend() {
+//	sendStrand_.dispatch([this, self = this->shared_from_this()]() mutable {
+        auto queueElementIter = channelSendPromiseQueue_.begin();
+        auto outStreamPromise = SendPromise::defer(sendStrand_, "Messenger_doSend");
+        outStreamPromise->then(
+                std::bind(&Messenger::outStreamMessageHandler, this->shared_from_this(),
+                          queueElementIter),
+                std::bind(&Messenger::rejectSendPromiseQueue, this->shared_from_this(),
+                          std::placeholders::_1));
+
+        messageOutStream_->stream(std::move(queueElementIter->first), std::move(outStreamPromise));
+//    });
 }
 
 void Messenger::outStreamMessageHandler(ChannelSendQueue::iterator queueElement)
@@ -118,10 +106,8 @@ void Messenger::outStreamMessageHandler(ChannelSendQueue::iterator queueElement)
 
 void Messenger::rejectReceivePromiseQueue(const error::Error& e)
 {
-    while(!channelReceivePromiseQueue_.empty())
-    {
-        channelReceivePromiseQueue_.pop()->reject(e);
-    }
+    ReceivePromise::Pointer promise = channelReceivePromiseQueue_.at(messenger::ChannelId::CONTROL);
+    promise->reject(e);
 }
 
 void Messenger::rejectSendPromiseQueue(const error::Error& e)
@@ -142,7 +128,7 @@ void Messenger::stop()
 //    messageOutStream_->stop();
 //    messageInStream_->stop();
 //    receiveStrand_.dispatch([this, self = this->shared_from_this()]() {
-    channelReceiveMessageQueue_.clear();
+//    channelReceiveMessageQueue_.clear();
 //    channelSendPromiseQueue_.clear();
 //    channelReceivePromiseQueue_.clear();
 //    });

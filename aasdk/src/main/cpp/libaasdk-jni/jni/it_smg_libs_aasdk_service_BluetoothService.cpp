@@ -70,7 +70,7 @@ Java_it_smg_libs_aasdk_service_BluetoothService_nativeInit(JNIEnv *env, jclass c
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_service_BluetoothService_nativeSetup(JNIEnv *env, jobject thiz, jobject jmessenger, jobject jbluetoothdevice) {
-    JBluetoothService::Pointer jBluetoothService = new JBluetoothService(env, thiz, jmessenger, jbluetoothdevice);
+    auto jBluetoothService = new JBluetoothService(env, thiz, jmessenger, jbluetoothdevice);
     return (jlong)((size_t)jBluetoothService);
 }
 

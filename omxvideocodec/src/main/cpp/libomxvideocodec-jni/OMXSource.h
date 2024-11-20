@@ -16,23 +16,23 @@ public:
     typedef OMXSource* Pointer;
     static constexpr common::Data::size_type cChunkSize = 38406 * 4;
 
-    OMXSource(int width, int height, int fps, std::mutex& mutex);
+    OMXSource(int width, int height, int fps/*, std::mutex& mutex*/);
 
-    virtual status_t read(MediaBuffer **buffer, const MediaSource::ReadOptions *options) ;
-    virtual status_t start(MetaData *params = NULL);
-    virtual status_t stop();
-    virtual sp<MetaData> getFormat();
+    status_t read(MediaBuffer **buffer, const MediaSource::ReadOptions *options) override;
+    status_t start(MetaData *params) override;
+    status_t stop() override;
+    sp<MetaData> getFormat() override;
     void queueBuffer(Packet::Pointer packet);
 
-    virtual status_t pause() {
+    status_t pause() override {
         return ERROR_UNSUPPORTED;
     }
 
-    virtual status_t setBuffers(const Vector<MediaBuffer *> &buffers) {
+    status_t setBuffers(const Vector<MediaBuffer *> &buffers) override {
         return ERROR_UNSUPPORTED;
     }
 
-    ~OMXSource();
+    ~OMXSource() override;
 protected:
 
 

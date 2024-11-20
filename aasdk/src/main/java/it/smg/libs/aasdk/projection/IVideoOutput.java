@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.projection;
 
+import androidx.annotation.Keep;
+
 import java.nio.ByteBuffer;
 
 public interface IVideoOutput {
@@ -13,6 +15,7 @@ public interface IVideoOutput {
     Rect getVideoMargins();
     void delete();
 
+    @Keep
     class Rect {
         public final int width;
         public final int height;

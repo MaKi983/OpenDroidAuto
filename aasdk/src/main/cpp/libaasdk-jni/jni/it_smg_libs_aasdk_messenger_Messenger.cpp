@@ -56,7 +56,7 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_messenger_Messenger_nativeSetupTCP(JNIEnv *env, jobject thiz, jobject jtcptransport, jobject jcryptor) {
     JTCPTransport::Pointer jTCPtransport = JTCPTransport::getJTCPTransport(env, jtcptransport);
-    JMessenger::Pointer jMessenger = new JMessenger(env, thiz, jTCPtransport->getTransport(), jcryptor);
+    auto jMessenger = new JMessenger(env, thiz, jTCPtransport->getTransport(), jcryptor);
     return (jlong)((size_t)jMessenger);
 }
 
@@ -64,7 +64,7 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_messenger_Messenger_nativeSetupUSB(JNIEnv *env, jobject thiz, jobject jusbtransport, jobject jcryptor) {
     JUSBTransport::Pointer jUSBtransport = JUSBTransport::getJUSBTransport(env, jusbtransport);
-    JMessenger::Pointer jMessenger = new JMessenger(env, thiz, jUSBtransport->getTransport(), jcryptor);
+    auto jMessenger = new JMessenger(env, thiz, jUSBtransport->getTransport(), jcryptor);
     return (jlong)((size_t)jMessenger);
 }
 
