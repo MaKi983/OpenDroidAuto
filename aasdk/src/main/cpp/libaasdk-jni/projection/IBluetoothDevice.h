@@ -16,6 +16,8 @@ public:
     virtual void pair(const std::string& address, PairingPromise::Pointer promise) = 0;
     virtual std::string getLocalAddress() = 0;
     virtual bool isAvailable() = 0;
+    virtual bool isEnabledAd2p() = 0;
+    virtual bool isEnabledHfp() = 0;
 };
 
 }

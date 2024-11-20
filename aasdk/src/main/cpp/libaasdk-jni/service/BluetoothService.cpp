@@ -23,10 +23,11 @@ BluetoothService::~BluetoothService(){
 void BluetoothService::start()
 {
     isRunning_ = true;
-    strand_.dispatch([this, self = this->shared_from_this()]() {
+//    strand_.dispatch([this, self = this->shared_from_this()]() {
+//    strand_.post([this, self = this->shared_from_this()]() {
         if(Log::isInfo()) Log_i("start");
         channel_->receive(this->shared_from_this());
-    });
+//    });
 }
 
 void BluetoothService::stop()
@@ -49,7 +50,14 @@ void BluetoothService::fillFeatures(aasdk::proto::messages::ServiceDiscoveryResp
         channelDescriptor->set_channel_id(static_cast<uint32_t>(channel_->getId()));
         auto bluetoothChannel = channelDescriptor->mutable_bluetooth_channel();
         bluetoothChannel->set_adapter_address(localAddress);
-        bluetoothChannel->add_supported_pairing_methods(aasdk::proto::enums::BluetoothPairingMethod_Enum_HFP);
+        if (bluetoothDevice_->isEnabledHfp()) {
+            if(Log::isInfo()) Log_i("Using pairing methods Hfp");
+            bluetoothChannel->add_supported_pairing_methods(aasdk::proto::enums::BluetoothPairingMethod_Enum_HFP);
+        }
+        if (bluetoothDevice_->isEnabledAd2p()) {
+            if(Log::isInfo()) Log_i("Using pairing methods Ad2p");
+            bluetoothChannel->add_supported_pairing_methods(aasdk::proto::enums::BluetoothPairingMethod_Enum_A2DP);
+        }
 
         if(Log::isVerbose() && Log::logProtocol()) Log_v("%s", channelDescriptor->Utf8DebugString().c_str());
     }
@@ -66,11 +74,11 @@ void BluetoothService::onChannelOpenRequest(const aasdk::proto::messages::Channe
     aasdk::proto::messages::ChannelOpenResponse response;
     response.set_status(status);
 
-    auto promise = aasdk::channel::SendPromise::defer(strand_);
+    auto promise = aasdk::channel::SendPromise::defer(strand_, "BluetoothService_channelOpen");
     promise->then([]() {}, std::bind(&BluetoothService::onChannelError, this->shared_from_this(), std::placeholders::_1));
     channel_->sendChannelOpenResponse(response, std::move(promise));
 
-    channel_->receive(this->shared_from_this());
+//    channel_->receive(this->shared_from_this());
 }
 
 void BluetoothService::onBluetoothPairingRequest(const aasdk::proto::messages::BluetoothPairingRequest& request)
@@ -84,11 +92,11 @@ void BluetoothService::onBluetoothPairingRequest(const aasdk::proto::messages::B
     response.set_already_paired(isPaired);
     response.set_status(isPaired ? aasdk::proto::enums::BluetoothPairingStatus::OK : aasdk::proto::enums::BluetoothPairingStatus::FAIL);
 
-    auto promise = aasdk::channel::SendPromise::defer(strand_);
+    auto promise = aasdk::channel::SendPromise::defer(strand_, "BluetoothService_pairing");
     promise->then([]() {}, std::bind(&BluetoothService::onChannelError, this->shared_from_this(), std::placeholders::_1));
     channel_->sendBluetoothPairingResponse(response, std::move(promise));
 
-    channel_->receive(this->shared_from_this());
+//    channel_->receive(this->shared_from_this());
 }
 
 void BluetoothService::onChannelError(const aasdk::error::Error& e)
@@ -98,7 +106,7 @@ void BluetoothService::onChannelError(const aasdk::error::Error& e)
         return;
     }
 //    Log_e("channel error: %s", e.what());
-//    serviceEventHandler_->onError(e);
+    serviceEventHandler_->onError(e);
 }
 
 }

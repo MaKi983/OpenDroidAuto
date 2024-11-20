@@ -24,7 +24,8 @@
             android:id="@+id/main_content"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"></FrameLayout>
+            android:orientation="vertical">
+        </FrameLayout>
     </ScrollView>
 
     <LinearLayout
@@ -58,16 +59,16 @@
 
 
         <ImageButton
-            android:id="@+id/audio_settings"
+            android:id="@+id/conn_settings"
             android:layout_width="128dp"
             android:layout_height="64dp"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:adjustViewBounds="true"
             android:background="#039BE5"
-            android:contentDescription="@string/audio_settings"
+            android:contentDescription="@string/conn_settings"
             android:scaleType="fitCenter"
-            android:src="@drawable/audio_settings"/>
+            android:src="@drawable/connectivity_settings"/>
 
         <!--
         <ImageButton
