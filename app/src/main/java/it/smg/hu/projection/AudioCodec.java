@@ -3,28 +3,25 @@ package it.smg.hu.projection;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
-import android.os.Handler;
-import android.os.HandlerThread;
 
 import java.nio.ByteBuffer;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import it.smg.hu.config.Settings;
 import it.smg.libs.common.Log;
 
 public class AudioCodec implements IAudioCodec, Runnable {
     private static final String TAG = "AudioCodec";
 
-    private String name_;
+    private final String name_;
     private AudioTrack audioTrack_;
-    private int sampleRate_;
-    private int channelConfig_;
-    private int sampleSize_;
+    private final int sampleRate_;
+    private final int channelConfig_;
+    private final int sampleSize_;
     protected AtomicBoolean running_;
 
-    private Queue<byte[]> queue_;
+    private final Queue<byte[]> queue_;
     private Thread codecThread_;
 
     public AudioCodec(String name, int sampleRate, int channelConfig, int sampleSize){
@@ -67,40 +64,52 @@ public class AudioCodec implements IAudioCodec, Runnable {
 
     @Override
     public void write(ByteBuffer buffer, long timestamp) {
-        if (running_.get()) {
+//        if (running_.get()) {
             if (Log.isVerbose()) Log.v(TAG, "buffer size: " + buffer.limit());
             final int size = buffer.limit();
             final byte[] data = new byte[size];
             buffer.get(data);
 
             queue_.add(data);
-        }
+//        }
     }
+
+//    @Override
+//    public void write(byte[] buffer, long timestamp) {
+//        if (running_.get()) {
+//            if (Log.isVerbose()) Log.v(TAG, "buffer size: " + buffer.length);
+////            final int size = buffer.limit();
+////            final byte[] data = new byte[size];
+////            buffer.get(data);
+//
+//            queue_.add(buffer);
+//        }
+//    }
 
     @Override
     public void start() {
         if (Log.isInfo()) Log.i(TAG, "Start");
 
-        if (audioTrack_ == null) {
-            try {
-                int bufferSize_ = AudioTrack.getMinBufferSize(sampleRate_, channels2num(channelConfig_), sampleSizeFromInt(sampleSize_));
-                if (Log.isInfo()) Log.i(TAG, "Buffer size " + bufferSize_ + "*2");
-                audioTrack_ = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate_, channels2num(channelConfig_), sampleSizeFromInt(sampleSize_), bufferSize_, AudioTrack.MODE_STREAM);
-            } catch (Exception e) {
-                Log.e(TAG, "error in audiotrack creation", e);
-                return;
-            }
-
-            if (Log.isInfo()) Log.i(TAG, "initialized");
-        }
+//        if (audioTrack_ == null) {
+//            try {
+//                int bufferSize_ = AudioTrack.getMinBufferSize(sampleRate_, channels2num(channelConfig_), sampleSizeFromInt(sampleSize_));
+//                if (Log.isInfo()) Log.i(TAG, "Buffer size " + bufferSize_ + "*2");
+//                audioTrack_ = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate_, channels2num(channelConfig_), sampleSizeFromInt(sampleSize_), bufferSize_ * 3, AudioTrack.MODE_STREAM);
+//            } catch (Exception e) {
+//                Log.e(TAG, "error in audiotrack creation", e);
+//                return;
+//            }
+//
+//            if (Log.isInfo()) Log.i(TAG, "initialized");
+//        }
 
         codecThread_ = new Thread(this);
         codecThread_.setName(name_);
         codecThread_.start();
 
-        if (audioTrack_ != null) {
-            audioTrack_.play();
-        }
+//        if (audioTrack_ != null) {
+//            audioTrack_.play();
+//        }
 
         running_.set(true);
     }
@@ -115,20 +124,20 @@ public class AudioCodec implements IAudioCodec, Runnable {
                 try {
                     codecThread_.join();
                     if (Log.isDebug()) Log.d(TAG + "_" + codecThread_.getName(), "thread joined");
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException ignored) {}
                 codecThread_ = null;
             }
 
-            if (audioTrack_ != null) {
-                if (audioTrack_.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
-                    audioTrack_.flush();
-                    audioTrack_.stop();
-                }
-                audioTrack_.release();
-                audioTrack_ = null;
-            }
-
-            if (Log.isInfo()) Log.i(TAG, "audtiotrack released");
+//            if (audioTrack_ != null) {
+//                if (audioTrack_.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
+//                    audioTrack_.flush();
+//                    audioTrack_.stop();
+//                }
+//                audioTrack_.release();
+//                audioTrack_ = null;
+//            }
+//
+//            if (Log.isInfo()) Log.i(TAG, "audtiotrack released");
 
             queue_.clear();
             if (Log.isDebug()) Log.d(TAG, "queue empty");
@@ -141,6 +150,23 @@ public class AudioCodec implements IAudioCodec, Runnable {
 
     @Override
     public void run() {
+        if (audioTrack_ == null) {
+            try {
+                int bufferSize_ = AudioTrack.getMinBufferSize(sampleRate_, channels2num(channelConfig_), sampleSizeFromInt(sampleSize_));
+                if (Log.isInfo()) Log.i(TAG, "Buffer size " + bufferSize_ + "*2");
+                audioTrack_ = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate_, channels2num(channelConfig_), sampleSizeFromInt(sampleSize_), bufferSize_ * 3, AudioTrack.MODE_STREAM);
+            } catch (Exception e) {
+                Log.e(TAG, "error in audiotrack creation", e);
+                return;
+            }
+
+            if (Log.isInfo()) Log.i(TAG, "initialized");
+        }
+
+        if (audioTrack_ != null) {
+            audioTrack_.play();
+        }
+
         if (Log.isVerbose()) Log.v(TAG + "_" + codecThread_.getName(), "running thread");
         while (running_.get()) {
             byte[] data = queue_.poll();
@@ -148,6 +174,19 @@ public class AudioCodec implements IAudioCodec, Runnable {
                 audioTrack_.write(data, 0, data.length);
             }
         }
+
+        if (audioTrack_ != null) {
+            if (Log.isInfo()) Log.i(TAG, "stop audiotrack");
+            if (audioTrack_.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
+                audioTrack_.flush();
+                audioTrack_.stop();
+            }
+            audioTrack_.release();
+            audioTrack_ = null;
+        }
+
+        if (Log.isInfo()) Log.i(TAG, "audtiotrack released");
+
         if (Log.isVerbose()) Log.v(TAG + "_" + codecThread_.getName(), "thread ended");
     }
 }
