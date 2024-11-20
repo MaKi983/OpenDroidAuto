@@ -1,5 +1,7 @@
 package it.smg.hu.projection;
 
+import androidx.annotation.Keep;
+
 import java.nio.ByteBuffer;
 
 import it.smg.hu.config.Settings;
@@ -16,23 +18,26 @@ public abstract class AudioOutput extends it.smg.libs.aasdk.projection.AudioOutp
         settings_ = Settings.instance();
     }
 
+    @Keep
     @Override
     public boolean open() {
-        if (settings_.audio.audioCodec() == 2){
-            if (Log.isInfo()) Log.i(tag(), "Create SLESAudio codec");
-            audioCodec_ = new SLESAudioCodec(tag(), getSampleRate(), getChannelCount(), getSampleSize());
-        } else {
-            if (Log.isInfo()) Log.i(tag(), "Create Android Audio codec");
-            audioCodec_ = new AudioCodec(tag(), getSampleRate(), getChannelCount(), getSampleSize());
-        }
+        if (Log.isInfo()) Log.i(tag(), "Create Android Audio codec");
+        audioCodec_ = new AudioCodec(tag(), getSampleRate(), getChannelCount(), getSampleSize());
         return true;
     }
 
+    @Keep
     @Override
     public void write(long timestamp, ByteBuffer buffer) {
         audioCodec_.write(buffer, timestamp);
     }
 
+//    @Override
+//    public void write(long timestamp, byte[] buffer) {
+//        audioCodec_.write(buffer, timestamp);
+//    }
+
+    @Keep
     @Override
     public void start() {
         if (audioCodec_ != null) {
@@ -40,6 +45,7 @@ public abstract class AudioOutput extends it.smg.libs.aasdk.projection.AudioOutp
         }
     }
 
+    @Keep
     @Override
     public void stop() {
         if (audioCodec_ != null) {
@@ -48,6 +54,7 @@ public abstract class AudioOutput extends it.smg.libs.aasdk.projection.AudioOutp
         }
     }
 
+    @Keep
     @Override
     public void suspend() {
         if (audioCodec_ != null) {

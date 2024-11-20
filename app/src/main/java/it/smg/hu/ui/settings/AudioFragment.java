@@ -45,9 +45,6 @@ public class AudioFragment extends BaseSettingsFragment {
 //        initSystemAudio(view);
 //        initMic(view);
 
-        Spinner audioCodec = view.findViewById(R.id.audio_codec);
-        initSpinner(audioCodec, R.array.audio_codec_labels, R.array.audio_channels_values, settings.audio, Settings.Audio.AUDIO_CODEC, Settings.Audio.AUDIO_CODEC_DEFAULT_VALUE);
-
         return view;
 
     }
