@@ -1,26 +1,25 @@
 plugins {
-    id 'com.android.library'
+    alias(libs.plugins.android.library)
 }
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion "30.0.2"
+    namespace 'it.smg.libs.common'
+
+    compileSdk rootProject.ext.compileSdk
 
     defaultConfig {
-        minSdkVersion 15
+        minSdkVersion rootProject.ext.minSdk
         //noinspection ExpiredTargetSdkVersion
-        targetSdkVersion 15
-        versionCode 1
-        versionName "1.0"
+        targetSdkVersion rootProject.ext.targetSdk
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
         externalNativeBuild {
             ndkBuild {
-                arguments "NDK_APPLICATION_MK=src/main/cpp/Application.mk"
+                arguments "NDK_APPLICATION_MK=src/main/cpp/Application.mk", "NDK_OUT=${projectDir.path.replace('\\', '/')}/build/intermediates/cxx"
                 abiFilters rootProject.ext.SupportedABIs.join(", ")
-                targets  "common"
+//                targets  "common"
             }
         }
 
@@ -45,13 +44,19 @@ android {
 
     buildFeatures {
         prefabPublishing true
-        buildConfig false
+//        buildConfig false
     }
 
     prefab {
         common {
+            libraryName "libcommon"
             headers "src/main/cpp/include"
         }
+    }
+
+    packagingOptions {
+//        exclude("**/libcommon.so")
+        exclude("**/libc++_shared.so")
     }
 
     ndkVersion rootProject.ext.ndkVersion
@@ -61,4 +66,8 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+}
+
+dependencies {
+    implementation libs.appcompat
 }
