@@ -155,7 +155,7 @@ Java_it_smg_libs_aasdk_projection_InputDevice_nativeInit(JNIEnv *env, jclass cla
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_projection_InputDevice_nativeSetup(JNIEnv *env, jobject thiz) {
-    JInputDevice::Pointer jInputDevice = new JInputDevice(env, thiz);
+    auto jInputDevice = new JInputDevice(env, thiz);
     return (jlong)((size_t)jInputDevice);
 }
 
@@ -190,6 +190,7 @@ Java_it_smg_libs_aasdk_projection_InputDevice_sendTouchEvent(JNIEnv *env, jobjec
             break;
         default:
             if(Log::isWarn()) Log_w("unknown action %d", action);
+            return;
     }
 
     touchEvent->set_touch_action(type);

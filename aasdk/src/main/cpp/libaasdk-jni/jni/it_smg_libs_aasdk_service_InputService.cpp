@@ -66,7 +66,7 @@ Java_it_smg_libs_aasdk_service_InputService_nativeInit(JNIEnv *env, jclass clazz
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_service_InputService_nativeSetup(JNIEnv *env, jobject thiz, jobject jmessenger, jobject jinputdevice) {
-    JInputService::Pointer jInputService = new JInputService(env, thiz, jmessenger, jinputdevice);
+    auto jInputService = new JInputService(env, thiz, jmessenger, jinputdevice);
     return (jlong)((size_t)jInputService);
 }
 

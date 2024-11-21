@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.transport;
 
+import androidx.annotation.Keep;
+
 import it.smg.libs.aasdk.usb.AOAPDevice;
 
 public class USBTransport extends Transport {
@@ -34,5 +36,6 @@ public class USBTransport extends Transport {
     private native void nativeStop();
     private native void nativeDelete();
 
+    @Keep
     private long handle_;
 }

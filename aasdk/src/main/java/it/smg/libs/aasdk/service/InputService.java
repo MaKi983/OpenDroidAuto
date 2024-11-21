@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.service;
 
+import androidx.annotation.Keep;
+
 import it.smg.libs.aasdk.messenger.Messenger;
 import it.smg.libs.aasdk.projection.IInputDevice;
 import it.smg.libs.common.Log;
@@ -59,5 +61,6 @@ public class InputService implements IService {
     private native void nativeStop();
     private native void nativeDelete();
 
+    @Keep
     protected long handle_;
 }

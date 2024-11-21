@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.tcp;
 
+import androidx.annotation.Keep;
+
 public class TCPEndpoint {
 
     private static final String TAG = "TCPEndpoint";
@@ -20,5 +22,6 @@ public class TCPEndpoint {
     private native long nativeSetup(String ipAddress);
     private native void nativeDelete();
 
+    @Keep
     private long handle_;
 }

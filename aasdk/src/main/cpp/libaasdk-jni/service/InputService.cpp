@@ -21,10 +21,11 @@ InputService::~InputService(){
 void InputService::start()
 {
     isRunning_ = true;
-    strand_.dispatch([this, self = this->shared_from_this()]() {
+//    strand_.dispatch([this, self = this->shared_from_this()]() {
+//    strand_.post([this, self = this->shared_from_this()]() {
         if(Log::isInfo()) Log_i("start");
         channel_->receive(this->shared_from_this());
-    });
+//    });
 //    serviceActive = true;
 }
 
@@ -76,11 +77,11 @@ void InputService::onChannelOpenRequest(const aasdk::proto::messages::ChannelOpe
     aasdk::proto::messages::ChannelOpenResponse response;
     response.set_status(status);
 
-    auto promise = aasdk::channel::SendPromise::defer(strand_);
+    auto promise = aasdk::channel::SendPromise::defer(strand_, "InputService_channelOpen");
     promise->then([]() {}, std::bind(&InputService::onChannelError, this->shared_from_this(), std::placeholders::_1));
     channel_->sendChannelOpenResponse(response, std::move(promise));
 
-    channel_->receive(this->shared_from_this());
+//    channel_->receive(this->shared_from_this());
 }
 
 void InputService::onBindingRequest(const aasdk::proto::messages::BindingRequest& request)
@@ -112,10 +113,10 @@ void InputService::onBindingRequest(const aasdk::proto::messages::BindingRequest
 
     if(Log::isDebug()) Log_d("binding request, status: %s", aasdk::proto::enums::Status::Enum_Name(status).c_str());
 
-    auto promise = aasdk::channel::SendPromise::defer(strand_);
+    auto promise = aasdk::channel::SendPromise::defer(strand_, "InputService_binding");
     promise->then([]() {}, std::bind(&InputService::onChannelError, this->shared_from_this(), std::placeholders::_1));
     channel_->sendBindingResponse(response, std::move(promise));
-    channel_->receive(this->shared_from_this());
+//    channel_->receive(this->shared_from_this());
 }
 
 void InputService::onChannelError(const aasdk::error::Error& e)
@@ -125,7 +126,7 @@ void InputService::onChannelError(const aasdk::error::Error& e)
         return;
     }
 //    Log_e("channel error: %s", e.what());
-//    serviceEventHandler_->onError(e);
+    serviceEventHandler_->onError(e);
 }
 
 void InputService::onButtonEvent(const projection::ButtonEvent& event)
@@ -154,7 +155,7 @@ void InputService::onButtonEvent(const projection::ButtonEvent& event)
             buttonEvent->set_scan_code(event.code);
         }
 
-        auto promise = aasdk::channel::SendPromise::defer(strand_);
+        auto promise = aasdk::channel::SendPromise::defer(strand_, "InputService_buttonEvent");
         promise->then([]() {}, std::bind(&InputService::onChannelError, this->shared_from_this(), std::placeholders::_1));
         channel_->sendInputEventIndication(inputEventIndication, std::move(promise));
     });
@@ -187,7 +188,7 @@ void InputService::onTouchEvent(aasdk::proto::messages::InputEventIndication inp
 
     strand_.dispatch([this, self = this->shared_from_this(), inputEventIndication = std::move(inputEventIndication)]() {
 
-        auto promise = aasdk::channel::SendPromise::defer(strand_);
+        auto promise = aasdk::channel::SendPromise::defer(strand_, "InputService_touchEvent");
         promise->then([]() {}, std::bind(&InputService::onChannelError, this->shared_from_this(), std::placeholders::_1));
         channel_->sendInputEventIndication(inputEventIndication, std::move(promise));
     });
@@ -210,7 +211,7 @@ void InputService::onMouseEvent(const projection::TouchEvent& event)
         touchLocation->set_y(event.y);
         touchLocation->set_pointer_id(0);
 
-        auto promise = aasdk::channel::SendPromise::defer(strand_);
+        auto promise = aasdk::channel::SendPromise::defer(strand_, "InputService_mouseEvent");
         promise->then([]() {}, std::bind(&InputService::onChannelError, this->shared_from_this(), std::placeholders::_1));
         channel_->sendInputEventIndication(inputEventIndication, std::move(promise));
     });

@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.usb;
 
+import androidx.annotation.Keep;
+
 public class AOAPDevice {
 
     private static final String TAG = "AOAPDevice";
@@ -29,5 +31,6 @@ public class AOAPDevice {
         nativeInit();
     }
 
+    @Keep
     private long handle_;
 }

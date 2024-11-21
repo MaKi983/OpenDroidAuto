@@ -20,9 +20,10 @@ ServiceChannel::ServiceChannel(boost::asio::io_service::strand& strand,
 void ServiceChannel::send(messenger::Message::Pointer message, SendPromise::Pointer promise)
 {
 #if BOOST_VERSION < 106600
-    auto sendPromise = messenger::SendPromise::defer(strand_.get_io_service());
+    auto sendPromise = messenger::SendPromise::defer(strand_.get_io_service(), "ServiceChannel_send");
 #else
-    auto sendPromise = messenger::SendPromise::defer(strand_.context());
+    auto sendPromise = messenger::SendPromise::defer(strand_.context(), "ServiceChannel_send");
+//    auto sendPromise = messenger::SendPromise::defer(strand_, "ServiceChannel_send");
 #endif
 
     io::PromiseLink<>::forward(*sendPromise, std::move(promise));

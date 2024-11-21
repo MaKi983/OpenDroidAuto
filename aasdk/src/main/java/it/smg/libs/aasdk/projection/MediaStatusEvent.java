@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.projection;
 
+import androidx.annotation.Keep;
+
 public abstract class MediaStatusEvent implements IMediaStatusEvent {
 
     public MediaStatusEvent(){
@@ -19,5 +21,6 @@ public abstract class MediaStatusEvent implements IMediaStatusEvent {
     private native long nativeSetup();
     private native void nativeDelete();
 
+    @Keep
     private long handle_;
 }

@@ -1,6 +1,9 @@
 package it.smg.libs.aasdk;
 
 import android.content.Context;
+
+import androidx.annotation.Keep;
+
 import it.smg.libs.common.ILog;
 import it.smg.libs.common.Log;
 
@@ -28,6 +31,7 @@ public class Runtime {
         handle = 0;
     }
 
+    @Keep
     private static void initExceptionHanlder(){
         if (exceptionHandler != null) {
             Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);

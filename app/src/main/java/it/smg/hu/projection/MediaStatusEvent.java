@@ -1,5 +1,7 @@
 package it.smg.hu.projection;
 
+import androidx.annotation.Keep;
+
 import it.smg.hu.config.Settings;
 import it.smg.hu.ui.PlayerActivity;
 import it.smg.hu.ui.notification.NotificationFactory;
@@ -15,8 +17,8 @@ public class MediaStatusEvent extends it.smg.libs.aasdk.projection.MediaStatusEv
     public final static String ALBUM_ART_EXTRA = "albumArt";
     public final static String TRACK_LENGTH_EXTRA = "trackLength";
 
-    private Settings settings_;
-    private NotificationFactory notificationFactory_;
+    private final Settings settings_;
+    private final NotificationFactory notificationFactory_;
 
     public MediaStatusEvent(){
         settings_ = Settings.instance();
@@ -26,6 +28,7 @@ public class MediaStatusEvent extends it.smg.libs.aasdk.projection.MediaStatusEv
     private PlaybackUpdateEvent playbackUpdateEvent_;
     private MetadataUpdateEvent metadataUpdateEvent_;
 
+    @Keep
     @Override
     public void mediaPlaybackUpdate(PlaybackUpdateEvent playbackUpdateEvent) {
         if (!settings_.video.showMediaNotification()) {
@@ -41,6 +44,7 @@ public class MediaStatusEvent extends it.smg.libs.aasdk.projection.MediaStatusEv
         }
     }
 
+    @Keep
     @Override
     public void mediaMetadataUpdate(MetadataUpdateEvent metadataUpdateEvent) {
         if (!settings_.video.showMediaNotification()) {

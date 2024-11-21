@@ -23,6 +23,7 @@ public:
     virtual void enqueueReceive(ChannelId channelId, ReceivePromise::Pointer promise) = 0;
     virtual void enqueueSend(Message::Pointer message, SendPromise::Pointer promise) = 0;
     virtual void stop() = 0;
+    virtual void startReceive() = 0;
 };
 
 }

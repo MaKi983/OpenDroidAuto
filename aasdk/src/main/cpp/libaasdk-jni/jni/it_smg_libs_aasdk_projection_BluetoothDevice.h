@@ -21,6 +21,8 @@ public:
     void pair(const std::string& address, PairingPromise::Pointer promise) override;
     std::string getLocalAddress() override;
     bool isAvailable() override;
+    bool isEnabledAd2p() override;
+    bool isEnabledHfp() override;
 
 private:
     jmethodID isPairedMethodId_;
@@ -28,6 +30,8 @@ private:
     jmethodID pairMethodId_;
     jmethodID getLocalAddressMethodId_;
     jmethodID isAvailableMethodId_;
+    jmethodID isEnabledAd2pMethodId_;
+    jmethodID isEnabledHfpMethodId_;
 };
 
 }

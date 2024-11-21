@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.projection;
 
+import androidx.annotation.Keep;
+
 import java.nio.ByteBuffer;
 
 public interface IMediaStatusEvent {
@@ -9,6 +11,7 @@ public interface IMediaStatusEvent {
 
     void delete();
 
+    @Keep
     enum PlaybackState {
         NONE,
         TRACK_CHANGE,
@@ -16,6 +19,7 @@ public interface IMediaStatusEvent {
         PAUSE
     }
 
+    @Keep
     class PlaybackUpdateEvent {
         public final PlaybackState playbackState;
         public final String mediaSource;
@@ -28,6 +32,7 @@ public interface IMediaStatusEvent {
         }
     }
 
+    @Keep
     class MetadataUpdateEvent {
         public final String trackName;
         public final String artistName; //optional

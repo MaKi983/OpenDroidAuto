@@ -1,14 +1,13 @@
 #include "OMXDecoder.h"
-#include "Log.h"
-
+#include <Log.h>
 #include <media/stagefright/MediaSource.h>
 #include <media/stagefright/OMXCodec.h>
 
 using namespace android;
 
-OMXDecoder::OMXDecoder(std::mutex& mutex):
+OMXDecoder::OMXDecoder():
+        source_(nullptr),
         client_(new OMXClient()),
-        mutex_(mutex),
         frameRate_(0),
         status_(-1){
 }
@@ -21,11 +20,11 @@ void OMXDecoder::setSource(OMXSource *source){
     source_ = source;
 }
 
-int32_t OMXDecoder::frameRate(){
+int32_t OMXDecoder::frameRate() const{
     return frameRate_;
 }
 
-status_t OMXDecoder::getStatus() {
+status_t OMXDecoder::getStatus() const {
     return status_;
 }
 
@@ -38,7 +37,7 @@ status_t OMXDecoder::init(){
     if (status_ == OK) {
         uint32_t flags = OMXCodec::kHardwareCodecsOnly;
         decoder_ = OMXCodec::Create(client_->interface(), source_->getFormat(), false, source_,
-                                    NULL, flags, nativeWindow_);
+                                    nullptr, flags, nativeWindow_);
         status_ = decoder_->start();
 
         if (Log::isInfo()) Log_i("decoder start %d", status_);

@@ -11,16 +11,16 @@ class OMXDecoder {
 public:
     typedef OMXDecoder* Pointer;
 
-    OMXDecoder(std::mutex& mutex);
+    OMXDecoder();
 
     virtual status_t read();
     void setNativeWindow(sp<ANativeWindow> &nativeWindow);
     void setSource(OMXSource *source);
     status_t  init();
-   int32_t frameRate();
+   int32_t frameRate() const;
     void stop();
     ~OMXDecoder();
-    status_t getStatus();
+    status_t getStatus() const;
 protected:
 
 
@@ -30,7 +30,7 @@ private:
     sp<ANativeWindow> nativeWindow_;
     OMXSource::Pointer source_;
 
-    std::mutex& mutex_;
+//    std::mutex& mutex_;
     int32_t frameRate_;
 
     status_t status_;

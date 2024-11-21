@@ -6,6 +6,8 @@ import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 
+import androidx.annotation.Keep;
+
 import it.smg.hu.config.Settings;
 import it.smg.libs.common.Log;
 
@@ -49,11 +51,13 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
         if (Log.isDebug()) Log.d(TAG, "using toucscreen geometry: " + touchScreenGeometry_);
     }
 
+    @Keep
     @Override
     public void start() {
         gainFocus();
     }
 
+    @Keep
     @Override
     public void stop() {
         if (Log.isInfo()) Log.i(TAG, "stop");
@@ -61,6 +65,7 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
         surfaceView_ = null;
     }
 
+    @Keep
     @Override
     public void gainFocus() {
         if (surfaceView_ != null) {
@@ -69,6 +74,7 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
         }
     }
 
+    @Keep
     @Override
     public void releaseFocus() {
         if (surfaceView_ != null) {
@@ -77,16 +83,19 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
         }
     }
 
+    @Keep
     @Override
     public int[] getSupportedButtonCodes() {
         return new int[]{};
     }
 
+    @Keep
     @Override
     public boolean hasTouchscreen() {
         return isTouchScreenAvailable_;
     }
 
+    @Keep
     @Override
     public Rect getTouchscreenGeometry() {
         return touchScreenGeometry_;

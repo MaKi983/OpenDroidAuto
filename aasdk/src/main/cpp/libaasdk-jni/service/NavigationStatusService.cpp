@@ -23,10 +23,11 @@ namespace service
     void NavigationStatusService::start()
     {
         isRunning_ = true;
-        strand_.dispatch([this, self = this->shared_from_this()]() {
+//        strand_.dispatch([this, self = this->shared_from_this()]() {
+//        strand_.post([this, self = this->shared_from_this()]() {
             if(Log::isInfo()) Log_i("start");
             channel_->receive(this->shared_from_this());
-        });
+//        });
     }
 
     void NavigationStatusService::stop()
@@ -45,7 +46,7 @@ namespace service
         navStatusChannel->set_minimum_interval_ms(1000);
         navStatusChannel->set_type(aasdk::proto::enums::NavigationTurnType::IMAGE);
         auto* imageOptions = new aasdk::proto::data::NavigationImageOptions();
-        imageOptions->set_colour_depth_bits(16);
+        imageOptions->set_colour_depth_bits(32);
         imageOptions->set_height(256);
         imageOptions->set_width(256);
         imageOptions->set_dunno(255);
@@ -63,11 +64,11 @@ namespace service
         aasdk::proto::messages::ChannelOpenResponse response;
         response.set_status(status);
 
-        auto promise = aasdk::channel::SendPromise::defer(strand_);
+        auto promise = aasdk::channel::SendPromise::defer(strand_, "NavigationStatusService_channelOpen");
         promise->then([]() {}, std::bind(&NavigationStatusService::onChannelError, this->shared_from_this(), std::placeholders::_1));
         channel_->sendChannelOpenResponse(response, std::move(promise));
 
-        channel_->receive(this->shared_from_this());
+//        channel_->receive(this->shared_from_this());
     }
 
 
@@ -78,14 +79,14 @@ namespace service
             return;
         }
 //        Log_e("channel error: %s", e.what());
-//        serviceEventHandler_->onError(e);
+        serviceEventHandler_->onError(e);
     }
 
     void NavigationStatusService::onStatusUpdate(const aasdk::proto::messages::NavigationStatus& navStatus)
     {
         if(Log::isInfo()) Log_i("Navigation Status Update, Status: %s", (navStatus.has_status() ? aasdk::proto::messages::NavigationStatus_Enum_Name(navStatus.status()).c_str() : "") );
         navigationEvent_->navigationStatusUpdate(navStatus);
-        channel_->receive(this->shared_from_this());
+//        channel_->receive(this->shared_from_this());
     }
 
     void NavigationStatusService::onTurnEvent(const aasdk::proto::messages::NavigationTurnEvent& turnEvent)
@@ -93,7 +94,7 @@ namespace service
         if (Log::isVerbose() && Log::logProtocol()) Log_v("%s", turnEvent.Utf8DebugString().c_str());
         if(Log::isInfo()) Log_i("Turn Event, Street: %s, Maneuver: %s %s", (turnEvent.has_street_name() && !turnEvent.street_name().empty() ? turnEvent.street_name().c_str() : "") , (turnEvent.has_maneuverdirection() ? aasdk::proto::enums::ManeuverDirection_Enum_Name(turnEvent.maneuverdirection()).c_str() : ""), (turnEvent.has_maneuvertype() ? aasdk::proto::enums::ManeuverType_Enum_Name(turnEvent.maneuvertype()).c_str() : ""));
         navigationEvent_->navigationTurnEvent(turnEvent);
-        channel_->receive(this->shared_from_this());
+//        channel_->receive(this->shared_from_this());
     }
 
     void NavigationStatusService::onDistanceEvent(const aasdk::proto::messages::NavigationDistanceEvent& distanceEvent)
@@ -101,7 +102,7 @@ namespace service
         if (Log::isVerbose() && Log::logProtocol()) Log_v("%s", distanceEvent.Utf8DebugString().c_str());
         if(Log::isInfo()) Log_i("Distance Event, Distance (meters): %d, Time To Turn (seconds): %d, Distance: %d" /*(%s)*/, (distanceEvent.has_meters() ? distanceEvent.meters() : -1), (distanceEvent.has_timetostepseconds() ? distanceEvent.timetostepseconds() : -1), (distanceEvent.has_distancetostepmillis() ? distanceEvent.distancetostepmillis()/1000.0 : -1) /*, (distanceEvent.has_distanceunit() ? aasdk::proto::enums::DistanceUnit_Enum_Name(distanceEvent.distanceunit()).c_str() : "")*/ );
         navigationEvent_->navigationDistanceEvent(distanceEvent);
-        channel_->receive(this->shared_from_this());
+//        channel_->receive(this->shared_from_this());
     }
 
 }

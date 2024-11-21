@@ -21,7 +21,7 @@ BluetoothServiceChannel::BluetoothServiceChannel(boost::asio::io_service::strand
 
 void BluetoothServiceChannel::receive(IBluetoothServiceChannelEventHandler::Pointer eventHandler)
 {
-    auto receivePromise = messenger::ReceivePromise::defer(strand_);
+    auto receivePromise = messenger::ReceivePromise::defer(strand_, "BluetoothServiceChannel_messageHandler");
     receivePromise->then(std::bind(&BluetoothServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IBluetoothServiceChannelEventHandler::onChannelError, eventHandler,std::placeholders::_1));
 
@@ -71,7 +71,7 @@ void BluetoothServiceChannel::messageHandler(messenger::Message::Pointer message
         break;
     default:
         Log_e("message not handled: %d", messageId.getId());
-        this->receive(std::move(eventHandler));
+//        this->receive(std::move(eventHandler));
         break;
     }
 }

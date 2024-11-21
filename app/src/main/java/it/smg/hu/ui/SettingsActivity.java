@@ -9,17 +9,18 @@ import androidx.fragment.app.FragmentActivity;
 
 import it.smg.hu.R;
 import it.smg.hu.ui.settings.AdvancedFragment;
-import it.smg.hu.ui.settings.AudioFragment;
 import it.smg.hu.ui.settings.CarFragment;
+import it.smg.hu.ui.settings.ConnectivityFragment;
 import it.smg.hu.ui.settings.VideoFragment;
 
 public class SettingsActivity extends FragmentActivity {
 
-//    private ImageButton keymapImage;
-    private ImageButton carImage;
-    private ImageButton advancedImage;
-    private ImageButton videoImage;
-    private ImageButton audioImage;
+////    private ImageButton keymapImage;
+//    private ImageButton carImage;
+//    private ImageButton advancedImage;
+//    private ImageButton videoImage;
+////    private ImageButton audioImage;
+//    private ImageButton connImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +28,7 @@ public class SettingsActivity extends FragmentActivity {
 
         setContentView(R.layout.activity_settings);
 
-        carImage = findViewById(R.id.car_settings);
+        ImageButton carImage = findViewById(R.id.car_settings);
         carImage.setOnClickListener(
                   listener -> getSupportFragmentManager()
                               .beginTransaction()
@@ -35,7 +36,7 @@ public class SettingsActivity extends FragmentActivity {
                               .commit()
         );
 
-        advancedImage = findViewById(R.id.advanced_settings);
+        ImageButton advancedImage = findViewById(R.id.advanced_settings);
         advancedImage.setOnClickListener(
                     listener -> getSupportFragmentManager()
                                 .beginTransaction()
@@ -43,7 +44,7 @@ public class SettingsActivity extends FragmentActivity {
                                 .commit()
         );
 
-        videoImage = findViewById(R.id.video_settings);
+        ImageButton videoImage = findViewById(R.id.video_settings);
         videoImage.setOnClickListener(
                 listener -> getSupportFragmentManager()
                         .beginTransaction()
@@ -51,11 +52,19 @@ public class SettingsActivity extends FragmentActivity {
                         .commit()
         );
 
-        audioImage = findViewById(R.id.audio_settings);
-        audioImage.setOnClickListener(
+//        audioImage = findViewById(R.id.audio_settings);
+//        audioImage.setOnClickListener(
+//                listener -> getSupportFragmentManager()
+//                        .beginTransaction()
+//                        .replace(R.id.main_content, new AudioFragment())
+//                        .commit()
+//        );
+
+        ImageButton connImage = findViewById(R.id.conn_settings);
+        connImage.setOnClickListener(
                 listener -> getSupportFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.main_content, new AudioFragment())
+                        .replace(R.id.main_content, new ConnectivityFragment())
                         .commit()
         );
 

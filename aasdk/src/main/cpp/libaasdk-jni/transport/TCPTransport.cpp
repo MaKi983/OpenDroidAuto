@@ -1,4 +1,5 @@
 #include <transport/TCPTransport.hpp>
+#include <Log.h>
 
 namespace aasdk
 {
@@ -14,7 +15,8 @@ TCPTransport::TCPTransport(boost::asio::io_service& ioService, tcp::ITCPEndpoint
 
 void TCPTransport::enqueueReceive(common::DataBuffer buffer)
 {
-    auto receivePromise = tcp::ITCPEndpoint::Promise::defer(receiveStrand_);
+    if (Log::isVerbose()) Log_v("enqueueReceive");
+    auto receivePromise = tcp::ITCPEndpoint::Promise::defer(receiveStrand_, "TCPTransport_enqueueReceive");
     receivePromise->then([this, self = this->shared_from_this()](auto bytesTransferred) {
             this->receiveHandler(bytesTransferred);
         },
@@ -27,7 +29,7 @@ void TCPTransport::enqueueReceive(common::DataBuffer buffer)
 
 void TCPTransport::enqueueSend(SendQueue::iterator queueElement)
 {
-    auto sendPromise = tcp::ITCPEndpoint::Promise::defer(sendStrand_);
+    auto sendPromise = tcp::ITCPEndpoint::Promise::defer(sendStrand_, "TCPTransport_enqueueSend");
 
     sendPromise->then([this, self = this->shared_from_this(), queueElement](auto) {
         this->sendHandler(queueElement, error::Error());
@@ -36,6 +38,7 @@ void TCPTransport::enqueueSend(SendQueue::iterator queueElement)
         this->sendHandler(queueElement, e);
     });
 
+	if (Log::isDebug()) Log_d("send to tcpendpoint");
     tcpEndpoint_->send(common::DataConstBuffer(queueElement->first), std::move(sendPromise));
 }
 

@@ -95,7 +95,9 @@ void SSLWrapper::setBIOs(SSL* ssl, const BIOs& bIOs, size_t maxBufferSize)
 {
     SSL_set_bio(ssl, bIOs.first, bIOs.second);
     BIO_set_write_buf_size(bIOs.first, maxBufferSize);
+//    BIO_set_write_buffer_size(bIOs.first, maxBufferSize);
     BIO_set_write_buf_size(bIOs.second, maxBufferSize);
+//    BIO_set_write_buffer_size(bIOs.second, maxBufferSize);
 }
 
 void SSLWrapper::setConnectState(SSL* ssl)

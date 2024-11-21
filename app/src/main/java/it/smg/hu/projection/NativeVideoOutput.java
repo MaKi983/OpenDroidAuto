@@ -6,6 +6,7 @@ import android.os.Build;
 import android.view.Surface;
 import android.view.SurfaceView;
 
+import androidx.annotation.Keep;
 import androidx.annotation.RequiresApi;
 
 import java.io.IOException;
@@ -32,11 +33,13 @@ public class NativeVideoOutput extends VideoOutput implements Runnable {
         return TAG;
     }
 
+    @Keep
     @Override
     public boolean open() {
         return true;
     }
 
+    @Keep
     @Override
     public boolean init() {
         try {
@@ -64,6 +67,7 @@ public class NativeVideoOutput extends VideoOutput implements Runnable {
         }
     }
 
+    @Keep
     @Override
     public void write(long timestamp, ByteBuffer buf) {
         if (configured_ && running_) {
@@ -85,6 +89,7 @@ public class NativeVideoOutput extends VideoOutput implements Runnable {
         }
     }
 
+    @Keep
     @Override
     public void stop() {
         if (Log.isInfo()) Log.i(TAG, "shutdown");
@@ -93,7 +98,7 @@ public class NativeVideoOutput extends VideoOutput implements Runnable {
             configured_ = false;
             try {
                 codecThread_.join();
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException ignored) {}
 
             codec_.flush();
             codec_.stop();

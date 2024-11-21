@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.messenger;
 
+import androidx.annotation.Keep;
+
 import it.smg.libs.aasdk.transport.TCPTransport;
 import it.smg.libs.aasdk.transport.USBTransport;
 
@@ -33,6 +35,7 @@ public class Messenger {
     private native void nativeStop();
     private native void nativeDelete();
 
+    @Keep
     private long handle_;
 
 }

@@ -12,7 +12,8 @@ USBTransport::USBTransport(boost::asio::io_service& ioService, usb::IAOAPDevice:
 
 void USBTransport::enqueueReceive(common::DataBuffer buffer)
 {
-    auto usbEndpointPromise = usb::IUSBEndpoint::Promise::defer(receiveStrand_);
+    if (Log::isVerbose()) Log_v("enqueueReceive");
+    auto usbEndpointPromise = usb::IUSBEndpoint::Promise::defer(receiveStrand_, "USBTransport_receive");
     usbEndpointPromise->then([this, self = this->shared_from_this()](auto bytesTransferred) {
             this->receiveHandler(bytesTransferred);
         },
@@ -20,17 +21,19 @@ void USBTransport::enqueueReceive(common::DataBuffer buffer)
             this->rejectReceivePromises(e);
         });
 
+    if (Log::isVerbose()) Log_v("bulkTransfer inEndpoint");
     aoapDevice_->getInEndpoint().bulkTransfer(buffer, cReceiveTimeoutMs, std::move(usbEndpointPromise));
 }
 
 void USBTransport::enqueueSend(SendQueue::iterator queueElement)
 {
+    if (Log::isVerbose()) Log_v("enqueueSend");
     this->doSend(queueElement, 0);
 }
 
 void USBTransport::doSend(SendQueue::iterator queueElement, common::Data::size_type offset)
 {
-    auto usbEndpointPromise = usb::IUSBEndpoint::Promise::defer(sendStrand_);
+    auto usbEndpointPromise = usb::IUSBEndpoint::Promise::defer(sendStrand_, "USBTransport_send");
     usbEndpointPromise->then([this, self = this->shared_from_this(), queueElement, offset](size_t bytesTransferred) mutable {
             this->sendHandler(queueElement, offset, bytesTransferred);
         },
@@ -43,11 +46,13 @@ void USBTransport::doSend(SendQueue::iterator queueElement, common::Data::size_t
             }
         });
 
+    if (Log::isVerbose()) Log_v("bulkTransfer outEndpoint");
     aoapDevice_->getOutEndpoint().bulkTransfer(common::DataBuffer(queueElement->first, offset), cSendTimeoutMs, std::move(usbEndpointPromise));
 }
 
 void USBTransport::sendHandler(SendQueue::iterator queueElement, common::Data::size_type offset, size_t bytesTransferred) {
     if(offset + bytesTransferred < queueElement->first.size()) {
+        if (Log::isVerbose()) Log_v("missing data to receive -> %d", (queueElement->first.size() - offset-bytesTransferred) );
         this->doSend(queueElement, offset + bytesTransferred);
     } else {
         queueElement->second->resolve();

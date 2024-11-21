@@ -110,7 +110,7 @@ configuration::IConfiguration::Pointer JAndroidAutoEntity::getConfiguration(JNIE
     jmethodID config_playMediaDuringVr = env->GetMethodID(config_cls, "playMediaDuringVr", "()Z");
     jmethodID config_leftHandDrive = env->GetMethodID(config_cls, "leftHandDrive", "()Z");
 
-    configuration::Configuration::Pointer config = new configuration::Configuration();
+    auto config = new configuration::Configuration();
     config->huName(getStringFromJava(env, jconfig, config_huName));
     config->model(getStringFromJava(env, jconfig, config_model));
     config->year(getStringFromJava(env, jconfig, config_year));
@@ -166,7 +166,7 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_service_AndroidAutoEntity_nativeSetup(JNIEnv *env, jobject thiz, jobject jcryptor, jobject jmessenger, jobject jservicelist, jobject jconfig,
                                                              jobject jpinger) {
-    JAndroidAutoEntity::Pointer jAndroidAutoEntity = new JAndroidAutoEntity(env, thiz, jcryptor, jmessenger, jservicelist, jconfig, jpinger);
+    auto jAndroidAutoEntity = new JAndroidAutoEntity(env, thiz, jcryptor, jmessenger, jservicelist, jconfig, jpinger);
     return (jlong)((size_t)jAndroidAutoEntity);
 }
 

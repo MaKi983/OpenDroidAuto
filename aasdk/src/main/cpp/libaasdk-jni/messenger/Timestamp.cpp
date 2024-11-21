@@ -1,7 +1,7 @@
 #include <boost/endian/conversion.hpp>
 #include <messenger/Timestamp.hpp>
 #include <Log.h>
-#include <inttypes.h>
+#include <chrono>
 
 namespace aasdk
 {
@@ -16,9 +16,11 @@ Timestamp::Timestamp(ValueType stamp)
 
 Timestamp::Timestamp(const common::DataConstBuffer& buffer)
 {
-    const ValueType& timestampBig = reinterpret_cast<const ValueType&>(buffer.cdata[0]);
-//    const ValueType& timestampBig = reinterpret_cast<const ValueType&>(buffer.cdata);
-    stamp_ = boost::endian::big_to_native(timestampBig);
+//    const ValueType& timestampBig = reinterpret_cast<const ValueType&>(buffer.cdata[0]); // generates sigbus on release build
+//    auto timestampBig = reinterpret_cast<const ValueType>(&buffer.cdata[0]); // result in wrong timestamp
+//    stamp_ = boost::endian::big_to_native(timestampBig);
+    stamp_ = std::chrono::system_clock::now().time_since_epoch().count();
+    Log_v("stamp_ %lld", stamp_);
 }
 
 common::Data Timestamp::getData() const

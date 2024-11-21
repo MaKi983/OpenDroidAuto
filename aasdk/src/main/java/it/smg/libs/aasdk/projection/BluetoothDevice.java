@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.projection;
 
+import androidx.annotation.Keep;
+
 public abstract class BluetoothDevice implements IBluetoothDevice {
 
     public BluetoothDevice(){
@@ -19,5 +21,6 @@ public abstract class BluetoothDevice implements IBluetoothDevice {
     private native long nativeSetup();
     private native void nativeDelete();
 
+    @Keep
     private long handle_;
 }

@@ -162,7 +162,7 @@ Java_it_smg_libs_aasdk_projection_VideoOutput_nativeInit(JNIEnv *env, jclass cla
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_projection_VideoOutput_nativeSetup(JNIEnv *env, jobject thiz) {
-    JVideoOutput::Pointer jVideoOutput = new JVideoOutput(env, thiz);
+    auto jVideoOutput = new JVideoOutput(env, thiz);
     return (jlong)((size_t)jVideoOutput);
 }
 

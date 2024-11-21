@@ -3,8 +3,9 @@
 #include <android_runtime/AndroidRuntime.h>
 #include <thread>
 #include <sstream>
+#include <utility>
 
-JNIBase::JNIBase(JNIEnv* env, jobject androidApp, std::string name): name_(name) {
+JNIBase::JNIBase(JNIEnv* env, jobject androidApp, std::string name): name_(std::move(name)) {
     androidClass_ = env->NewGlobalRef(androidApp);
     if(Log::isVerbose()) Log_v("(%s) created global ref %p", name_.c_str(), androidClass_);
 }

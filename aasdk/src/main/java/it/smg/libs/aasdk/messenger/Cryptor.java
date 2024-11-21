@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.messenger;
 
+import androidx.annotation.Keep;
+
 public class Cryptor {
     private static final String TAG = "Cryptor";
 
@@ -21,5 +23,6 @@ public class Cryptor {
     private native long nativeSetup();
     private native void nativeDelete();
 
+    @Keep
     private long handle_;
 }

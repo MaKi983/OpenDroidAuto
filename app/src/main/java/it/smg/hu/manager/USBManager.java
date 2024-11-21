@@ -29,7 +29,7 @@ public class USBManager {
     private static final int ACC_REQ_SEND_STRING  = 52;
     private static final int ACC_REQ_START        = 53;
 
-    private static final String MANUFACTER = "Android";
+    private static final String MANUFACTURER = "Android";
     private static final String MODEL = "Android Auto";
     private static final String DESC = "Android Auto";
     private static final String VERSION = "2.0.1";
@@ -42,10 +42,10 @@ public class USBManager {
 
     private static final String TAG = "USBManager";
 
-    private Context ctx_;
-    private UsbManager usbManager_;
+    private final Context ctx_;
+    private final UsbManager usbManager_;
     private LibUsbDevice usbDevice_;
-    private LocalBroadcastManager localBroadcastManager_;
+    private final LocalBroadcastManager localBroadcastManager_;
 
     private static USBManager instance_;
     private LibUsb libUsb_;
@@ -150,8 +150,8 @@ public class USBManager {
                     return false;
                 }
 
-                if (Log.isDebug()) Log.d(TAG, "Send Manufacter " + MANUFACTER);
-                buffer = (MANUFACTER + "\0").getBytes();
+                if (Log.isDebug()) Log.d(TAG, "Send Manufacter " + MANUFACTURER);
+                buffer = (MANUFACTURER + "\0").getBytes();
                 len = usbConnection.controlTransfer(UsbConstants.USB_DIR_OUT | UsbConstants.USB_TYPE_VENDOR, ACC_REQ_SEND_STRING, 0, 0, buffer, buffer.length, 10000);
                 if (len != buffer.length) {
                     Log.e(TAG, "Error sending Manufacter, len= " + len + " expected= " + buffer.length);

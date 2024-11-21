@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import androidx.annotation.Keep;
+
 import it.smg.libs.common.ILog;
 import it.smg.libs.aasdk.configuration.ICarConfiguration;
 
@@ -17,10 +19,11 @@ public class Settings {
     private SharedPreferences SP;
 
     public Car car;
-    public Keymap keymap;
+//    public Keymap keymap;
     public Advanced advanced;
     public Video video;
     public Audio audio;
+    public Connectivity connectivity;
 
     private static Settings settings = null;
 
@@ -36,7 +39,8 @@ public class Settings {
         SP = PreferenceManager.getDefaultSharedPreferences(context);
 
         car = new Car();
-        keymap = new Keymap();
+//        keymap = new Keymap();
+        connectivity = new Connectivity();
         advanced = new Advanced();
         video = new Video();
         audio = new Audio();
@@ -53,7 +57,6 @@ public class Settings {
         public final static String CAR_SETTINGS_PLAY_MEDIA_DURING_VR = "play_media_during_vr";
         public final static String CAR_SETTINGS_HIDE_CLOCK = "hide_clock";
         public final static String CAR_SETTINGS_LEFT_HAND_DRIVE = "left_drive";
-        public final static String CAR_SETTINGS_AA_WIRELESS = "aa_wireless";
 
         public final static String CAR_SETTINGS_HU_NAME_DEFAULT_VALUE = "Honda";
         public final static String CAR_SETTINGS_MODEL_DEFAULT_VALUE = "HRV";
@@ -65,8 +68,8 @@ public class Settings {
         public final static boolean CAR_SETTINGS_PLAY_MEDIA_DURING_VR_DEFAULT_VALUE = true;
         public final static boolean CAR_SETTINGS_HIDE_CLOCK_DEFAULT_VALUE = false;
         public final static boolean CAR_SETTINGS_LEFT_HAND_DRIVE_DEFAULT_VALUE = true;
-        public final static boolean CAR_SETTINGS_AA_WIRELESS_DEFAULT_VALUE = false;
 
+        @Keep
         public String huName() {
             return get(CAR_SETTINGS_HU_NAME, CAR_SETTINGS_HU_NAME_DEFAULT_VALUE);
         }
@@ -75,6 +78,7 @@ public class Settings {
             set(CAR_SETTINGS_HU_NAME, value);
         }
 
+        @Keep
         public String model() {
             return get(CAR_SETTINGS_MODEL, CAR_SETTINGS_MODEL_DEFAULT_VALUE);
         }
@@ -83,6 +87,7 @@ public class Settings {
             set(CAR_SETTINGS_MODEL, value);
         }
 
+        @Keep
         public String year() {
             return get(CAR_SETTINGS_YEAR, CAR_SETTINGS_YEAR_DEFAULT_VALUE);
         }
@@ -91,6 +96,7 @@ public class Settings {
             set(CAR_SETTINGS_YEAR, value);
         }
 
+        @Keep
         public String huMake() {
             return get(CAR_SETTINGS_HU_MAKE, CAR_SETTINGS_HU_MAKE_DEFAULT_VALUE);
         }
@@ -99,6 +105,7 @@ public class Settings {
             set(CAR_SETTINGS_HU_MAKE, value);
         }
 
+        @Keep
         public String huModel() {
             return get(CAR_SETTINGS_HU_MODEL, CAR_SETTINGS_HU_MODEL_DEFAULT_VALUE);
         }
@@ -107,6 +114,7 @@ public class Settings {
             set(CAR_SETTINGS_HU_MODEL, value);
         }
 
+        @Keep
         public String swVersion() {
             return get(CAR_SETTINGS_SW_VERSION, CAR_SETTINGS_SW_VERSION_DEFAULT_VALUE);
         }
@@ -115,6 +123,7 @@ public class Settings {
             set(CAR_SETTINGS_SW_VERSION, value);
         }
 
+        @Keep
         public String swBuild() {
             return get(CAR_SETTINGS_SW_BUILD, CAR_SETTINGS_SW_BUILD_DEFAULT_VALUE);
         }
@@ -123,6 +132,7 @@ public class Settings {
             set(CAR_SETTINGS_SW_BUILD, value);
         }
 
+        @Keep
         public boolean playMediaDuringVr() {
             return get(CAR_SETTINGS_PLAY_MEDIA_DURING_VR, CAR_SETTINGS_PLAY_MEDIA_DURING_VR_DEFAULT_VALUE);
         }
@@ -131,6 +141,7 @@ public class Settings {
             set(CAR_SETTINGS_PLAY_MEDIA_DURING_VR, value);
         }
 
+        @Keep
         public boolean hideClock() {
             return get(CAR_SETTINGS_HIDE_CLOCK, CAR_SETTINGS_HIDE_CLOCK_DEFAULT_VALUE);
         }
@@ -139,6 +150,7 @@ public class Settings {
             set(CAR_SETTINGS_HIDE_CLOCK, value);
         }
 
+        @Keep
         public boolean leftHandDrive() {
             return get(CAR_SETTINGS_LEFT_HAND_DRIVE, CAR_SETTINGS_LEFT_HAND_DRIVE_DEFAULT_VALUE);
         }
@@ -148,18 +160,18 @@ public class Settings {
         }
     }
 
-    public class Keymap extends Base {
-        private Keymap(){}
-
-        public void key(String key, int code){
-            set(key, code);
-        }
-
-        public int key(String key){
-            return get(key, -1);
-        }
-
-    }
+//    public class Keymap extends Base {
+//        private Keymap(){}
+//
+//        public void key(String key, int code){
+//            set(key, code);
+//        }
+//
+//        public int key(String key){
+//            return get(key, -1);
+//        }
+//
+//    }
 
     public class Video extends Base {
         public final static String VIDEO_RESOLUTION = "video_resolution";
@@ -167,7 +179,6 @@ public class Settings {
         public final static String VIDEO_DPI = "video_dpi";
         public final static String VIDEO_MARGIN = "video_margin";
         public final static String VIDEO_NIGHT_MODE = "video_night_mode";
-        public final static String VIDEO_USE_EXPERIMENTAL_OMXVIDEOCODEC = "video_experimental_omxvideocodec";
         public final static String VIDEO_SHOW_MEDIA_NOTIFICATION = "video_show_media_notification";
         public final static String VIDEO_SHOW_NAVIGATION_NOTIFICATION = "video_show_navigation_notification";
         public final static String VIDEO_SHOW_APP_BADGE = "video_show_app_badge";
@@ -177,7 +188,6 @@ public class Settings {
         public final static int VIDEO_DPI_DEFAULT_VALUE = 140;
         public final static String VIDEO_MARGIN_DEFAULT_VALUE = "0,0";
         public final static String VIDEO_NIGHT_MODE_DEFAULT_VALUE = ""; //IDayNightSensor.TIME_GPS;
-        public final static boolean VIDEO_USE_EXPERIMENTAL_OMXVIDEOCODEC_DEFAULT_VALUE = false;
         public final static boolean VIDEO_SHOW_MEDIA_NOTIFICATION_DEFAULT_VALUE = true;
         public final static boolean VIDEO_SHOW_NAVIGATION_NOTIFICATION_DEFAULT_VALUE = true;
         public final static boolean VIDEO_SHOW_APP_BADGE_DEFAULT_VALUE = true;
@@ -186,14 +196,14 @@ public class Settings {
             return SP.getInt(VIDEO_RESOLUTION,VIDEO_RESOLUTION_DEFAULT_VALUE);
         }
         public void resolution(int res){
-            SP.edit().putInt(VIDEO_RESOLUTION, res);
+            SP.edit().putInt(VIDEO_RESOLUTION, res).apply();
         }
 
         public int fps(){
             return SP.getInt(VIDEO_FPS,VIDEO_FPS_DEFAULT_VALUE);
         }
         public void fps(int fps){
-            SP.edit().putInt(VIDEO_FPS, fps);
+            SP.edit().putInt(VIDEO_FPS, fps).apply();
         }
 
         public int dpi() {
@@ -239,9 +249,31 @@ public class Settings {
         }
     }
 
-    public class Audio extends Base {
-        public final static String AUDIO_CODEC = "audio_codec";
+    public class Connectivity extends Base {
+        public final static String CONN_ENABLED_AD2P = "audio_enable_ad2p";
+        public final static String CONN_ENABLED_HFP = "audio_enable_hfp";
 
+        public final static boolean CONN_ENABLED_AD2P_DEFAULT_VALUE = false;
+        public final static boolean CONN_ENABLED_HFP_DEFAULT_VALUE = true;
+
+
+        public boolean enableA2dp(){
+            return SP.getBoolean(CONN_ENABLED_AD2P, CONN_ENABLED_AD2P_DEFAULT_VALUE);
+        }
+        public void enableA2dp(boolean value){
+            SP.edit().putBoolean(CONN_ENABLED_AD2P, value).apply();
+        }
+
+        public boolean enableHfp(){
+            return SP.getBoolean(CONN_ENABLED_HFP, CONN_ENABLED_HFP_DEFAULT_VALUE);
+        }
+        public void enableHfp(boolean value){
+            SP.edit().putBoolean(CONN_ENABLED_HFP, value).apply();
+        }
+
+
+    }
+    public class Audio extends Base {
         public final static String MEDIA_ENABLE_CHANNEL = "media_enable_channel";
         public final static String MEDIA_SAMPLERATE = "media_samplerate";
         public final static String MEDIA_SAMPLESIZE = "media_samplesize";
@@ -256,13 +288,10 @@ public class Settings {
         public final static String SYSTEM_SAMPLESIZE = "system_samplesize";
         public final static String SYSTEM_CHANNELCOUNT = "system_channelcount";
 
-        public final static String MIC_ENABLE_CHANNEL = "mic_enable_channel";
         public final static String MIC_SAMPLERATE = "mic_samplerate";
         public final static String MIC_SAMPLESIZE = "mic_samplesize";
         public final static String MIC_CHANNELCOUNT = "mic_channelcount";
         public final static String MIC_SOURCE = "mic_source";
-
-        public final static int AUDIO_CODEC_DEFAULT_VALUE = 1; //Android AudioTrack
 
         public final static boolean MEDIA_ENABLE_CHANNEL_DEFAULT_VALUE = true;
         public final static int MEDIA_SAMPLERATE_DEFAULT_VALUE = 48000;
@@ -278,25 +307,17 @@ public class Settings {
         public final static int SYSTEM_SAMPLESIZE_DEFAULT_VALUE = 16; // 16bit
         public final static int SYSTEM_CHANNELCOUNT_DEFAULT_VALUE = 1; //AudioFormat.CHANNEL_OUT_MONO;
 
-        public final static boolean MIC_ENABLE_CHANNEL_DEFAULT_VALUE = true;
         public final static int MIC_SAMPLERATE_DEFAULT_VALUE = 16000;
         public final static int MIC_SAMPLESIZE_DEFAULT_VALUE = 16; // 16bit
         public final static int MIC_CHANNELCOUNT_DEFAULT_VALUE = 1; //AudioFormat.CHANNEL_OUT_MONO;
         public final static int MIC_SOURCE_DEFAULT_VALUE = 1; // 1 = MIC
-
-        public int audioCodec(){
-            return get(AUDIO_CODEC,AUDIO_CODEC_DEFAULT_VALUE);
-        }
-        public void audioCodec(int value){
-            set(AUDIO_CODEC, value);
-        }
 
         public boolean musicChannelEnabled(){
             return SP.getBoolean(MEDIA_ENABLE_CHANNEL, MEDIA_ENABLE_CHANNEL_DEFAULT_VALUE);
         }
 
         public void musicChannelEnabled(boolean value){
-            SP.edit().putBoolean(MEDIA_ENABLE_CHANNEL, value);
+            SP.edit().putBoolean(MEDIA_ENABLE_CHANNEL, value).apply();
         }
 
         public int mediaSampleRate(){
@@ -304,7 +325,7 @@ public class Settings {
         }
 
         public void mediaSampleRate(int value){
-            SP.edit().putInt(MEDIA_SAMPLERATE, value);
+            SP.edit().putInt(MEDIA_SAMPLERATE, value).apply();
         }
 
         public int mediaSampleSize(){
@@ -312,7 +333,7 @@ public class Settings {
         }
 
         public void mediaSampleSize(int value){
-            SP.edit().putInt(MEDIA_SAMPLESIZE, value);
+            SP.edit().putInt(MEDIA_SAMPLESIZE, value).apply();
         }
 
         public int mediaChannelCount(){
@@ -320,7 +341,7 @@ public class Settings {
         }
 
         public void mediaChannelCount(int value){
-            SP.edit().putInt(MEDIA_CHANNELCOUNT, value);
+            SP.edit().putInt(MEDIA_CHANNELCOUNT, value).apply();
         }
 
         public boolean speechAudioChannelEnabled(){
@@ -328,7 +349,7 @@ public class Settings {
         }
 
         public void speechAudioChannelEnabled(boolean value){
-            SP.edit().putBoolean(SPEECH_ENABLE_CHANNEL, value);
+            SP.edit().putBoolean(SPEECH_ENABLE_CHANNEL, value).apply();
         }
 
         public int speechSampleRate(){
@@ -336,7 +357,7 @@ public class Settings {
         }
 
         public void speechSampleRate(int value){
-            SP.edit().putInt(SPEECH_SAMPLERATE, value);
+            SP.edit().putInt(SPEECH_SAMPLERATE, value).apply();
         }
 
         public int speechSampleSize(){
@@ -344,7 +365,7 @@ public class Settings {
         }
 
         public void speechSampleSize(int value){
-            SP.edit().putInt(SPEECH_SAMPLESIZE, value);
+            SP.edit().putInt(SPEECH_SAMPLESIZE, value).apply();
         }
 
         public int speechChannelCount(){
@@ -352,7 +373,7 @@ public class Settings {
         }
 
         public void speechChannelCount(int value){
-            SP.edit().putInt(SPEECH_CHANNELCOUNT, value);
+            SP.edit().putInt(SPEECH_CHANNELCOUNT, value).apply();
         }
 
         public int systemSampleRate(){
@@ -360,7 +381,7 @@ public class Settings {
         }
 
         public void systemSampleRate(int value){
-            SP.edit().putInt(SYSTEM_SAMPLERATE, value);
+            SP.edit().putInt(SYSTEM_SAMPLERATE, value).apply();
         }
 
         public int systemSampleSize(){
@@ -368,7 +389,7 @@ public class Settings {
         }
 
         public void systemSampleSize(int value){
-            SP.edit().putInt(SYSTEM_SAMPLESIZE, value);
+            SP.edit().putInt(SYSTEM_SAMPLESIZE, value).apply();
         }
 
         public int systemChannelCount(){
@@ -376,7 +397,7 @@ public class Settings {
         }
 
         public void systemChannelCount(int value){
-            SP.edit().putInt(SYSTEM_CHANNELCOUNT, value);
+            SP.edit().putInt(SYSTEM_CHANNELCOUNT, value).apply();
         }
 
         public int micSampleRate(){
@@ -384,7 +405,7 @@ public class Settings {
         }
 
         public void micSampleRate(int value){
-            SP.edit().putInt(MIC_SAMPLERATE, value);
+            SP.edit().putInt(MIC_SAMPLERATE, value).apply();
         }
 
         public int micSampleSize(){
@@ -392,7 +413,7 @@ public class Settings {
         }
 
         public void micSampleSize(int value){
-            SP.edit().putInt(MIC_SAMPLESIZE, value);
+            SP.edit().putInt(MIC_SAMPLESIZE, value).apply();
         }
 
         public int micChannelCount(){
@@ -400,7 +421,7 @@ public class Settings {
         }
 
         public void micChannelCount(int value){
-            SP.edit().putInt(MIC_CHANNELCOUNT, value);
+            SP.edit().putInt(MIC_CHANNELCOUNT, value).apply();
         }
 
         public int micSource(){
@@ -408,7 +429,7 @@ public class Settings {
         }
 
         public void micSource(int value){
-            SP.edit().putInt(MIC_SOURCE, value);
+            SP.edit().putInt(MIC_SOURCE, value).apply();
         }
     }
 

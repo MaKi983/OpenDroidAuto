@@ -64,7 +64,7 @@ Java_it_smg_libs_aasdk_service_AudioInputService_nativeInit(JNIEnv *env, jclass 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_service_AudioInputService_nativeSetup(JNIEnv *env, jobject thiz, jobject jmessenger, jobject jaudioinput) {
-    JAudioInputService::Pointer jAudioInputService = new JAudioInputService(env, thiz, jmessenger, jaudioinput);
+    auto jAudioInputService = new JAudioInputService(env, thiz, jmessenger, jaudioinput);
     return (jlong)((size_t)jAudioInputService);
 }
 

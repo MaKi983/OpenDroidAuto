@@ -42,7 +42,7 @@ Java_it_smg_libs_aasdk_messenger_Cryptor_nativeInit(JNIEnv *env, jclass clazz) {
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_messenger_Cryptor_nativeSetup(JNIEnv *env, jobject thiz) {
-    JCryptor::Pointer jCryptor = new JCryptor(env, thiz);
+    auto jCryptor = new JCryptor(env, thiz);
     return (jlong)((size_t)jCryptor);
 }
 

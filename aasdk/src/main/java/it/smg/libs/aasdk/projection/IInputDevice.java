@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.projection;
 
+import androidx.annotation.Keep;
+
 public interface IInputDevice {
     void start();
     void stop();
@@ -10,6 +12,7 @@ public interface IInputDevice {
     void releaseFocus();
     void delete();
 
+    @Keep
     class Rect {
         public final int width;
         public final int height;
@@ -20,6 +23,7 @@ public interface IInputDevice {
         }
     }
 
+    @Keep
     class TouchAction {
         public final int x;
         public final int y;

@@ -68,7 +68,7 @@ public class ODALog implements ILog {
                 v_(TAG, "external storage writable");
                 String extStoragePath = settings_.advanced.logDir();
 
-                if (!"".equals(extStoragePath.trim())) {
+                if (!extStoragePath.trim().isEmpty()) {
                     File extStorageDir = new File(extStoragePath);
                     if (extStorageDir.exists()){
                         File logDirectory = new File(extStorageDir, "logs");
@@ -76,7 +76,10 @@ public class ODALog implements ILog {
 
                         // create log folder
                         if (!logDirectory.exists()) {
-                            logDirectory.mkdir();
+                            if (!logDirectory.mkdir()){
+                                w_(TAG, "log directory " + logDirectory + " doesn't created");
+                                return;
+                            }
                         }
 
                         // clear the previous logcat and then write the new one to the file

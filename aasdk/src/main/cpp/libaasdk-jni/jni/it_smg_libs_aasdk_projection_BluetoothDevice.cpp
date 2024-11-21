@@ -23,6 +23,8 @@ void JBluetoothDevice::initJavaMethods() {
     pairMethodId_ = env->GetMethodID(cls, "pair", "(Ljava/lang/String;)Z");
     getLocalAddressMethodId_ = env->GetMethodID(cls, "getLocalAddress", "()Ljava/lang/String;" );
     isAvailableMethodId_ = env->GetMethodID(cls, "isAvailable", "()Z");
+    isEnabledAd2pMethodId_ = env->GetMethodID(cls, "isEnabledAd2p", "()Z");
+    isEnabledHfpMethodId_ = env->GetMethodID(cls, "isEnabledHfp", "()Z");
 
     env->DeleteLocalRef(cls);
 }
@@ -53,7 +55,7 @@ void JBluetoothDevice::pair(const std::string& address, PairingPromise::Pointer 
 
 std::string JBluetoothDevice::getLocalAddress() {
     JNIEnv* env = getJniEnv();
-    jstring jaddr = (jstring) env->CallObjectMethod(androidClass_, getLocalAddressMethodId_);
+    auto jaddr = (jstring) env->CallObjectMethod(androidClass_, getLocalAddressMethodId_);
 
     const char *strReturn = env->GetStringUTFChars(jaddr, 0);
     std::string address(strReturn);
@@ -66,6 +68,18 @@ std::string JBluetoothDevice::getLocalAddress() {
 bool JBluetoothDevice::isAvailable() {
     JNIEnv* env = getJniEnv();
     jboolean ret = env->CallBooleanMethod(androidClass_, isAvailableMethodId_);
+    return ret == JNI_TRUE;
+}
+
+bool JBluetoothDevice::isEnabledAd2p() {
+    JNIEnv* env = getJniEnv();
+    jboolean ret = env->CallBooleanMethod(androidClass_, isEnabledAd2pMethodId_);
+    return ret == JNI_TRUE;
+}
+
+bool JBluetoothDevice::isEnabledHfp() {
+    JNIEnv* env = getJniEnv();
+    jboolean ret = env->CallBooleanMethod(androidClass_, isEnabledHfpMethodId_);
     return ret == JNI_TRUE;
 }
 

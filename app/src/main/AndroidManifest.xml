@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="it.smg.hu"
     android:versionCode="4"
-    android:versionName="OpenDroidAuto V2.2.1">
+    android:versionName="OpenDroidAuto V2.3.0">
 
     <uses-feature android:name="android.hardware.usb.host" android:required="false"/>
     <uses-feature android:name="android.hardware.usb.accessory" android:required="true" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
 
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" android:required="false"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" android:required="false"/>

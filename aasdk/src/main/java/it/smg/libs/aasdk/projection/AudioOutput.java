@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.projection;
 
+import androidx.annotation.Keep;
+
 public abstract class AudioOutput implements IAudioOutput {
 
     protected int sampleRate_;
@@ -10,16 +12,19 @@ public abstract class AudioOutput implements IAudioOutput {
         handle_ = nativeSetup();
     }
 
+    @Keep
     @Override
     public int getSampleSize(){
         return sampleSize_;
     }
 
+    @Keep
     @Override
     public int getChannelCount(){
         return channelConfig_;
     }
 
+    @Keep
     @Override
     public int getSampleRate(){
         return sampleRate_;
@@ -40,5 +45,6 @@ public abstract class AudioOutput implements IAudioOutput {
     private native void nativeDelete();
     private static native void nativeInit();
 
+    @Keep
     private long handle_;
 }

@@ -15,7 +15,7 @@ namespace control
 {
 
 ControlServiceChannel::ControlServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger)
-    : ServiceChannel(strand, messenger, messenger::ChannelId::CONTROL)
+    : ServiceChannel(strand, std::move(messenger), messenger::ChannelId::CONTROL)
 {
 
 }
@@ -136,11 +136,12 @@ void ControlServiceChannel::sendPingRequest(const proto::messages::PingRequest& 
 
 void ControlServiceChannel::receive(IControlServiceChannelEventHandler::Pointer eventHandler)
 {
-    auto receivePromise  = messenger::ReceivePromise::defer(strand_);
+    auto receivePromise  = messenger::ReceivePromise::defer(strand_, "ControlServiceChannel_messageHandler");
     receivePromise->then(std::bind(&ControlServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IControlServiceChannelEventHandler::onChannelError, eventHandler, std::placeholders::_1));
 
     messenger_->enqueueReceive(channelId_, std::move(receivePromise));
+    messenger_->startReceive();
 }
 
 void ControlServiceChannel::messageHandler(messenger::Message::Pointer message, IControlServiceChannelEventHandler::Pointer eventHandler)
@@ -183,7 +184,7 @@ void ControlServiceChannel::messageHandler(messenger::Message::Pointer message, 
         break;
     default:
         Log_e("message not handled %d", messageId.getId());
-        this->receive(std::move(eventHandler));
+//        this->receive(std::move(eventHandler));
         break;
     }
 }

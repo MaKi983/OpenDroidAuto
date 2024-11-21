@@ -1,35 +1,15 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-//        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.1'
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
 }
 
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-
-project.ext {
+ext {
+    apkName = 'HondaAppCenter_A1'
+    compileSdk = 34
+    minSdk = 15
+    targetSdk = 15
+    versionCode = 1
     SupportedABIs = ['armeabi-v7a']
     ndkVersion = '17.2.4988734'
-    ndkDir = properties.getProperty('sdk.dir') + "\\ndk\\" + ndkVersion
-}
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-//        jcenter()
-        maven { url "https://oss.jfrog.org/libs-snapshot" }
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

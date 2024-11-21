@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.projection;
 
+import androidx.annotation.Keep;
+
 public abstract class NavigationStatusEvent implements INavigationStatusEvent {
 
     public NavigationStatusEvent(){
@@ -19,5 +21,6 @@ public abstract class NavigationStatusEvent implements INavigationStatusEvent {
     private native long nativeSetup();
     private native void nativeDelete();
 
+    @Keep
     private long handle_;
 }

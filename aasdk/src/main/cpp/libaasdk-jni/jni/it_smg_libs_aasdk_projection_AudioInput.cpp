@@ -144,7 +144,7 @@ Java_it_smg_libs_aasdk_projection_AudioInput_nativeInit(JNIEnv *env, jclass claz
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_projection_AudioInput_nativeSetup(JNIEnv *env, jobject thiz) {
-    JAudioInput::Pointer jAudioInput = new JAudioInput(env, thiz);
+    auto jAudioInput = new JAudioInput(env, thiz);
     return (jlong)((size_t)jAudioInput);
 }
 

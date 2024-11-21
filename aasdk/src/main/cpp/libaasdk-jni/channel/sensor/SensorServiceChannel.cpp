@@ -21,7 +21,7 @@ SensorServiceChannel::SensorServiceChannel(boost::asio::io_service::strand& stra
 
 void SensorServiceChannel::receive(ISensorServiceChannelEventHandler::Pointer eventHandler)
 {
-    auto receivePromise = messenger::ReceivePromise::defer(strand_);
+    auto receivePromise = messenger::ReceivePromise::defer(strand_, "SensorServiceChannel_messageHandler");
     receivePromise->then(std::bind(&SensorServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&ISensorServiceChannelEventHandler::onChannelError, eventHandler, std::placeholders::_1));
 
@@ -60,7 +60,7 @@ void SensorServiceChannel::messageHandler(messenger::Message::Pointer message, I
         break;
     default:
         Log_e("message not handled: %d", messageId.getId());
-        this->receive(std::move(eventHandler));
+//        this->receive(std::move(eventHandler));
         break;
     }
 }

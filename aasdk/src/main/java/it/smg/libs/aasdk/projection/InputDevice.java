@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.projection;
 
+import androidx.annotation.Keep;
+
 public abstract class InputDevice implements IInputDevice {
     private static final String TAG = "InputDevice";
 
@@ -21,5 +23,6 @@ public abstract class InputDevice implements IInputDevice {
     private native void nativeDelete();
     private static native void nativeInit();
 
+    @Keep
     private long handle_;
 }

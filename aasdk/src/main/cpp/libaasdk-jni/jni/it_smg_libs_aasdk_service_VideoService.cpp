@@ -33,7 +33,7 @@ JVideoService::JVideoService(JNIEnv *env, jobject jvideoservice, jobject jmessen
 
     JMessenger::Pointer jMessenger = JMessenger::getJMessenger(env, jmessenger);
     projection::JVideoOutput::Pointer jVideoOutput = projection::JVideoOutput::getJVideoOutput(env, jvideooutput);
-    JVideoEventHandler::Pointer jVideoEventHandler = new JVideoEventHandler(env, jvideoeventhandler);
+    auto jVideoEventHandler = new JVideoEventHandler(env, jvideoeventhandler);
     videoService_ = std::make_shared<VideoService>(JRuntime::ioService(), jMessenger->getMessenger(), jVideoOutput, jVideoEventHandler, this);
 }
 

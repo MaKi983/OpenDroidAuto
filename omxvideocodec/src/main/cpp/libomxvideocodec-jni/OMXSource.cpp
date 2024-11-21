@@ -4,7 +4,7 @@
 #include <media/stagefright/MediaDefs.h>
 #include <media/stagefright/openmax/OMX_IVCommon.h>
 #include <media/stagefright/openmax/OMX_Video.h>
-#include <inttypes.h>
+#include <cinttypes>
 #include <sstream>
 
 #define BUFFERS_SIZE 5
@@ -14,11 +14,11 @@ using namespace android;
 // https://www.programmersought.com/article/87712558400/
 // https://vec.io/posts/use-android-hardware-decoder-with-omxcodec-in-ndk
 // https://stackoverflow.com/questions/9832503/android-include-native-stagefright-features-in-my-own-project
-OMXSource::OMXSource(int width, int height, int fps, std::mutex& mutex):
-        format_(NULL), quitFlag_(false), pbuffers_(20)
+OMXSource::OMXSource(int width, int height, int fps):
+        format_(nullptr), quitFlag_(false), pbuffers_(20)
 {
 
-    size_t bufferSize = (width * height * 3) / 2;
+    int32_t bufferSize = (width * height * 3) / 2;
     if (Log::isVerbose()) Log_v("BufferSize: %d", bufferSize);
 
     format_ = new MetaData();
@@ -35,7 +35,7 @@ OMXSource::OMXSource(int width, int height, int fps, std::mutex& mutex):
     format_->setInt32(kKeyColorFormat, OMX_COLOR_FormatYUV420Planar);
 
     for (int i = 0; i < BUFFERS_SIZE; i++) {
-        MediaBuffer* b = new MediaBuffer(cChunkSize);
+        auto* b = new MediaBuffer(cChunkSize);
 //        MediaBuffer* b = new MediaBuffer(bufferSize);
         if (Log::isVerbose()) Log_v("creating mediabuffer %p", b);
         group_.add_buffer(b);

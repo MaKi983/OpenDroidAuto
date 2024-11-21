@@ -19,7 +19,7 @@ AudioServiceChannel::AudioServiceChannel(boost::asio::io_service::strand& strand
 
 void AudioServiceChannel::receive(IAudioServiceChannelEventHandler::Pointer eventHandler)
 {
-    auto receivePromise = messenger::ReceivePromise::defer(strand_);
+    auto receivePromise = messenger::ReceivePromise::defer(strand_, channelIdToString(channelId_) + "_Channel_messageHandler");
     receivePromise->then(std::bind(&AudioServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IAudioServiceChannelEventHandler::onChannelError, eventHandler, std::placeholders::_1));
 
@@ -92,7 +92,7 @@ void AudioServiceChannel::messageHandler(messenger::Message::Pointer message, IA
         break;
     default:
         Log_e("message not handled %d", messageId.getId());
-        this->receive(std::move(eventHandler));
+//        this->receive(std::move(eventHandler));
         break;
     }
 }
@@ -159,7 +159,7 @@ void AudioServiceChannel::handleAVMediaWithTimestampIndication(const common::Dat
     {
         if (Log::isVerbose() && Log::logProtocol()) Log_v("handleAVMediaWithTimestampIndication %s", common::dump(payload).c_str());
         messenger::Timestamp timestamp(payload);
-        if (Log::isVerbose()) Log_v("handleAVMediaWithTimestampIndication timestamp %lld", timestamp);
+        if (Log::isVerbose()) Log_v("handleAVMediaWithTimestampIndication timestamp %lld", timestamp.getValue());
         eventHandler->onAVMediaWithTimestampIndication(timestamp.getValue(), common::DataConstBuffer(payload.cdata, payload.size, sizeof(messenger::Timestamp::ValueType)));
     }
     else

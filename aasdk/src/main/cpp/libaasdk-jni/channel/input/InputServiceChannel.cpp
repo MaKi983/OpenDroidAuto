@@ -20,7 +20,7 @@ InputServiceChannel::InputServiceChannel(boost::asio::io_service::strand& strand
 
 void InputServiceChannel::receive(IInputServiceChannelEventHandler::Pointer eventHandler)
 {
-    auto receivePromise = messenger::ReceivePromise::defer(strand_);
+    auto receivePromise = messenger::ReceivePromise::defer(strand_, "InputServiceChannel_messageHandler");
     receivePromise->then(std::bind(&InputServiceChannel::messageHandler, this->shared_from_this(), std::placeholders::_1, eventHandler),
                         std::bind(&IInputServiceChannelEventHandler::onChannelError, eventHandler, std::placeholders::_1));
 
@@ -82,7 +82,7 @@ void InputServiceChannel::messageHandler(messenger::Message::Pointer message, II
         break;
     default:
         Log_e("message not handled %d", messageId.getId());
-        this->receive(std::move(eventHandler));
+//        this->receive(std::move(eventHandler));
         break;
     }
 }

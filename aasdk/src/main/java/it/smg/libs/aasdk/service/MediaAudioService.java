@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.service;
 
+import androidx.annotation.Keep;
+
 import it.smg.libs.aasdk.projection.IAudioOutput;
 import it.smg.libs.aasdk.messenger.Messenger;
 
@@ -28,5 +30,6 @@ public class MediaAudioService extends AudioService {
     protected native void nativeStop();
     protected native void nativeDelete();
 
+    @Keep
     protected long handle_;
 }

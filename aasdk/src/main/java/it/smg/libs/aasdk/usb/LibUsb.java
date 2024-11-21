@@ -3,6 +3,8 @@ package it.smg.libs.aasdk.usb;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 
+import androidx.annotation.Keep;
+
 public class LibUsb {
 
     static {
@@ -50,6 +52,7 @@ public class LibUsb {
 
     private static LibUsb instance_;
 
+    @Keep
     private long handle_;
 
     private static native void nativeInit();

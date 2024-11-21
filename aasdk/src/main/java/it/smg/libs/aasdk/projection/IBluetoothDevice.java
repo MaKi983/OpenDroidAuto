@@ -7,4 +7,7 @@ public interface IBluetoothDevice {
     String getLocalAddress();
     boolean isAvailable();
     void delete();
+
+    boolean isEnabledAd2p();
+    boolean isEnabledHfp();
 }
