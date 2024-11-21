@@ -18,6 +18,12 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 //        signingConfig signingConfigs.debug
+
+        android.applicationVariants.all { variant ->
+            variant.outputs.all {
+                outputFileName = rootProject.apkName + ".apk"
+            }
+        }
     }
 
     splits {
@@ -36,12 +42,6 @@ android {
 //                doNotStrip "**.so"
 //                pickFirst '**/libc++_shared.so'
 //                pickFirst '**/libcommon.so'
-            }
-
-            android.applicationVariants.all { variant ->
-                variant.outputs.all {
-                    outputFileName = rootProject.apkName + "_${variant.name}.apk"
-                }
             }
         }
 
