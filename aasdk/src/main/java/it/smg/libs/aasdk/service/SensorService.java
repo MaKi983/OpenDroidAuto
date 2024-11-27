@@ -42,6 +42,7 @@ public class SensorService implements IService, ISensor.Listener {
         sendNightMode(isNight);
     }
 
+    @Keep
     @Override
     public void onError(String error, int code){
         Log.v(TAG, "onError " + error + "/" + code);

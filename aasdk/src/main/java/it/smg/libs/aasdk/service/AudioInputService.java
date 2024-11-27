@@ -36,6 +36,7 @@ public class AudioInputService implements IService {
         audioInput_ = null;
     }
 
+    @Keep
     @Override
     public void onError(String error, int code){
         Log.v(TAG, "onError " + error + "/" + code);

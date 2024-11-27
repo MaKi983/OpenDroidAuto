@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.service;
 
+import androidx.annotation.Keep;
+
 import it.smg.libs.aasdk.messenger.Messenger;
 import it.smg.libs.aasdk.projection.IAudioOutput;
 import it.smg.libs.common.Log;
@@ -31,6 +33,7 @@ public abstract class AudioService implements IService {
         audioOutput_ = null;
     }
 
+    @Keep
     @Override
     public void onError(String error, int code){
         Log.v(tag(), "onError " + error + "/" + code);

@@ -13,7 +13,7 @@ android {
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion rootProject.ext.targetSdk
         versionCode rootProject.ext.versionCode
-        versionName "1.0"
+        versionName rootProject.ext.versionName
         multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
