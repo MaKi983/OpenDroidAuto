@@ -3,6 +3,7 @@ package it.smg.libs.common;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public interface ILog {
 
@@ -45,7 +46,7 @@ public interface ILog {
     }
 
     default void v_(String tag, byte[] buffer){
-        Log.v(tag, "" + buffer);
+        Log.v(tag, Arrays.toString(buffer));
     }
 
     default void v_(String tag, ByteBuffer buffer){

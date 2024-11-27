@@ -36,6 +36,7 @@ public class BluetoothService implements IService {
         bluetoothDevice_ = null;
     }
 
+    @Keep
     @Override
     public void onError(String error, int code){
         Log.v(TAG, "onError " + error + "/" + code);
