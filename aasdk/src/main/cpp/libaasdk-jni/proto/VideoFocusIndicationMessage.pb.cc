@@ -102,10 +102,13 @@ class VideoFocusIndication::_Internal {
   }
 };
 
-VideoFocusIndication::VideoFocusIndication(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+VideoFocusIndication::VideoFocusIndication(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.VideoFocusIndication)
 }
 VideoFocusIndication::VideoFocusIndication(const VideoFocusIndication& from)
@@ -118,7 +121,7 @@ VideoFocusIndication::VideoFocusIndication(const VideoFocusIndication& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.VideoFocusIndication)
 }
 
-void VideoFocusIndication::SharedCtor() {
+inline void VideoFocusIndication::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&focus_mode_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&unrequested_) -
@@ -127,11 +130,12 @@ void VideoFocusIndication::SharedCtor() {
 
 VideoFocusIndication::~VideoFocusIndication() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.VideoFocusIndication)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void VideoFocusIndication::SharedDtor() {
+inline void VideoFocusIndication::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -285,25 +289,22 @@ size_t VideoFocusIndication::ByteSizeLong() const {
   return total_size;
 }
 
-void VideoFocusIndication::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.VideoFocusIndication)
-  GOOGLE_DCHECK_NE(&from, this);
-  const VideoFocusIndication* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<VideoFocusIndication>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.VideoFocusIndication)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.VideoFocusIndication)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData VideoFocusIndication::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    VideoFocusIndication::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*VideoFocusIndication::GetClassData() const { return &_class_data_; }
+
+void VideoFocusIndication::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<VideoFocusIndication *>(to)->MergeFrom(
+      static_cast<const VideoFocusIndication &>(from));
 }
+
 
 void VideoFocusIndication::MergeFrom(const VideoFocusIndication& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.VideoFocusIndication)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -317,13 +318,7 @@ void VideoFocusIndication::MergeFrom(const VideoFocusIndication& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void VideoFocusIndication::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.VideoFocusIndication)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void VideoFocusIndication::CopyFrom(const VideoFocusIndication& from) {

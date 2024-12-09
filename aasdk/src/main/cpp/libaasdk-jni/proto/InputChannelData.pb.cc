@@ -120,11 +120,14 @@ void InputChannel::clear_touch_pad_config() {
   if (touch_pad_config_ != nullptr) touch_pad_config_->Clear();
   _has_bits_[0] &= ~0x00000002u;
 }
-InputChannel::InputChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+InputChannel::InputChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
   supported_keycodes_(arena) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.InputChannel)
 }
 InputChannel::InputChannel(const InputChannel& from)
@@ -145,7 +148,7 @@ InputChannel::InputChannel(const InputChannel& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.InputChannel)
 }
 
-void InputChannel::SharedCtor() {
+inline void InputChannel::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&touch_screen_config_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&touch_pad_config_) -
@@ -154,11 +157,12 @@ void InputChannel::SharedCtor() {
 
 InputChannel::~InputChannel() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.InputChannel)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void InputChannel::SharedDtor() {
+inline void InputChannel::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   if (this != internal_default_instance()) delete touch_screen_config_;
   if (this != internal_default_instance()) delete touch_pad_config_;
@@ -336,25 +340,22 @@ size_t InputChannel::ByteSizeLong() const {
   return total_size;
 }
 
-void InputChannel::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.InputChannel)
-  GOOGLE_DCHECK_NE(&from, this);
-  const InputChannel* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<InputChannel>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.InputChannel)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.InputChannel)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData InputChannel::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    InputChannel::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*InputChannel::GetClassData() const { return &_class_data_; }
+
+void InputChannel::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<InputChannel *>(to)->MergeFrom(
+      static_cast<const InputChannel &>(from));
 }
+
 
 void InputChannel::MergeFrom(const InputChannel& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.InputChannel)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -368,13 +369,7 @@ void InputChannel::MergeFrom(const InputChannel& from) {
       _internal_mutable_touch_pad_config()->::aasdk::proto::data::TouchConfig::MergeFrom(from._internal_touch_pad_config());
     }
   }
-}
-
-void InputChannel::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.InputChannel)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void InputChannel::CopyFrom(const InputChannel& from) {

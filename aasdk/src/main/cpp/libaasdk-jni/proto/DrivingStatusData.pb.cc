@@ -89,10 +89,13 @@ class DrivingStatus::_Internal {
   }
 };
 
-DrivingStatus::DrivingStatus(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+DrivingStatus::DrivingStatus(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.DrivingStatus)
 }
 DrivingStatus::DrivingStatus(const DrivingStatus& from)
@@ -103,17 +106,18 @@ DrivingStatus::DrivingStatus(const DrivingStatus& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.DrivingStatus)
 }
 
-void DrivingStatus::SharedCtor() {
+inline void DrivingStatus::SharedCtor() {
 status_ = 0;
 }
 
 DrivingStatus::~DrivingStatus() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.DrivingStatus)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void DrivingStatus::SharedDtor() {
+inline void DrivingStatus::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -221,38 +225,29 @@ size_t DrivingStatus::ByteSizeLong() const {
   return total_size;
 }
 
-void DrivingStatus::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.DrivingStatus)
-  GOOGLE_DCHECK_NE(&from, this);
-  const DrivingStatus* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<DrivingStatus>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.DrivingStatus)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.DrivingStatus)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData DrivingStatus::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    DrivingStatus::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*DrivingStatus::GetClassData() const { return &_class_data_; }
+
+void DrivingStatus::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<DrivingStatus *>(to)->MergeFrom(
+      static_cast<const DrivingStatus &>(from));
 }
+
 
 void DrivingStatus::MergeFrom(const DrivingStatus& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.DrivingStatus)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_has_status()) {
     _internal_set_status(from._internal_status());
   }
-}
-
-void DrivingStatus::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.DrivingStatus)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void DrivingStatus::CopyFrom(const DrivingStatus& from) {

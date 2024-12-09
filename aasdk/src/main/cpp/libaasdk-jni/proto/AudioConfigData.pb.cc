@@ -102,10 +102,13 @@ class AudioConfig::_Internal {
   }
 };
 
-AudioConfig::AudioConfig(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+AudioConfig::AudioConfig(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.AudioConfig)
 }
 AudioConfig::AudioConfig(const AudioConfig& from)
@@ -118,7 +121,7 @@ AudioConfig::AudioConfig(const AudioConfig& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.AudioConfig)
 }
 
-void AudioConfig::SharedCtor() {
+inline void AudioConfig::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&sample_rate_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&channel_count_) -
@@ -127,11 +130,12 @@ void AudioConfig::SharedCtor() {
 
 AudioConfig::~AudioConfig() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.AudioConfig)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void AudioConfig::SharedDtor() {
+inline void AudioConfig::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -312,25 +316,22 @@ size_t AudioConfig::ByteSizeLong() const {
   return total_size;
 }
 
-void AudioConfig::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.AudioConfig)
-  GOOGLE_DCHECK_NE(&from, this);
-  const AudioConfig* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<AudioConfig>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.AudioConfig)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.AudioConfig)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData AudioConfig::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    AudioConfig::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*AudioConfig::GetClassData() const { return &_class_data_; }
+
+void AudioConfig::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<AudioConfig *>(to)->MergeFrom(
+      static_cast<const AudioConfig &>(from));
 }
+
 
 void AudioConfig::MergeFrom(const AudioConfig& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.AudioConfig)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -347,13 +348,7 @@ void AudioConfig::MergeFrom(const AudioConfig& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void AudioConfig::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.AudioConfig)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void AudioConfig::CopyFrom(const AudioConfig& from) {

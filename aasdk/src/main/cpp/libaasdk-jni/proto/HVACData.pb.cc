@@ -96,10 +96,13 @@ class HVAC::_Internal {
   }
 };
 
-HVAC::HVAC(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+HVAC::HVAC(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.HVAC)
 }
 HVAC::HVAC(const HVAC& from)
@@ -112,7 +115,7 @@ HVAC::HVAC(const HVAC& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.HVAC)
 }
 
-void HVAC::SharedCtor() {
+inline void HVAC::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&target_temperature_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&current_temperature_) -
@@ -121,11 +124,12 @@ void HVAC::SharedCtor() {
 
 HVAC::~HVAC() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.HVAC)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void HVAC::SharedDtor() {
+inline void HVAC::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -280,25 +284,22 @@ size_t HVAC::ByteSizeLong() const {
   return total_size;
 }
 
-void HVAC::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.HVAC)
-  GOOGLE_DCHECK_NE(&from, this);
-  const HVAC* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<HVAC>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.HVAC)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.HVAC)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData HVAC::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    HVAC::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*HVAC::GetClassData() const { return &_class_data_; }
+
+void HVAC::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<HVAC *>(to)->MergeFrom(
+      static_cast<const HVAC &>(from));
 }
+
 
 void HVAC::MergeFrom(const HVAC& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.HVAC)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -312,13 +313,7 @@ void HVAC::MergeFrom(const HVAC& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void HVAC::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.HVAC)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void HVAC::CopyFrom(const HVAC& from) {

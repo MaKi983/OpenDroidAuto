@@ -89,11 +89,14 @@ class SensorChannel::_Internal {
 void SensorChannel::clear_sensors() {
   sensors_.Clear();
 }
-SensorChannel::SensorChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+SensorChannel::SensorChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
   sensors_(arena) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.SensorChannel)
 }
 SensorChannel::SensorChannel(const SensorChannel& from)
@@ -103,16 +106,17 @@ SensorChannel::SensorChannel(const SensorChannel& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.SensorChannel)
 }
 
-void SensorChannel::SharedCtor() {
+inline void SensorChannel::SharedCtor() {
 }
 
 SensorChannel::~SensorChannel() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.SensorChannel)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void SensorChannel::SharedDtor() {
+inline void SensorChannel::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -223,36 +227,27 @@ size_t SensorChannel::ByteSizeLong() const {
   return total_size;
 }
 
-void SensorChannel::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.SensorChannel)
-  GOOGLE_DCHECK_NE(&from, this);
-  const SensorChannel* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<SensorChannel>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.SensorChannel)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.SensorChannel)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData SensorChannel::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    SensorChannel::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SensorChannel::GetClassData() const { return &_class_data_; }
+
+void SensorChannel::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<SensorChannel *>(to)->MergeFrom(
+      static_cast<const SensorChannel &>(from));
 }
+
 
 void SensorChannel::MergeFrom(const SensorChannel& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.SensorChannel)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   sensors_.MergeFrom(from.sensors_);
-}
-
-void SensorChannel::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.SensorChannel)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void SensorChannel::CopyFrom(const SensorChannel& from) {

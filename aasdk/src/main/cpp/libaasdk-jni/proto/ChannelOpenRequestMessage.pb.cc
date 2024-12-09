@@ -96,10 +96,13 @@ class ChannelOpenRequest::_Internal {
   }
 };
 
-ChannelOpenRequest::ChannelOpenRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+ChannelOpenRequest::ChannelOpenRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.ChannelOpenRequest)
 }
 ChannelOpenRequest::ChannelOpenRequest(const ChannelOpenRequest& from)
@@ -112,7 +115,7 @@ ChannelOpenRequest::ChannelOpenRequest(const ChannelOpenRequest& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.ChannelOpenRequest)
 }
 
-void ChannelOpenRequest::SharedCtor() {
+inline void ChannelOpenRequest::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&priority_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&channel_id_) -
@@ -121,11 +124,12 @@ void ChannelOpenRequest::SharedCtor() {
 
 ChannelOpenRequest::~ChannelOpenRequest() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.ChannelOpenRequest)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void ChannelOpenRequest::SharedDtor() {
+inline void ChannelOpenRequest::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -280,25 +284,22 @@ size_t ChannelOpenRequest::ByteSizeLong() const {
   return total_size;
 }
 
-void ChannelOpenRequest::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.ChannelOpenRequest)
-  GOOGLE_DCHECK_NE(&from, this);
-  const ChannelOpenRequest* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<ChannelOpenRequest>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.ChannelOpenRequest)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.ChannelOpenRequest)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData ChannelOpenRequest::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ChannelOpenRequest::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ChannelOpenRequest::GetClassData() const { return &_class_data_; }
+
+void ChannelOpenRequest::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<ChannelOpenRequest *>(to)->MergeFrom(
+      static_cast<const ChannelOpenRequest &>(from));
 }
+
 
 void ChannelOpenRequest::MergeFrom(const ChannelOpenRequest& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.ChannelOpenRequest)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -312,13 +313,7 @@ void ChannelOpenRequest::MergeFrom(const ChannelOpenRequest& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void ChannelOpenRequest::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.ChannelOpenRequest)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void ChannelOpenRequest::CopyFrom(const ChannelOpenRequest& from) {

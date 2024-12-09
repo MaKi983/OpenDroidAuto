@@ -120,10 +120,13 @@ void AVInputChannel::clear_audio_config() {
   if (audio_config_ != nullptr) audio_config_->Clear();
   _has_bits_[0] &= ~0x00000001u;
 }
-AVInputChannel::AVInputChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+AVInputChannel::AVInputChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.AVInputChannel)
 }
 AVInputChannel::AVInputChannel(const AVInputChannel& from)
@@ -141,7 +144,7 @@ AVInputChannel::AVInputChannel(const AVInputChannel& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.AVInputChannel)
 }
 
-void AVInputChannel::SharedCtor() {
+inline void AVInputChannel::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&audio_config_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&available_while_in_call_) -
@@ -150,11 +153,12 @@ void AVInputChannel::SharedCtor() {
 
 AVInputChannel::~AVInputChannel() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.AVInputChannel)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void AVInputChannel::SharedDtor() {
+inline void AVInputChannel::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   if (this != internal_default_instance()) delete audio_config_;
 }
@@ -338,25 +342,22 @@ size_t AVInputChannel::ByteSizeLong() const {
   return total_size;
 }
 
-void AVInputChannel::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.AVInputChannel)
-  GOOGLE_DCHECK_NE(&from, this);
-  const AVInputChannel* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<AVInputChannel>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.AVInputChannel)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.AVInputChannel)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData AVInputChannel::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    AVInputChannel::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*AVInputChannel::GetClassData() const { return &_class_data_; }
+
+void AVInputChannel::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<AVInputChannel *>(to)->MergeFrom(
+      static_cast<const AVInputChannel &>(from));
 }
+
 
 void AVInputChannel::MergeFrom(const AVInputChannel& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.AVInputChannel)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -373,13 +374,7 @@ void AVInputChannel::MergeFrom(const AVInputChannel& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void AVInputChannel::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.AVInputChannel)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void AVInputChannel::CopyFrom(const AVInputChannel& from) {

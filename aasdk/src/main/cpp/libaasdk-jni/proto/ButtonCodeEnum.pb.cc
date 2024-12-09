@@ -159,10 +159,13 @@ class ButtonCode::_Internal {
  public:
 };
 
-ButtonCode::ButtonCode(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+ButtonCode::ButtonCode(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.enums.ButtonCode)
 }
 ButtonCode::ButtonCode(const ButtonCode& from)
@@ -171,16 +174,17 @@ ButtonCode::ButtonCode(const ButtonCode& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.enums.ButtonCode)
 }
 
-void ButtonCode::SharedCtor() {
+inline void ButtonCode::SharedCtor() {
 }
 
 ButtonCode::~ButtonCode() {
   // @@protoc_insertion_point(destructor:aasdk.proto.enums.ButtonCode)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void ButtonCode::SharedDtor() {
+inline void ButtonCode::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -258,35 +262,26 @@ size_t ButtonCode::ByteSizeLong() const {
   return total_size;
 }
 
-void ButtonCode::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.enums.ButtonCode)
-  GOOGLE_DCHECK_NE(&from, this);
-  const ButtonCode* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<ButtonCode>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.enums.ButtonCode)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.enums.ButtonCode)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData ButtonCode::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ButtonCode::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ButtonCode::GetClassData() const { return &_class_data_; }
+
+void ButtonCode::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<ButtonCode *>(to)->MergeFrom(
+      static_cast<const ButtonCode &>(from));
 }
+
 
 void ButtonCode::MergeFrom(const ButtonCode& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.enums.ButtonCode)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-}
-
-void ButtonCode::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.enums.ButtonCode)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void ButtonCode::CopyFrom(const ButtonCode& from) {

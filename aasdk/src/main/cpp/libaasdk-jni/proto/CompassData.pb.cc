@@ -102,10 +102,13 @@ class Compass::_Internal {
   }
 };
 
-Compass::Compass(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+Compass::Compass(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.Compass)
 }
 Compass::Compass(const Compass& from)
@@ -118,7 +121,7 @@ Compass::Compass(const Compass& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.Compass)
 }
 
-void Compass::SharedCtor() {
+inline void Compass::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&bearing_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&roll_) -
@@ -127,11 +130,12 @@ void Compass::SharedCtor() {
 
 Compass::~Compass() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.Compass)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void Compass::SharedDtor() {
+inline void Compass::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -312,25 +316,22 @@ size_t Compass::ByteSizeLong() const {
   return total_size;
 }
 
-void Compass::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.Compass)
-  GOOGLE_DCHECK_NE(&from, this);
-  const Compass* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Compass>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.Compass)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.Compass)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Compass::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    Compass::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Compass::GetClassData() const { return &_class_data_; }
+
+void Compass::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<Compass *>(to)->MergeFrom(
+      static_cast<const Compass &>(from));
 }
+
 
 void Compass::MergeFrom(const Compass& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.Compass)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -347,13 +348,7 @@ void Compass::MergeFrom(const Compass& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void Compass::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.Compass)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Compass::CopyFrom(const Compass& from) {

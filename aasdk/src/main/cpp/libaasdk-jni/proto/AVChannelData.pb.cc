@@ -129,12 +129,15 @@ void AVChannel::clear_audio_configs() {
 void AVChannel::clear_video_configs() {
   video_configs_.Clear();
 }
-AVChannel::AVChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+AVChannel::AVChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
   audio_configs_(arena),
   video_configs_(arena) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.AVChannel)
 }
 AVChannel::AVChannel(const AVChannel& from)
@@ -149,7 +152,7 @@ AVChannel::AVChannel(const AVChannel& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.AVChannel)
 }
 
-void AVChannel::SharedCtor() {
+inline void AVChannel::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&stream_type_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&available_while_in_call_) -
@@ -158,11 +161,12 @@ void AVChannel::SharedCtor() {
 
 AVChannel::~AVChannel() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.AVChannel)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void AVChannel::SharedDtor() {
+inline void AVChannel::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -382,25 +386,22 @@ size_t AVChannel::ByteSizeLong() const {
   return total_size;
 }
 
-void AVChannel::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.AVChannel)
-  GOOGLE_DCHECK_NE(&from, this);
-  const AVChannel* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<AVChannel>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.AVChannel)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.AVChannel)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData AVChannel::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    AVChannel::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*AVChannel::GetClassData() const { return &_class_data_; }
+
+void AVChannel::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<AVChannel *>(to)->MergeFrom(
+      static_cast<const AVChannel &>(from));
 }
+
 
 void AVChannel::MergeFrom(const AVChannel& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.AVChannel)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -419,13 +420,7 @@ void AVChannel::MergeFrom(const AVChannel& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void AVChannel::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.AVChannel)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void AVChannel::CopyFrom(const AVChannel& from) {

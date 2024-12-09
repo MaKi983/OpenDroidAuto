@@ -9,12 +9,12 @@ Build:
   	${NDK_ROOT}/ndk-build
   - create folder build-protobuf/include 
   - go inside build-protobuf/protobuf/jni/src filder and copy all headers file build-protobuf/include with following commands
-  	find . -name '*.h' | cpio -pdm ../../include
-	find . -name '*.inc' | cpio -pdm ../../include
+  	find . -name '*.h' | cpio -pdm ../../include    --   xcopy .\*.h /s ..\..\include
+	find . -name '*.inc' | cpio -pdm ../../include   --  xcopy .\*.inc /s ..\..\include
   - copy build-protobuf/include  directory to project libs/protobuf
   - copy libprotobuf.a from build-protobuf/obj/local/<<arch>> to libs/protobuf/lib folder accordingly to architecture
   
-  
+ 
 To compile proto file:
   - download protoc with the same version of protobuf from https://github.com/protocolbuffers/protobuf/releases and unzip it in a protoc folder
   - go inside *.proto file folder and run following command:
@@ -26,8 +26,8 @@ To compile proto file:
 
 protoc --cpp_out=./build/ *.proto
 
-- andare in build e modificare i riferimenti agli header nei file cc
-sed -i.bak -e 's/\#include \"\(.*\)\.pb\.h\"/\#include <aasdk_proto\/\1\.pb\.h>/' *.pb.cc
+// - andare in build e modificare i riferimenti agli header nei file cc
+// sed -i.bak -e 's/\#include \"\(.*\)\.pb\.h\"/\#include <aasdk_proto\/\1\.pb\.h>/' *.pb.cc
 
 - copiare gli header/cc file
 

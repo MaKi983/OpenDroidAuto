@@ -227,8 +227,9 @@ void SensorEventIndication::clear_accel() {
 void SensorEventIndication::clear_gyro() {
   gyro_.Clear();
 }
-SensorEventIndication::SensorEventIndication(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+SensorEventIndication::SensorEventIndication(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
   gps_location_(arena),
   compass_(arena),
   speed_(arena),
@@ -249,7 +250,9 @@ SensorEventIndication::SensorEventIndication(::PROTOBUF_NAMESPACE_ID::Arena* are
   accel_(arena),
   gyro_(arena) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.SensorEventIndication)
 }
 SensorEventIndication::SensorEventIndication(const SensorEventIndication& from)
@@ -277,16 +280,17 @@ SensorEventIndication::SensorEventIndication(const SensorEventIndication& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.SensorEventIndication)
 }
 
-void SensorEventIndication::SharedCtor() {
+inline void SensorEventIndication::SharedCtor() {
 }
 
 SensorEventIndication::~SensorEventIndication() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.SensorEventIndication)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void SensorEventIndication::SharedDtor() {
+inline void SensorEventIndication::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -901,25 +905,22 @@ size_t SensorEventIndication::ByteSizeLong() const {
   return total_size;
 }
 
-void SensorEventIndication::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.SensorEventIndication)
-  GOOGLE_DCHECK_NE(&from, this);
-  const SensorEventIndication* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<SensorEventIndication>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.SensorEventIndication)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.SensorEventIndication)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData SensorEventIndication::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    SensorEventIndication::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SensorEventIndication::GetClassData() const { return &_class_data_; }
+
+void SensorEventIndication::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<SensorEventIndication *>(to)->MergeFrom(
+      static_cast<const SensorEventIndication &>(from));
 }
+
 
 void SensorEventIndication::MergeFrom(const SensorEventIndication& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.SensorEventIndication)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -942,13 +943,7 @@ void SensorEventIndication::MergeFrom(const SensorEventIndication& from) {
   light_.MergeFrom(from.light_);
   accel_.MergeFrom(from.accel_);
   gyro_.MergeFrom(from.gyro_);
-}
-
-void SensorEventIndication::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.SensorEventIndication)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void SensorEventIndication::CopyFrom(const SensorEventIndication& from) {

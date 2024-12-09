@@ -107,10 +107,13 @@ class InputChannelMessage::_Internal {
  public:
 };
 
-InputChannelMessage::InputChannelMessage(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+InputChannelMessage::InputChannelMessage(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.ids.InputChannelMessage)
 }
 InputChannelMessage::InputChannelMessage(const InputChannelMessage& from)
@@ -119,16 +122,17 @@ InputChannelMessage::InputChannelMessage(const InputChannelMessage& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.ids.InputChannelMessage)
 }
 
-void InputChannelMessage::SharedCtor() {
+inline void InputChannelMessage::SharedCtor() {
 }
 
 InputChannelMessage::~InputChannelMessage() {
   // @@protoc_insertion_point(destructor:aasdk.proto.ids.InputChannelMessage)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void InputChannelMessage::SharedDtor() {
+inline void InputChannelMessage::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -206,35 +210,26 @@ size_t InputChannelMessage::ByteSizeLong() const {
   return total_size;
 }
 
-void InputChannelMessage::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.ids.InputChannelMessage)
-  GOOGLE_DCHECK_NE(&from, this);
-  const InputChannelMessage* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<InputChannelMessage>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.ids.InputChannelMessage)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.ids.InputChannelMessage)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData InputChannelMessage::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    InputChannelMessage::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*InputChannelMessage::GetClassData() const { return &_class_data_; }
+
+void InputChannelMessage::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<InputChannelMessage *>(to)->MergeFrom(
+      static_cast<const InputChannelMessage &>(from));
 }
+
 
 void InputChannelMessage::MergeFrom(const InputChannelMessage& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.ids.InputChannelMessage)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-}
-
-void InputChannelMessage::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.ids.InputChannelMessage)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void InputChannelMessage::CopyFrom(const InputChannelMessage& from) {
