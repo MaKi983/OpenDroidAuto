@@ -34,13 +34,13 @@ class AOAPDevice: public IAOAPDevice, boost::noncopyable
 public:
     typedef AOAPDevice* Pointer;
 
-    AOAPDevice(LibUsbDevice::Pointer libUsbDevice, boost::asio::io_service& ioService, const libusb_interface_descriptor* interfaceDescriptor);
+    AOAPDevice(LibUsbDevice::Pointer libUsbDevice, aasdk::io::ioService& ioService, const libusb_interface_descriptor* interfaceDescriptor);
     ~AOAPDevice() override;
 
     IUSBEndpoint& getInEndpoint() override;
     IUSBEndpoint& getOutEndpoint() override;
 
-    static IAOAPDevice::Pointer create(LibUsbDevice::Pointer usbDevice, boost::asio::io_service& ioService);
+    static IAOAPDevice::Pointer create(LibUsbDevice::Pointer usbDevice, aasdk::io::ioService& ioService);
 
 private:
     LibUsbDevice::Pointer libUsbDevice_;

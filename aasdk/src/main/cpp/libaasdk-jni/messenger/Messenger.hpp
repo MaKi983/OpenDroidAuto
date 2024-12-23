@@ -5,6 +5,7 @@
 #include <messenger/IMessenger.hpp>
 #include <messenger/IMessageInStream.hpp>
 #include <messenger/IMessageOutStream.hpp>
+#include <boost/optional.hpp>
 
 namespace aasdk
 {
@@ -14,7 +15,7 @@ namespace messenger
 class Messenger: public IMessenger, public std::enable_shared_from_this<Messenger>, boost::noncopyable
 {
 public:
-    Messenger(boost::asio::io_service& ioService, IMessageInStream::Pointer messageInStream, IMessageOutStream::Pointer messageOutStream);
+    Messenger(aasdk::io::ioService& ioService, IMessageInStream::Pointer messageInStream, IMessageOutStream::Pointer messageOutStream);
     ~Messenger();
     void enqueueReceive(ChannelId channelId, ReceivePromise::Pointer promise) override;
     void enqueueSend(Message::Pointer message, SendPromise::Pointer promise) override;
@@ -33,8 +34,9 @@ private:
     void rejectReceivePromiseQueue(const error::Error& e);
     void rejectSendPromiseQueue(const error::Error& e);
 
-    boost::asio::io_service::strand receiveStrand_;
-    boost::asio::io_service::strand sendStrand_;
+    io::strand receiveStrand_;
+    io::strand sendStrand_;
+//    boost::asio::io_service::strand sendStrand_;
     IMessageInStream::Pointer messageInStream_;
     IMessageOutStream::Pointer messageOutStream_;
 

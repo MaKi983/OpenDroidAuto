@@ -21,6 +21,7 @@ SSLWrapper::SSLWrapper()
 
 SSLWrapper::~SSLWrapper()
 {
+    if (Log::isVerbose()) Log_v("destructor");
     FIPS_mode_set(0);
 //    ENGINE_cleanup();  // Compiled without engine
     CONF_modules_unload(1);

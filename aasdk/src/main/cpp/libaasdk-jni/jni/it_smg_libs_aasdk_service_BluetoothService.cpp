@@ -24,7 +24,8 @@ void JBluetoothService::initJavaMethods() {
 }
 
 JBluetoothService::~JBluetoothService() {
-//    bluetoothService_.reset();
+    if (Log::isVerbose()) Log_v("destructor");
+    bluetoothService_.reset();
 }
 
 JBluetoothService::Pointer JBluetoothService::getJBluetoothService(JNIEnv *env, jobject jbluetoothservice) {

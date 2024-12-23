@@ -14,10 +14,13 @@ namespace channel
 namespace navigation
 {
 
-    NavigationStatusServiceChannel::NavigationStatusServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger)
+    NavigationStatusServiceChannel::NavigationStatusServiceChannel(io::strand& strand, messenger::IMessenger::Pointer messenger)
             : ServiceChannel(strand, std::move(messenger), messenger::ChannelId::NAVIGATION)
     {
+    }
 
+    NavigationStatusServiceChannel::~NavigationStatusServiceChannel() {
+        if (Log::isVerbose()) Log_v("destructor");
     }
 
     void NavigationStatusServiceChannel::receive(INavigationStatusServiceChannelEventHandler::Pointer eventHandler)

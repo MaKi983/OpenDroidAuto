@@ -24,7 +24,8 @@ void JNavigationStatusService::initJavaMethods() {
 }
 
 JNavigationStatusService::~JNavigationStatusService() {
-//    navigationStatusService_.reset();
+    if (Log::isVerbose()) Log_v("destructor");
+    navigationStatusService_.reset();
 }
 
 JNavigationStatusService::Pointer JNavigationStatusService::getJNavigationStatusService(JNIEnv *env, jobject jnavigationstatusservice) {

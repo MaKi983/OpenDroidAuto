@@ -14,7 +14,7 @@ namespace transport
 class Transport: public ITransport, public std::enable_shared_from_this<Transport>, boost::noncopyable
 {
 public:
-    Transport(boost::asio::io_service& ioService);
+    Transport(aasdk::io::ioService& ioService);
 
     void receive(size_t size, ReceivePromise::Pointer promise) override;
     void send(common::Data data, SendPromise::Pointer promise) override;
@@ -33,11 +33,13 @@ protected:
 
     DataSink receivedDataSink_;
 
-    boost::asio::io_service::strand receiveStrand_;
+    io::strand receiveStrand_;
     ReceiveQueue receiveQueue_;
 
-    boost::asio::io_service::strand sendStrand_;
+    io::strand sendStrand_;
     SendQueue sendQueue_;
+
+    bool isStopping_;
 };
 
 }

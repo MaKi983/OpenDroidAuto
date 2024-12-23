@@ -20,6 +20,9 @@
 
 #include <boost/asio.hpp>
 #include <mutex>
+#include "boost/optional.hpp"
+#include "Log.h"
+#include "IOService.h"
 
 
 namespace aasdk
@@ -32,7 +35,7 @@ class IOContextWrapper
 public:
     IOContextWrapper();
     explicit IOContextWrapper(boost::asio::io_service& ioService);
-    explicit IOContextWrapper(boost::asio::io_service::strand& strand);
+    explicit IOContextWrapper(io::strand& strand);
 
     template<typename CompletionHandlerType>
     void post(CompletionHandlerType&& handler)
@@ -40,10 +43,18 @@ public:
         if(ioService_ != nullptr)
         {
             ioService_->post(std::move(handler));
+            return;
+        } else {
+
         }
-        else if(strand_ != nullptr)
+
+        if(strand_ != nullptr && strand_->is_initialized())
         {
-            strand_->post(std::move(handler));
+            strand_->get().post(std::move(handler));
+            return;
+        } else {
+            Log_v("post strand null? %s, initialized? %s", (strand_ == nullptr ? "true" : "false"), (strand_ !=
+                    nullptr && strand_->is_initialized() ? "true" : "false"));
         }
     }
 
@@ -53,10 +64,16 @@ public:
         if(ioService_ != nullptr)
         {
             ioService_->dispatch(std::move(handler));
+            return;
         }
-        else if(strand_ != nullptr)
+
+        if(strand_ != nullptr && strand_->is_initialized())
         {
-            strand_->dispatch(std::move(handler));
+            strand_->get().dispatch(std::move(handler));
+            return;
+        } else {
+            Log_v("dispatch strand null? %s, initialized? %s", (strand_ == nullptr ? "true" : "false"), (strand_ !=
+                                                                                                nullptr && strand_->is_initialized() ? "true" : "false"));
         }
     }
 
@@ -65,7 +82,7 @@ public:
 
 private:
     boost::asio::io_service* ioService_;
-    boost::asio::io_service::strand* strand_;
+    io::strand* strand_;
 };
 
 }

@@ -35,6 +35,7 @@ public class StartNotification extends Notification {
             Intent i = new Intent(ctx_.getApplicationContext(), PlayerActivity.class);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             i.putExtra("mode", ODAService.MODE_USB);
+//            i.putExtra("mode", ODAService.MODE_WIFI);
             ctx_.getApplicationContext().startActivity(i);
             dialog_.dismiss();
         });

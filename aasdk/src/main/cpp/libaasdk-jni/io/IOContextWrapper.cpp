@@ -19,7 +19,7 @@ IOContextWrapper::IOContextWrapper(boost::asio::io_service& ioService)
 
 }
 
-IOContextWrapper::IOContextWrapper(boost::asio::io_service::strand& strand)
+IOContextWrapper::IOContextWrapper(boost::optional<boost::asio::io_service::strand>& strand)
     : ioService_(nullptr)
     , strand_(&strand)
 {

@@ -6,13 +6,19 @@ namespace aasdk
 namespace transport
 {
 
-Transport::Transport(boost::asio::io_service& ioService)
+Transport::Transport(aasdk::io::ioService& ioService)
     : receiveStrand_(ioService)
     , sendStrand_(ioService)
+    , isStopping_(false)
 {}
 
 void Transport::receive(size_t size, ReceivePromise::Pointer promise) {
-    receiveStrand_.dispatch([this, self = this->shared_from_this(), size, promise = std::move(promise)]() mutable {
+    if (isStopping_) {
+        if (Log::isInfo()) Log_i("Transport stopped");
+        return;
+    }
+
+    receiveStrand_->dispatch([this, self = this->shared_from_this(), size, promise = std::move(promise)]() mutable {
         if (Log::isVerbose()) Log_v("receive");
         receiveQueue_.emplace_back(std::make_pair(size, std::move(promise)));
 
@@ -65,7 +71,12 @@ void Transport::rejectReceivePromises(const error::Error& e)
 
 void Transport::send(common::Data data, SendPromise::Pointer promise)
 {
-    sendStrand_.dispatch([this, self = this->shared_from_this(), data = std::move(data), promise = std::move(promise)]() mutable {
+    if (isStopping_) {
+        if (Log::isInfo()) Log_i("Transport stopped");
+        return;
+    }
+
+    sendStrand_->dispatch([this, self = this->shared_from_this(), data = std::move(data), promise = std::move(promise)]() mutable {
         if (Log::isVerbose()) Log_v("send");
         sendQueue_.emplace_back(std::make_pair(std::move(data), std::move(promise)));
 

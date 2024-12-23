@@ -21,7 +21,8 @@ ITransport::Pointer JTCPTransport::getTransport() {
 }
 
 JTCPTransport::~JTCPTransport() {
-//    transport_.reset();
+    if (Log::isVerbose()) Log_v("destructor");
+    transport_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

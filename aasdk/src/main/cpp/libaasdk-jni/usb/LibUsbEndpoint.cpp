@@ -8,7 +8,7 @@ namespace aasdk
 namespace usb
 {
 
-LibUsbEndpoint::LibUsbEndpoint(LibUsbDevice::Pointer libUsbDevice, boost::asio::io_service& ioService, const libusb_endpoint_descriptor* endpoint)
+LibUsbEndpoint::LibUsbEndpoint(LibUsbDevice::Pointer libUsbDevice, aasdk::io::ioService& ioService, const libusb_endpoint_descriptor* endpoint)
         : libUsbDevice_(libUsbDevice)
         , strand_(ioService)
         , endpointAddress_(endpoint->bEndpointAddress)
@@ -67,9 +67,10 @@ void LibUsbEndpoint::bulkTransfer(common::DataBuffer buffer, uint32_t timeout, P
 }
 
 void LibUsbEndpoint::transfer(libusb_transfer *transfer, Promise::Pointer promise) {
-    strand_.dispatch([this, transfer, promise = std::move(promise)]() mutable {
+    strand_->dispatch([this, transfer, promise = std::move(promise)]() mutable {
         if (Log::isVerbose()) Log_v("libusb_submit_transfer");
         auto submitResult = libusb_submit_transfer(transfer);
+        if (Log::isVerbose()) Log_v("libusb_submit_transfer %d", submitResult);
 
         if(submitResult == LIBUSB_SUCCESS) {
             transfers_.insert(std::make_pair(transfer, std::move(promise)));
@@ -87,6 +88,7 @@ uint8_t LibUsbEndpoint::getAddress()
 
 void LibUsbEndpoint::cancelTransfers()
 {
+    if (Log::isDebug()) Log_d("cancel transfers");
     for(const auto& transfer : transfers_) {
         libusb_cancel_transfer(transfer.first);
     }
@@ -96,7 +98,7 @@ void LibUsbEndpoint::transferHandler(libusb_transfer *transfer) {
     if (Log::isVerbose()) Log_v("transferHandler %p", transfer);
     auto self = reinterpret_cast<LibUsbEndpoint*>(transfer->user_data);
 
-    self->strand_.dispatch([self, transfer]() mutable {
+    self->strand_->dispatch([self, transfer]() mutable {
         if(self->transfers_.count(transfer) == 0) {
             if (Log::isWarn()) Log_w("transfer not found in list");
             return;

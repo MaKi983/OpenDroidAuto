@@ -8,18 +8,26 @@ namespace aasdk
 namespace messenger
 {
 
-MessageOutStream::MessageOutStream(boost::asio::io_service& ioService, transport::ITransport::Pointer transport, ICryptor::Pointer cryptor)
+MessageOutStream::MessageOutStream(aasdk::io::ioService& ioService, transport::ITransport::Pointer transport, ICryptor::Pointer cryptor)
     : strand_(ioService)
     , transport_(std::move(transport))
     , cryptor_(std::move(cryptor))
-//    , isStopping_(false)
+    , isStopping_(false)
 {
+}
 
+MessageOutStream::~MessageOutStream(){
+    if (Log::isVerbose()) Log_v("destructor");
 }
 
 void MessageOutStream::stream(Message::Pointer message, SendPromise::Pointer promise)
 {
-    strand_.dispatch([this, self = this->shared_from_this(), message = std::move(message), promise = std::move(promise)]() mutable {
+    if (isStopping_) {
+        if (Log::isInfo()) Log_i("MessageOutStream stopped");
+        return;
+    }
+
+    strand_->dispatch([this, self = this->shared_from_this(), message = std::move(message), promise = std::move(promise)]() mutable {
         if (Log::isDebug()) Log_d("%s / sending message %s", channelIdToString(message->getChannelId()).c_str(), message->toString().c_str());
 
         if(message->getPayload().size() >= cMaxFramePayloadSize)
@@ -128,10 +136,11 @@ void MessageOutStream::reset()
 //    message_.reset();
 }
 
-//void MessageOutStream::stop() {
-//    if(Log::isVerbose()) Log_v("set stop flag");
-//    isStopping_ = true;
-//}
+void MessageOutStream::stop() {
+    if(Log::isVerbose()) Log_v("stop");
+    isStopping_ = true;
+    strand_ = boost::none;
+}
 
 
 }

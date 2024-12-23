@@ -10,6 +10,10 @@ JVideoEventHandler::JVideoEventHandler(JNIEnv *env, jobject jandroidautoentityev
     initJavaMethods();
 }
 
+JVideoEventHandler::~JVideoEventHandler() {
+    if (Log::isVerbose()) Log_v("destructor");
+}
+
 void JVideoEventHandler::initJavaMethods() {
     JNIEnv* env = getJniEnv();
     jclass cls = env->GetObjectClass(androidClass_);
@@ -47,7 +51,8 @@ void JVideoService::initJavaMethods() {
 }
 
 JVideoService::~JVideoService() {
-//    videoService_.reset();
+    if (Log::isVerbose()) Log_v("destructor");
+    videoService_.reset();
 }
 
 JVideoService::Pointer JVideoService::getJVideoService(JNIEnv *env, jobject jvideoservice) {

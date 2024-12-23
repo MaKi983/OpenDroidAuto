@@ -18,7 +18,7 @@ public:
 
     ITCPEndpoint::Pointer getTCPEnpoint();
 private:
-    ITCPEndpoint::SocketPointer connect(JNIEnv* env, boost::asio::io_service& ioService, std::string ipAddress);
+    ITCPEndpoint::SocketPointer connect(JNIEnv* env, aasdk::io::ioService& ioService, std::string ipAddress);
     void throwConnectException(JNIEnv *env, char *message );
 
     TCPWrapper tcpWrapper_;

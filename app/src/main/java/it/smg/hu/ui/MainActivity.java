@@ -163,6 +163,8 @@ public class MainActivity extends FragmentActivity {
             }
         }
 
+//        NotificationFactory.init(getApplicationContext());
+//        NotificationFactory.instance().notifyStartRequest();
         AppBadge.instance().dismiss();
 
         newUsbDeviceIntent_ = null;

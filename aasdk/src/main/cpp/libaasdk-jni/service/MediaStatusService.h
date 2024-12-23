@@ -12,7 +12,7 @@ namespace service
     public:
         typedef std::shared_ptr<MediaStatusService> Pointer;
 
-        MediaStatusService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IMediaStatusEvent::Pointer mediaEvent, IServiceEventHandler::Pointer serviceEventHandler);
+        MediaStatusService(aasdk::io::ioService& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IMediaStatusEvent::Pointer mediaEvent, IServiceEventHandler::Pointer serviceEventHandler);
         ~MediaStatusService();
 
         void start() override;
@@ -25,8 +25,8 @@ namespace service
 
     private:
         using std::enable_shared_from_this<MediaStatusService>::shared_from_this;
-        
-        boost::asio::io_service::strand strand_;
+
+        aasdk::io::strand strand_;
         aasdk::channel::av::MediaStatusServiceChannel::Pointer channel_;
         projection::IMediaStatusEvent::Pointer mediaEvent_ = nullptr;
         IServiceEventHandler::Pointer serviceEventHandler_;

@@ -8,7 +8,7 @@ namespace channel
 namespace av
 {
 
-SpeechAudioServiceChannel::SpeechAudioServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger)
+SpeechAudioServiceChannel::SpeechAudioServiceChannel(io::strand& strand, messenger::IMessenger::Pointer messenger)
     : AudioServiceChannel(strand, std::move(messenger), messenger::ChannelId::SPEECH_AUDIO)
 {
 

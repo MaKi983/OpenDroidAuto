@@ -1,5 +1,6 @@
 #include <boost/asio.hpp>
 #include <tcp/TCPWrapper.hpp>
+#include <Log.h>
 
 namespace aasdk
 {
@@ -18,9 +19,16 @@ void TCPWrapper::asyncRead(boost::asio::ip::tcp::socket& socket, common::DataBuf
 
 void TCPWrapper::close(boost::asio::ip::tcp::socket& socket)
 {
+    if (Log::isDebug()) Log_d("close socket");
     boost::system::error_code ec;
     socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
     socket.close(ec);
+
+    if (ec) {
+        if (Log::isWarn()) Log_w("closing socket error %d (%s) ", ec.value(), ec.message().c_str());
+    }
+
+    if (Log::isInfo()) Log_i("socket closed");
 }
 
 void TCPWrapper::asyncConnect(boost::asio::ip::tcp::socket& socket, const std::string& hostname, uint16_t port, ConnectHandler handler)

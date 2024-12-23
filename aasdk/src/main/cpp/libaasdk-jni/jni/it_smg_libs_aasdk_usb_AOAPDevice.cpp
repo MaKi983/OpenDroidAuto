@@ -19,7 +19,7 @@ JAOAPDevice::Pointer JAOAPDevice::getJAOAPDevice(JNIEnv *env, jobject jaoapDevic
     return (JAOAPDevice::Pointer)env->GetLongField(jaoapDevice, JAOAPDevice::handleId);;
 }
 
-void JAOAPDevice::create(LibUsbDevice::Pointer libUsbDevice, boost::asio::io_service& ioService) {
+void JAOAPDevice::create(LibUsbDevice::Pointer libUsbDevice, aasdk::io::ioService& ioService) {
     aoapDevice_ = AOAPDevice::create(libUsbDevice, ioService);
 }
 

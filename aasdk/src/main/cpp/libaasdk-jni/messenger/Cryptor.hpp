@@ -13,7 +13,7 @@ class Cryptor: public ICryptor
 {
 public:
     Cryptor(transport::ISSLWrapper::Pointer sslWrapper);
-//    ~Cryptor();
+    ~Cryptor();
 
     void init() override;
     void deinit() override;

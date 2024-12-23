@@ -13,7 +13,7 @@ namespace av
 class SpeechAudioServiceChannel: public AudioServiceChannel
 {
 public:
-    SpeechAudioServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger);
+    SpeechAudioServiceChannel(io::strand& strand, messenger::IMessenger::Pointer messenger);
 };
 
 }

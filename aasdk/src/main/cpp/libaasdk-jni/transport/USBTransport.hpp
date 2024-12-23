@@ -14,7 +14,7 @@ class USBTransport: public Transport
 public:
 //    typedef USBTransport *Pointer;
 
-    USBTransport(boost::asio::io_service& ioService, usb::IAOAPDevice::Pointer aoapDevice);
+    USBTransport(aasdk::io::ioService& ioService, usb::IAOAPDevice::Pointer aoapDevice);
 
     void stop() override;
 

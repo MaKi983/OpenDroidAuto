@@ -16,13 +16,11 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import it.smg.hu.manager.USBManager;
 import it.smg.hu.manager.WIFIManager;
 import it.smg.hu.ui.notification.NotificationFactory;
+import it.smg.libs.aasdk.tcp.TCPConnectException;
 import it.smg.libs.common.Log;
 import it.smg.libs.aasdk.service.AndroidAutoEntity;
 import it.smg.libs.aasdk.service.IAndroidAutoEntityEventHandler;
 import it.smg.libs.aasdk.tcp.TCPEndpoint;
-import it.smg.libs.aasdk.transport.TCPTransport;
-import it.smg.libs.aasdk.transport.USBTransport;
-import it.smg.libs.aasdk.usb.AOAPDevice;
 import it.smg.libs.aasdk.usb.LibUsbDevice;
 
 public class ODAService extends Service implements IAndroidAutoEntityEventHandler {
@@ -76,15 +74,13 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
 
             if (usbManager_.aoapDevice() != null) {
                 isRunning_ = true;
+
                 if (Log.isVerbose()) Log.v(TAG, "aoap device available, start in usb mode");
                 try {
                     LibUsbDevice device = usbManager_.aoapDevice();
                     if (device.open()) {
                         if (Log.isInfo()) Log.i(TAG, "device opened");
-                        AOAPDevice aoapDevice = AOAPDevice.create(device);
-                        if (Log.isInfo()) Log.i(TAG, "create AOAP device");
-
-                        androidAutoEntity_ = AndroidAutoEntityFactory.create(this, new USBTransport(aoapDevice), surfaceView);
+                        androidAutoEntity_ = AndroidAutoEntityFactory.create(this, device, surfaceView);
                         androidAutoEntity_.start(this);
                     } else {
                         Log.e(TAG, "Error in open usb device");
@@ -106,15 +102,21 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         startThread_ = new Thread(() -> {
             Looper.prepare();
 
-            String ipAddress = wifiManager_.getIpAddress();
-            if (ipAddress != null) {
-                isRunning_ = true;
-                if (Log.isInfo()) Log.i(TAG, "Connect to ip " + ipAddress);
-                TCPEndpoint tcpEndpoint = new TCPEndpoint(ipAddress);
-                androidAutoEntity_ = AndroidAutoEntityFactory.create(this, new TCPTransport(tcpEndpoint), surfaceView);
-                androidAutoEntity_.start(this);
+            try {
+                String ipAddress = wifiManager_.getIpAddress();
+                if (ipAddress != null) {
+                    isRunning_ = true;
+
+//                    if (Log.isInfo()) Log.i(TAG, "Connect to ip " + ipAddress);
+                    TCPEndpoint tcpEndpoint = new TCPEndpoint(ipAddress);
+                    androidAutoEntity_ = AndroidAutoEntityFactory.create(this, tcpEndpoint, surfaceView);
+                    androidAutoEntity_.start(this);
+                }
+                if (Log.isInfo()) Log.i(TAG, "start wifi thead completed");
+            } catch (TCPConnectException e){
+                Log.e(TAG, "TCP Connection error", e);
+                stop();
             }
-            if (Log.isInfo()) Log.i(TAG, "start wifi thead completed");
         });
         startThread_.start();
     }
@@ -142,8 +144,12 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         isRunning_ = false;
 
         if (Log.isInfo()) Log.i(TAG, "Stop");
+
         if (androidAutoEntity_ != null) {
             androidAutoEntity_.stop();
+        }
+
+        if (androidAutoEntity_ != null) {
             androidAutoEntity_.delete();
             androidAutoEntity_ = null;
         }

@@ -5,14 +5,22 @@
 namespace service
 {
 
-AudioService::AudioService(boost::asio::io_service& ioService, aasdk::channel::av::IAudioServiceChannel::Pointer channel, projection::IAudioOutput::Pointer audioOutput, IServiceEventHandler::Pointer serviceEventHandler)
+AudioService::AudioService(aasdk::io::ioService& ioService, aasdk::channel::av::IAudioServiceChannel::Pointer channel, projection::IAudioOutput::Pointer audioOutput, IServiceEventHandler::Pointer serviceEventHandler)
         : strand_(ioService)
         , channel_(std::move(channel))
-        , serviceEventHandler_(std::move(serviceEventHandler))
-        , audioOutput_(std::move(audioOutput))
+        , serviceEventHandler_(serviceEventHandler)
+        , audioOutput_(audioOutput)
         , session_(-1)
         , isRunning_(false)
 {
+}
+
+AudioService::~AudioService(){
+    if (Log::isVerbose()) Log_v("destructor");
+    channel_.reset();
+    serviceEventHandler_ = nullptr;
+    audioOutput_ = nullptr;
+//    delete audioOutput_;
 }
 
 void AudioService::start()

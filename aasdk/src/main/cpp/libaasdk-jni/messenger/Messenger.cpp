@@ -2,13 +2,14 @@
 #include <error/Error.hpp>
 #include <messenger/Messenger.hpp>
 #include <Log.h>
+#include "boost/none.hpp"
 
 namespace aasdk
 {
 namespace messenger
 {
 
-Messenger::Messenger(boost::asio::io_service& ioService, IMessageInStream::Pointer messageInStream, IMessageOutStream::Pointer messageOutStream)
+Messenger::Messenger(aasdk::io::ioService& ioService, IMessageInStream::Pointer messageInStream, IMessageOutStream::Pointer messageOutStream)
     : receiveStrand_(ioService)
     , sendStrand_(ioService)
     , messageInStream_(std::move(messageInStream))
@@ -39,12 +40,12 @@ void Messenger::startReceive() {
 
 void Messenger::enqueueSend(Message::Pointer message, SendPromise::Pointer promise)
 {
-//    if (isStopping_) {
-//        if (Log::isInfo()) Log_i("Messenger stopped");
-//        return;
-//    }
+    if (isStopping_) {
+        if (Log::isInfo()) Log_i("Messenger stopped");
+        return;
+    }
 
-    sendStrand_.dispatch([this, self = this->shared_from_this(), message = std::move(message), promise = std::move(promise)]() mutable {
+    sendStrand_->dispatch([this, self = this->shared_from_this(), message = std::move(message), promise = std::move(promise)]() mutable {
         channelSendPromiseQueue_.emplace_back(std::make_pair(std::move(message), std::move(promise)));
 
         if(channelSendPromiseQueue_.size() == 1)
@@ -61,14 +62,20 @@ void Messenger::inStreamMessageHandler(Message::Pointer message)
     auto channelId = message->getChannelId();
     if (Log::isDebug()) Log_d("%s/inStreamMessageHandler", channelIdToString(channelId).c_str());
     ReceivePromise::Pointer promise = channelReceivePromiseQueue_.at(channelId);
-
+    if (promise) {
 //    threadPool_.enqueue([message = std::move(message), promise]{
         promise->resolve(std::move(message));
 //    });
+    }
 }
 
 void Messenger::doReceive() {
-    receiveStrand_.dispatch([this, self = this->shared_from_this()]() {
+    if (isStopping_) {
+        if (Log::isInfo()) Log_i("Messenger stopped");
+        return;
+    }
+
+    receiveStrand_->dispatch([this, self = this->shared_from_this()]() {
         if (Log::isDebug()) Log_d("doReceive");
         auto inStreamPromise = ReceivePromise::defer(receiveStrand_, "Messenger_doReceive");
         inStreamPromise->then(
@@ -107,7 +114,9 @@ void Messenger::outStreamMessageHandler(ChannelSendQueue::iterator queueElement)
 void Messenger::rejectReceivePromiseQueue(const error::Error& e)
 {
     ReceivePromise::Pointer promise = channelReceivePromiseQueue_.at(messenger::ChannelId::CONTROL);
-    promise->reject(e);
+    if (promise) {
+        promise->reject(e);
+    }
 }
 
 void Messenger::rejectSendPromiseQueue(const error::Error& e)
@@ -125,12 +134,17 @@ void Messenger::stop()
     if (Log::isInfo()) Log_i("Stop messenger");
 
     isStopping_ = true;
-//    messageOutStream_->stop();
-//    messageInStream_->stop();
+//    boost::asio::io_context& ioContext = receiveStrand_->get_io_context();
+    receiveStrand_ = boost::none;
+//    receiveStrand_ = io::strand(ioContext);
+    sendStrand_ = boost::none;
+//    receiveStrand_ = io::strand(ioContext);
+    messageInStream_->stop();
+    messageOutStream_->stop();
 //    receiveStrand_.dispatch([this, self = this->shared_from_this()]() {
 //    channelReceiveMessageQueue_.clear();
-//    channelSendPromiseQueue_.clear();
-//    channelReceivePromiseQueue_.clear();
+    channelSendPromiseQueue_.clear();
+    channelReceivePromiseQueue_.clear();
 //    });
 }
 

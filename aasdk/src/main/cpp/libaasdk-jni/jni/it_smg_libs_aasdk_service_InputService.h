@@ -11,6 +11,7 @@ public:
     typedef JInputService* Pointer;
 
     JInputService(JNIEnv *env, jobject jinputservice, jobject jmessenger, jobject jinputdevice);
+    ~JInputService();
 
     void initJavaMethods() override;
 

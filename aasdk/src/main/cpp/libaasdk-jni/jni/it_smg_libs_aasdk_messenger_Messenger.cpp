@@ -21,11 +21,12 @@ JMessenger::JMessenger(JNIEnv *env, jobject jmessenger, aasdk::transport::ITrans
     IMessageInStream::Pointer messageInStream = std::make_shared<MessageInStream>(JRuntime::ioService(), transport, jCryptor->getCryptor());
     IMessageOutStream::Pointer messageOutStream = std::make_shared<MessageOutStream>(JRuntime::ioService(), transport, jCryptor->getCryptor());
 
-    messenger_ = std::make_shared<Messenger>(JRuntime::ioService(), messageInStream, messageOutStream);
+    messenger_ = std::make_shared<Messenger>(JRuntime::ioService(), std::move(messageInStream), std::move(messageOutStream));
 }
 
 JMessenger::~JMessenger() {
-//    messenger_.reset();
+    if (Log::isVerbose()) Log_v("destructor");
+    messenger_.reset();
 }
 
 JMessenger::Pointer JMessenger::getJMessenger(JNIEnv *env, jobject jmessenger) {

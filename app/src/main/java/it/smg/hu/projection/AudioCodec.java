@@ -164,6 +164,7 @@ public class AudioCodec implements IAudioCodec, Runnable {
         }
 
         if (audioTrack_ != null) {
+            if (Log.isInfo()) Log.i(TAG, "starting audiotrack");
             audioTrack_.play();
         }
 
@@ -185,7 +186,7 @@ public class AudioCodec implements IAudioCodec, Runnable {
             audioTrack_ = null;
         }
 
-        if (Log.isInfo()) Log.i(TAG, "audtiotrack released");
+        if (Log.isInfo()) Log.i(TAG, "audiotrack released");
 
         if (Log.isVerbose()) Log.v(TAG + "_" + codecThread_.getName(), "thread ended");
     }

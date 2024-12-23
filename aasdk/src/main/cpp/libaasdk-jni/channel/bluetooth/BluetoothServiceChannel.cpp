@@ -13,10 +13,13 @@ namespace channel
 namespace bluetooth
 {
 
-BluetoothServiceChannel::BluetoothServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger)
+BluetoothServiceChannel::BluetoothServiceChannel(io::strand& strand, messenger::IMessenger::Pointer messenger)
     : ServiceChannel(strand, std::move(messenger), messenger::ChannelId::BLUETOOTH)
 {
+}
 
+BluetoothServiceChannel::~BluetoothServiceChannel() {
+    if (Log::isVerbose()) Log_v("destructor");
 }
 
 void BluetoothServiceChannel::receive(IBluetoothServiceChannelEventHandler::Pointer eventHandler)

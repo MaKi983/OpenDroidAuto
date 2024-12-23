@@ -12,10 +12,13 @@ namespace channel
 namespace input
 {
 
-InputServiceChannel::InputServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger)
+InputServiceChannel::InputServiceChannel(io::strand& strand, messenger::IMessenger::Pointer messenger)
     : ServiceChannel(strand, std::move(messenger), messenger::ChannelId::INPUT)
 {
+}
 
+InputServiceChannel::~InputServiceChannel() {
+    if (Log::isVerbose()) Log_v("destructor");
 }
 
 void InputServiceChannel::receive(IInputServiceChannelEventHandler::Pointer eventHandler)

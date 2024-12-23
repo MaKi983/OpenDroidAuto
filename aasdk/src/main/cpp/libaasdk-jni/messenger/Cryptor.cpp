@@ -21,9 +21,10 @@ Cryptor::Cryptor(transport::ISSLWrapper::Pointer sslWrapper)
 
 }
 
-//Cryptor::~Cryptor(){
-//    delete sslWrapper_;
-//}
+Cryptor::~Cryptor(){
+    if (Log::isVerbose()) Log_v("destructor");
+    sslWrapper_.reset();
+}
 
 void Cryptor::init()
 {

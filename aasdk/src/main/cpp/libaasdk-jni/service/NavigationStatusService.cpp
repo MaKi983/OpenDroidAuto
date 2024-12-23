@@ -7,17 +7,19 @@
 namespace service
 {
 
-    NavigationStatusService::NavigationStatusService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::INavigationStatusEvent::Pointer navigationEvent, IServiceEventHandler::Pointer serviceEventHandler)
+    NavigationStatusService::NavigationStatusService(aasdk::io::ioService& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::INavigationStatusEvent::Pointer navigationEvent, IServiceEventHandler::Pointer serviceEventHandler)
             : strand_(ioService)
             , channel_(std::make_shared<aasdk::channel::navigation::NavigationStatusServiceChannel>(strand_, std::move(messenger)))
-            , serviceEventHandler_(std::move(serviceEventHandler))
+            , serviceEventHandler_(serviceEventHandler)
             , isRunning_(false)
     {
         this->navigationEvent_ = navigationEvent;
     }
 
     NavigationStatusService::~NavigationStatusService(){
-//        delete channel_;
+        if (Log::isVerbose()) Log_v("destructor");
+        channel_.reset();
+        serviceEventHandler_ = nullptr;
     }
 
     void NavigationStatusService::start()

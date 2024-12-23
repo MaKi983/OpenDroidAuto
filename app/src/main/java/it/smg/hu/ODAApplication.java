@@ -23,7 +23,7 @@ public class ODAApplication extends MultiDexApplication {
     public void onTerminate() {
         super.onTerminate();
         Log.shutdown();
-        Runtime.delete();
+//        Runtime.delete();
     }
 
     @Override
@@ -31,26 +31,26 @@ public class ODAApplication extends MultiDexApplication {
         super.attachBaseContext(base);
 
         Settings.build(base);
-        Runtime.setExceptionHandler((thread, t) -> {
-            Log.e(TAG, "uncaughtException in " + thread.getName(), t);
+//        Runtime.setExceptionHandler((thread, t) -> {
+//            Log.e(TAG, "uncaughtException in " + thread.getName(), t);
+//
+//            Log.shutdown();
+//            Runtime.delete();
+//
+//            Intent service = new Intent(this, ODAService.class);
+//            stopService(service);
+//
+//            android.os.Process.killProcess(android.os.Process.myPid());
+//        });
 
-            Log.shutdown();
-            Runtime.delete();
-
-            Intent service = new Intent(this, ODAService.class);
-            stopService(service);
-
-            android.os.Process.killProcess(android.os.Process.myPid());
-        });
-
-        Runtime.init(getApplicationContext());
+//        Runtime.init(getApplicationContext());
         Runtime.initLog(new ODALog());
     }
 
     public void onCreate() {
         super.onCreate();
 
-        if (Log.isDebug()) Log.d(TAG, "Initialized jni: " + Runtime.handle());
+//        if (Log.isDebug()) Log.d(TAG, "Initialized jni: " + Runtime.handle());
 
         USBManager.init(getApplicationContext());
         WIFIManager.init(getApplicationContext());

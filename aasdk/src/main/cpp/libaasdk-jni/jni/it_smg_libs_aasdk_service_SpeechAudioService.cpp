@@ -25,7 +25,8 @@ void JSpeechAudioService::initJavaMethods() {
 }
 
 JSpeechAudioService::~JSpeechAudioService() {
-//    audioService_.reset();
+    if (Log::isVerbose()) Log_v("destructor");
+    audioService_.reset();
 }
 
 JSpeechAudioService::Pointer JSpeechAudioService::getJSpeechAudioService(JNIEnv *env, jobject jspeechaudioservice) {

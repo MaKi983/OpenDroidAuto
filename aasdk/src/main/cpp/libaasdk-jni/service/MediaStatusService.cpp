@@ -4,7 +4,7 @@
 namespace service
 {
 
-    MediaStatusService::MediaStatusService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IMediaStatusEvent::Pointer mediaEvent, IServiceEventHandler::Pointer serviceEventHandler)
+    MediaStatusService::MediaStatusService(aasdk::io::ioService& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IMediaStatusEvent::Pointer mediaEvent, IServiceEventHandler::Pointer serviceEventHandler)
             : strand_(ioService)
             , channel_(std::make_shared<aasdk::channel::av::MediaStatusServiceChannel>(strand_, std::move(messenger)))
             , isRunning_(false)
@@ -13,7 +13,8 @@ namespace service
     }
 
     MediaStatusService::~MediaStatusService(){
-//        delete channel_;
+        if (Log::isVerbose()) Log_v("destructor");
+        channel_.reset();
     }
 
     void MediaStatusService::start()
