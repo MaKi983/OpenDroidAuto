@@ -25,7 +25,8 @@ void JSystemAudioService::initJavaMethods() {
 }
 
 JSystemAudioService::~JSystemAudioService() {
-//    audioService_.reset();
+    if (Log::isVerbose()) Log_v("destructor");
+    audioService_.reset();
 }
 
 JSystemAudioService::Pointer JSystemAudioService::getJSystemAudioService(JNIEnv *env, jobject jsystemaudioservice) {

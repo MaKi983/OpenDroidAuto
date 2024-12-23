@@ -1,7 +1,5 @@
 package it.smg.libs.aasdk;
 
-import android.content.Context;
-
 import androidx.annotation.Keep;
 
 import it.smg.libs.common.ILog;
@@ -10,58 +8,58 @@ import it.smg.libs.common.Log;
 public class Runtime {
 
     private static final String TAG = "Runtime";
+    private static native void nativeInit();
+    private native long nativeSetup();
+    private native void nativeDelete();
+    private native void nativeStartIOServiceWorker(int threads);
+    private native void nativeStopIOServiceWorker();
 
-    private static native long nativeInit();
-    private static native void nativeFinalize(long handle);
-    private static native void nativeStartIOServiceWorker(long handle, int threads);
-    private static native void nativeStopIOServiceWorker(long handle);
+    @Keep
+    private long handle_;
 
-    private static long handle;
-
-    private static Thread.UncaughtExceptionHandler exceptionHandler;
+//    private static Thread.UncaughtExceptionHandler exceptionHandler;
 
     static {
         System.loadLibrary("c++_shared");
         System.loadLibrary("common");
         System.loadLibrary("aasdk-jni");
+
+        nativeInit();
     }
 
-    public static void delete(){
-        nativeFinalize(handle);
-        handle = 0;
+    public Runtime(){
+        handle_ = nativeSetup();
     }
 
-    @Keep
-    private static void initExceptionHanlder(){
-        if (exceptionHandler != null) {
-            Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
-        }
+    public void delete(){
+        nativeDelete();
+        handle_ = 0;
     }
 
-    public static void setExceptionHandler(Thread.UncaughtExceptionHandler exceptionHandler){
-        Runtime.exceptionHandler = exceptionHandler;
+//    @Keep
+//    private static void initExceptionHanlder(){
+//        if (exceptionHandler != null) {
+//            Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
+//        }
+//    }
+
+//    public static void setExceptionHandler(Thread.UncaughtExceptionHandler exceptionHandler){
+//        Runtime.exceptionHandler = exceptionHandler;
+//    }
+
+    public void startThreads(int threads){
+        nativeStartIOServiceWorker(threads);
     }
 
-    public static void startThreads(int threads){
-        nativeStartIOServiceWorker(handle, threads);
+    public void stopThreads(){
+        nativeStopIOServiceWorker();
     }
-
-    public static void stopThreads(){
-        nativeStopIOServiceWorker(handle);
-    }
-
-    public static long handle(){
-        return handle;
-    }
-
     public static void initLog(ILog log) {
         Log.init(log);
     }
 
-    public static void init(Context ctx){
-        initExceptionHanlder();
-
-        handle = nativeInit();
-    }
+//    public static void init(Context ctx){
+//        initExceptionHanlder();
+//    }
 
 }

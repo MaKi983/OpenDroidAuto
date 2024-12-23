@@ -90,10 +90,13 @@ class ParkingBrake::_Internal {
   }
 };
 
-ParkingBrake::ParkingBrake(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+ParkingBrake::ParkingBrake(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.ParkingBrake)
 }
 ParkingBrake::ParkingBrake(const ParkingBrake& from)
@@ -104,17 +107,18 @@ ParkingBrake::ParkingBrake(const ParkingBrake& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.ParkingBrake)
 }
 
-void ParkingBrake::SharedCtor() {
+inline void ParkingBrake::SharedCtor() {
 parking_brake_ = false;
 }
 
 ParkingBrake::~ParkingBrake() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.ParkingBrake)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void ParkingBrake::SharedDtor() {
+inline void ParkingBrake::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -220,38 +224,29 @@ size_t ParkingBrake::ByteSizeLong() const {
   return total_size;
 }
 
-void ParkingBrake::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.ParkingBrake)
-  GOOGLE_DCHECK_NE(&from, this);
-  const ParkingBrake* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<ParkingBrake>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.ParkingBrake)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.ParkingBrake)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData ParkingBrake::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ParkingBrake::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ParkingBrake::GetClassData() const { return &_class_data_; }
+
+void ParkingBrake::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<ParkingBrake *>(to)->MergeFrom(
+      static_cast<const ParkingBrake &>(from));
 }
+
 
 void ParkingBrake::MergeFrom(const ParkingBrake& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.ParkingBrake)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_has_parking_brake()) {
     _internal_set_parking_brake(from._internal_parking_brake());
   }
-}
-
-void ParkingBrake::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.ParkingBrake)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void ParkingBrake::CopyFrom(const ParkingBrake& from) {

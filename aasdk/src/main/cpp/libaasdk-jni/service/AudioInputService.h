@@ -13,7 +13,7 @@ class AudioInputService: public aasdk::channel::av::IAVInputServiceChannelEventH
 public:
     typedef std::shared_ptr<AudioInputService> Pointer;
 
-    AudioInputService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IAudioInput::Pointer audioInput, IServiceEventHandler::Pointer serviceEventHandler);
+    AudioInputService(aasdk::io::ioService& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IAudioInput::Pointer audioInput, IServiceEventHandler::Pointer serviceEventHandler);
     ~AudioInputService();
 
     void start() override;
@@ -31,7 +31,7 @@ private:
     void onAudioInputDataReady(aasdk::common::Data data);
     void readAudioInput();
 
-    boost::asio::io_service::strand strand_;
+    aasdk::io::strand strand_;
     aasdk::channel::av::AVInputServiceChannel::Pointer channel_;
     projection::IAudioInput::Pointer audioInput_;
     int32_t session_;

@@ -14,7 +14,7 @@ namespace channel
 namespace control
 {
 
-ControlServiceChannel::ControlServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger)
+ControlServiceChannel::ControlServiceChannel(io::strand& strand, messenger::IMessenger::Pointer messenger)
     : ServiceChannel(strand, std::move(messenger), messenger::ChannelId::CONTROL)
 {
 

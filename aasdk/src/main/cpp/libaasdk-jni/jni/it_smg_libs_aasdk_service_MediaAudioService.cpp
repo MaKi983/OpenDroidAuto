@@ -25,7 +25,8 @@ void JMediaAudioService::initJavaMethods() {
 }
 
 JMediaAudioService::~JMediaAudioService() {
-//    audioService_.reset();
+    if (Log::isVerbose()) Log_v("destructor");
+    audioService_.reset();
 }
 
 JMediaAudioService::Pointer JMediaAudioService::getJMediaAudioService(JNIEnv *env, jobject jmediaaudioservice) {

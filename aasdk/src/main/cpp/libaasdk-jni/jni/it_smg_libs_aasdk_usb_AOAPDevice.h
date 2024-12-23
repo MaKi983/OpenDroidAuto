@@ -15,7 +15,7 @@ public:
     static jfieldID handleId;
     static JAOAPDevice::Pointer getJAOAPDevice(JNIEnv* env, jobject jaoapDevice);
 
-    void create(LibUsbDevice::Pointer libUsbDevice, boost::asio::io_service& ioService);
+    void create(LibUsbDevice::Pointer libUsbDevice, aasdk::io::ioService& ioService);
     IAOAPDevice::Pointer getAOAPDevice();
 
 private:

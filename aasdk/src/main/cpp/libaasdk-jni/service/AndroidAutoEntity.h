@@ -18,7 +18,7 @@ class AndroidAutoEntity
 public:
     typedef std::shared_ptr<AndroidAutoEntity> Pointer;
 
-    AndroidAutoEntity(boost::asio::io_service &ioService,
+    AndroidAutoEntity(aasdk::io::ioService& ioService,
                       aasdk::messenger::ICryptor::Pointer cryptor,
                       aasdk::messenger::IMessenger::Pointer messenger,
                       configuration::IConfiguration::Pointer configuration,
@@ -69,7 +69,8 @@ private:
 
     void sendPing();
 
-    boost::asio::io_service::strand strand_;
+    boost::asio::signal_set signals_;
+    aasdk::io::strand strand_;
     aasdk::messenger::ICryptor::Pointer cryptor_;
     aasdk::transport::ITransport::Pointer transport_;
     aasdk::messenger::IMessenger::Pointer messenger_;

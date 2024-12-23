@@ -106,11 +106,14 @@ class AVChannelSetupResponse::_Internal {
   }
 };
 
-AVChannelSetupResponse::AVChannelSetupResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+AVChannelSetupResponse::AVChannelSetupResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
   configs_(arena) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.AVChannelSetupResponse)
 }
 AVChannelSetupResponse::AVChannelSetupResponse(const AVChannelSetupResponse& from)
@@ -124,7 +127,7 @@ AVChannelSetupResponse::AVChannelSetupResponse(const AVChannelSetupResponse& fro
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.AVChannelSetupResponse)
 }
 
-void AVChannelSetupResponse::SharedCtor() {
+inline void AVChannelSetupResponse::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&media_status_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&max_unacked_) -
@@ -133,11 +136,12 @@ void AVChannelSetupResponse::SharedCtor() {
 
 AVChannelSetupResponse::~AVChannelSetupResponse() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.AVChannelSetupResponse)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void AVChannelSetupResponse::SharedDtor() {
+inline void AVChannelSetupResponse::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -326,25 +330,22 @@ size_t AVChannelSetupResponse::ByteSizeLong() const {
   return total_size;
 }
 
-void AVChannelSetupResponse::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.AVChannelSetupResponse)
-  GOOGLE_DCHECK_NE(&from, this);
-  const AVChannelSetupResponse* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<AVChannelSetupResponse>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.AVChannelSetupResponse)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.AVChannelSetupResponse)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData AVChannelSetupResponse::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    AVChannelSetupResponse::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*AVChannelSetupResponse::GetClassData() const { return &_class_data_; }
+
+void AVChannelSetupResponse::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<AVChannelSetupResponse *>(to)->MergeFrom(
+      static_cast<const AVChannelSetupResponse &>(from));
 }
+
 
 void AVChannelSetupResponse::MergeFrom(const AVChannelSetupResponse& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.AVChannelSetupResponse)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -359,13 +360,7 @@ void AVChannelSetupResponse::MergeFrom(const AVChannelSetupResponse& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void AVChannelSetupResponse::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.AVChannelSetupResponse)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void AVChannelSetupResponse::CopyFrom(const AVChannelSetupResponse& from) {

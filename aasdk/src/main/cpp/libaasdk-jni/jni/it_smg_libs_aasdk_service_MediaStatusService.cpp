@@ -24,7 +24,8 @@ void JMediaStatusService::initJavaMethods() {
 }
 
 JMediaStatusService::~JMediaStatusService() {
-//    mediaStatusService_.reset();
+    if (Log::isVerbose()) Log_v("destructor");
+    mediaStatusService_.reset();
 }
 
 JMediaStatusService::Pointer JMediaStatusService::getJMediaStatusService(JNIEnv *env, jobject jmediastatusservice) {

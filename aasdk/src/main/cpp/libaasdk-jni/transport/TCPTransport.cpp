@@ -6,7 +6,7 @@ namespace aasdk
 namespace transport
 {
 
-TCPTransport::TCPTransport(boost::asio::io_service& ioService, tcp::ITCPEndpoint::Pointer tcpEndpoint)
+TCPTransport::TCPTransport(aasdk::io::ioService& ioService, tcp::ITCPEndpoint::Pointer tcpEndpoint)
     : Transport(ioService)
     , tcpEndpoint_(std::move(tcpEndpoint))
 {
@@ -44,6 +44,11 @@ void TCPTransport::enqueueSend(SendQueue::iterator queueElement)
 
 void TCPTransport::stop()
 {
+    if (Log::isDebug()) Log_d("stop tcp endpoint");
+    isStopping_ = true;
+    sendQueue_.clear();
+    receiveStrand_ = boost::none;
+    sendStrand_ = boost::none;
     tcpEndpoint_->stop();
 }
 

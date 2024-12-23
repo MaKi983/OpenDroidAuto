@@ -14,8 +14,8 @@ namespace av
 class MediaStatusServiceChannel: public IMediaStatusServiceChannel, public ServiceChannel, public std::enable_shared_from_this<MediaStatusServiceChannel>
 {
 public:
-    MediaStatusServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger);
-
+    MediaStatusServiceChannel(io::strand& strand, messenger::IMessenger::Pointer messenger);
+    ~MediaStatusServiceChannel();
     void receive(IMediaStatusServiceChannelEventHandler::Pointer eventHandler) override;
     messenger::ChannelId getId() const override;
     void sendChannelOpenResponse(const proto::messages::ChannelOpenResponse& response, SendPromise::Pointer promise) override;

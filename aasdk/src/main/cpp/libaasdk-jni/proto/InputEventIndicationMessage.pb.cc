@@ -171,10 +171,13 @@ void InputEventIndication::clear_relative_input_event() {
   if (relative_input_event_ != nullptr) relative_input_event_->Clear();
   _has_bits_[0] &= ~0x00000008u;
 }
-InputEventIndication::InputEventIndication(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+InputEventIndication::InputEventIndication(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.InputEventIndication)
 }
 InputEventIndication::InputEventIndication(const InputEventIndication& from)
@@ -207,7 +210,7 @@ InputEventIndication::InputEventIndication(const InputEventIndication& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.InputEventIndication)
 }
 
-void InputEventIndication::SharedCtor() {
+inline void InputEventIndication::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&touch_event_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&disp_channel_) -
@@ -216,11 +219,12 @@ void InputEventIndication::SharedCtor() {
 
 InputEventIndication::~InputEventIndication() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.InputEventIndication)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void InputEventIndication::SharedDtor() {
+inline void InputEventIndication::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   if (this != internal_default_instance()) delete touch_event_;
   if (this != internal_default_instance()) delete button_event_;
@@ -467,25 +471,22 @@ size_t InputEventIndication::ByteSizeLong() const {
   return total_size;
 }
 
-void InputEventIndication::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.InputEventIndication)
-  GOOGLE_DCHECK_NE(&from, this);
-  const InputEventIndication* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<InputEventIndication>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.InputEventIndication)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.InputEventIndication)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData InputEventIndication::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    InputEventIndication::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*InputEventIndication::GetClassData() const { return &_class_data_; }
+
+void InputEventIndication::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<InputEventIndication *>(to)->MergeFrom(
+      static_cast<const InputEventIndication &>(from));
 }
+
 
 void InputEventIndication::MergeFrom(const InputEventIndication& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.InputEventIndication)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -511,13 +512,7 @@ void InputEventIndication::MergeFrom(const InputEventIndication& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void InputEventIndication::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.InputEventIndication)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void InputEventIndication::CopyFrom(const InputEventIndication& from) {

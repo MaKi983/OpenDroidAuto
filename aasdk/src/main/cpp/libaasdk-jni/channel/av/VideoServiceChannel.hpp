@@ -14,7 +14,7 @@ namespace av
 class VideoServiceChannel: public IVideoServiceChannel, public ServiceChannel, public std::enable_shared_from_this<VideoServiceChannel>
 {
 public:
-    VideoServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger);
+    VideoServiceChannel(io::strand& strand, messenger::IMessenger::Pointer messenger);
 
     void receive(IVideoServiceChannelEventHandler::Pointer eventHandler) override;
     void sendChannelOpenResponse(const proto::messages::ChannelOpenResponse& response, SendPromise::Pointer promise) override;

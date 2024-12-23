@@ -19,6 +19,8 @@ void JAudioInputService::initJavaMethods() {
 }
 
 JAudioInputService::~JAudioInputService() {
+    if (Log::isVerbose()) Log_v("destructor");
+    audioInputService_.reset();
 }
 
 JAudioInputService::Pointer JAudioInputService::getJAudioInputService(JNIEnv *env, jobject jaudioinputservice) {

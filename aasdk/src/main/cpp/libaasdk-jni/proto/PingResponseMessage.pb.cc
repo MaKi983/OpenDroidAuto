@@ -90,10 +90,13 @@ class PingResponse::_Internal {
   }
 };
 
-PingResponse::PingResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+PingResponse::PingResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.PingResponse)
 }
 PingResponse::PingResponse(const PingResponse& from)
@@ -104,17 +107,18 @@ PingResponse::PingResponse(const PingResponse& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.PingResponse)
 }
 
-void PingResponse::SharedCtor() {
+inline void PingResponse::SharedCtor() {
 timestamp_ = int64_t{0};
 }
 
 PingResponse::~PingResponse() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.PingResponse)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void PingResponse::SharedDtor() {
+inline void PingResponse::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -222,38 +226,29 @@ size_t PingResponse::ByteSizeLong() const {
   return total_size;
 }
 
-void PingResponse::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.PingResponse)
-  GOOGLE_DCHECK_NE(&from, this);
-  const PingResponse* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<PingResponse>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.PingResponse)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.PingResponse)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData PingResponse::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    PingResponse::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*PingResponse::GetClassData() const { return &_class_data_; }
+
+void PingResponse::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<PingResponse *>(to)->MergeFrom(
+      static_cast<const PingResponse &>(from));
 }
+
 
 void PingResponse::MergeFrom(const PingResponse& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.PingResponse)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_has_timestamp()) {
     _internal_set_timestamp(from._internal_timestamp());
   }
-}
-
-void PingResponse::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.PingResponse)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void PingResponse::CopyFrom(const PingResponse& from) {

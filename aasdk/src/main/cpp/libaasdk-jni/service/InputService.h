@@ -19,7 +19,7 @@ class InputService:
 public:
     typedef std::shared_ptr<InputService> Pointer;
 
-    InputService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IInputDevice::Pointer inputDevice, IServiceEventHandler::Pointer serviceEventHandler);
+    InputService(aasdk::io::ioService& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IInputDevice::Pointer inputDevice, IServiceEventHandler::Pointer serviceEventHandler);
     ~InputService();
 
     void sendButtonPress(aasdk::proto::enums::ButtonCode::Enum buttonCode, projection::WheelDirection wheelDirection = projection::WheelDirection::NONE, projection::ButtonEventType buttonEventType = projection::ButtonEventType::NONE);
@@ -36,7 +36,7 @@ public:
 private:
     using std::enable_shared_from_this<InputService>::shared_from_this;
 
-    boost::asio::io_service::strand strand_;
+    aasdk::io::strand strand_;
     aasdk::channel::input::InputServiceChannel::Pointer channel_;
     projection::IInputDevice::Pointer inputDevice_;
     bool serviceActive = false;

@@ -13,14 +13,14 @@ namespace channel
 class ServiceChannel
 {
 protected:
-    ServiceChannel(boost::asio::io_service::strand& strand,
+    ServiceChannel(io::strand& strand,
                    messenger::IMessenger::Pointer messenger,
                    messenger::ChannelId channelId);
 
     virtual ~ServiceChannel() = default;
     void send(messenger::Message::Pointer message, SendPromise::Pointer promise);
 
-    boost::asio::io_service::strand& strand_;
+    io::strand& strand_;
     messenger::IMessenger::Pointer messenger_;
     messenger::ChannelId channelId_;
 };

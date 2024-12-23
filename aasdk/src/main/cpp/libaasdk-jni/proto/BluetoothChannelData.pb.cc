@@ -99,11 +99,14 @@ class BluetoothChannel::_Internal {
   }
 };
 
-BluetoothChannel::BluetoothChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+BluetoothChannel::BluetoothChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
   supported_pairing_methods_(arena) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.BluetoothChannel)
 }
 BluetoothChannel::BluetoothChannel(const BluetoothChannel& from)
@@ -119,17 +122,18 @@ BluetoothChannel::BluetoothChannel(const BluetoothChannel& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.BluetoothChannel)
 }
 
-void BluetoothChannel::SharedCtor() {
+inline void BluetoothChannel::SharedCtor() {
 adapter_address_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 BluetoothChannel::~BluetoothChannel() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.BluetoothChannel)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void BluetoothChannel::SharedDtor() {
+inline void BluetoothChannel::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   adapter_address_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -286,25 +290,22 @@ size_t BluetoothChannel::ByteSizeLong() const {
   return total_size;
 }
 
-void BluetoothChannel::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.BluetoothChannel)
-  GOOGLE_DCHECK_NE(&from, this);
-  const BluetoothChannel* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<BluetoothChannel>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.BluetoothChannel)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.BluetoothChannel)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData BluetoothChannel::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    BluetoothChannel::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*BluetoothChannel::GetClassData() const { return &_class_data_; }
+
+void BluetoothChannel::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<BluetoothChannel *>(to)->MergeFrom(
+      static_cast<const BluetoothChannel &>(from));
 }
+
 
 void BluetoothChannel::MergeFrom(const BluetoothChannel& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.BluetoothChannel)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -312,13 +313,7 @@ void BluetoothChannel::MergeFrom(const BluetoothChannel& from) {
   if (from._internal_has_adapter_address()) {
     _internal_set_adapter_address(from._internal_adapter_address());
   }
-}
-
-void BluetoothChannel::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.BluetoothChannel)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void BluetoothChannel::CopyFrom(const BluetoothChannel& from) {

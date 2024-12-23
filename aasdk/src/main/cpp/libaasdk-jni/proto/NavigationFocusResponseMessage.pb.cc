@@ -90,10 +90,13 @@ class NavigationFocusResponse::_Internal {
   }
 };
 
-NavigationFocusResponse::NavigationFocusResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+NavigationFocusResponse::NavigationFocusResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.NavigationFocusResponse)
 }
 NavigationFocusResponse::NavigationFocusResponse(const NavigationFocusResponse& from)
@@ -104,17 +107,18 @@ NavigationFocusResponse::NavigationFocusResponse(const NavigationFocusResponse& 
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.NavigationFocusResponse)
 }
 
-void NavigationFocusResponse::SharedCtor() {
+inline void NavigationFocusResponse::SharedCtor() {
 type_ = 0u;
 }
 
 NavigationFocusResponse::~NavigationFocusResponse() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.NavigationFocusResponse)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void NavigationFocusResponse::SharedDtor() {
+inline void NavigationFocusResponse::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -222,38 +226,29 @@ size_t NavigationFocusResponse::ByteSizeLong() const {
   return total_size;
 }
 
-void NavigationFocusResponse::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.NavigationFocusResponse)
-  GOOGLE_DCHECK_NE(&from, this);
-  const NavigationFocusResponse* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<NavigationFocusResponse>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.NavigationFocusResponse)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.NavigationFocusResponse)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData NavigationFocusResponse::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    NavigationFocusResponse::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*NavigationFocusResponse::GetClassData() const { return &_class_data_; }
+
+void NavigationFocusResponse::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<NavigationFocusResponse *>(to)->MergeFrom(
+      static_cast<const NavigationFocusResponse &>(from));
 }
+
 
 void NavigationFocusResponse::MergeFrom(const NavigationFocusResponse& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.NavigationFocusResponse)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_has_type()) {
     _internal_set_type(from._internal_type());
   }
-}
-
-void NavigationFocusResponse::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.NavigationFocusResponse)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void NavigationFocusResponse::CopyFrom(const NavigationFocusResponse& from) {

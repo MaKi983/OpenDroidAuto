@@ -15,7 +15,7 @@ namespace usb
 class LibUsbEndpoint: public IUSBEndpoint, boost::noncopyable
 {
 public:
-    LibUsbEndpoint(LibUsbDevice::Pointer libUsbDevice, boost::asio::io_service& ioService, const libusb_endpoint_descriptor* endpoint);
+    LibUsbEndpoint(LibUsbDevice::Pointer libUsbDevice, aasdk::io::ioService& ioService, const libusb_endpoint_descriptor* endpoint);
 
     void controlTransfer(common::DataBuffer buffer, uint32_t timeout, Promise::Pointer promise) override;
     void bulkTransfer(common::DataBuffer buffer, uint32_t timeout, Promise::Pointer promise) override;
@@ -30,7 +30,7 @@ private:
     static void transferHandler(libusb_transfer *transfer);
 
     LibUsbDevice::Pointer libUsbDevice_;
-    boost::asio::io_service::strand strand_;
+    aasdk::io::strand strand_;
     uint8_t endpointAddress_;
     Transfers transfers_;
 };

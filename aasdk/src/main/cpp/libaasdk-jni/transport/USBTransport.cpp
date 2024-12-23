@@ -5,7 +5,7 @@ namespace aasdk
 namespace transport
 {
 
-USBTransport::USBTransport(boost::asio::io_service& ioService, usb::IAOAPDevice::Pointer aoapDevice)
+USBTransport::USBTransport(aasdk::io::ioService& ioService, usb::IAOAPDevice::Pointer aoapDevice)
     : Transport(ioService)
     , aoapDevice_(std::move(aoapDevice))
 {}
@@ -66,8 +66,17 @@ void USBTransport::sendHandler(SendQueue::iterator queueElement, common::Data::s
 
 void USBTransport::stop()
 {
+    if (Log::isDebug()) Log_d("stop");
+    isStopping_ = true;
+    receiveStrand_ = boost::none;
+    sendStrand_ = boost::none;
+    sendQueue_.clear();
+    if (Log::isDebug()) Log_d("stop usb inendpoint");
     aoapDevice_->getInEndpoint().cancelTransfers();
+    if (Log::isDebug()) Log_d("stop usb outendpoint");
     aoapDevice_->getOutEndpoint().cancelTransfers();
+    if (Log::isInfo()) Log_d("stopped");
+
 }
 
 }

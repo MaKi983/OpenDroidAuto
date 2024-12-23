@@ -6,12 +6,12 @@
 namespace service
 {
 
-VideoService::VideoService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IVideoOutput::Pointer videoOutput, IVideoEventHandler::Pointer eventHandler, IServiceEventHandler::Pointer serviceEventHandler)
+VideoService::VideoService(aasdk::io::ioService& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IVideoOutput::Pointer videoOutput, IVideoEventHandler::Pointer eventHandler, IServiceEventHandler::Pointer serviceEventHandler)
         : strand_(ioService)
         , channel_(std::make_shared<aasdk::channel::av::VideoServiceChannel>(strand_, std::move(messenger)))
-        , videoOutput_(std::move(videoOutput))
-        , eventHandler_(std::move(eventHandler))
-        , serviceEventHandler_(std::move(serviceEventHandler))
+        , videoOutput_(videoOutput)
+        , eventHandler_(eventHandler)
+        , serviceEventHandler_(serviceEventHandler)
         , session_(-1)
         , isRunning_(false)
 {
@@ -19,6 +19,11 @@ VideoService::VideoService(boost::asio::io_service& ioService, aasdk::messenger:
 }
 
 VideoService::~VideoService(){
+    if (Log::isVerbose()) Log_v("destructor");
+    channel_.reset();
+    delete eventHandler_;
+    serviceEventHandler_ = nullptr;
+    videoOutput_ = nullptr;
 }
 
 void VideoService::start()

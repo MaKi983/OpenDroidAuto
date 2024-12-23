@@ -96,10 +96,13 @@ class AudioFocusResponse::_Internal {
   }
 };
 
-AudioFocusResponse::AudioFocusResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+AudioFocusResponse::AudioFocusResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.AudioFocusResponse)
 }
 AudioFocusResponse::AudioFocusResponse(const AudioFocusResponse& from)
@@ -110,17 +113,18 @@ AudioFocusResponse::AudioFocusResponse(const AudioFocusResponse& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.AudioFocusResponse)
 }
 
-void AudioFocusResponse::SharedCtor() {
+inline void AudioFocusResponse::SharedCtor() {
 audio_focus_state_ = 0;
 }
 
 AudioFocusResponse::~AudioFocusResponse() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.AudioFocusResponse)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void AudioFocusResponse::SharedDtor() {
+inline void AudioFocusResponse::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -232,38 +236,29 @@ size_t AudioFocusResponse::ByteSizeLong() const {
   return total_size;
 }
 
-void AudioFocusResponse::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.AudioFocusResponse)
-  GOOGLE_DCHECK_NE(&from, this);
-  const AudioFocusResponse* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<AudioFocusResponse>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.AudioFocusResponse)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.AudioFocusResponse)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData AudioFocusResponse::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    AudioFocusResponse::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*AudioFocusResponse::GetClassData() const { return &_class_data_; }
+
+void AudioFocusResponse::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<AudioFocusResponse *>(to)->MergeFrom(
+      static_cast<const AudioFocusResponse &>(from));
 }
+
 
 void AudioFocusResponse::MergeFrom(const AudioFocusResponse& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.AudioFocusResponse)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_has_audio_focus_state()) {
     _internal_set_audio_focus_state(from._internal_audio_focus_state());
   }
-}
-
-void AudioFocusResponse::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.AudioFocusResponse)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void AudioFocusResponse::CopyFrom(const AudioFocusResponse& from) {

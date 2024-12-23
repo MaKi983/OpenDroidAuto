@@ -73,7 +73,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 const char descriptor_table_protodef_MediaInfoChannelMetadataData_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\"MediaInfoChannelMetadataData.proto\022\024aa"
   "sdk.proto.messages\"\226\001\n\034MediaInfoChannelM"
-  "etadataData\022\022\n\ntrack_name\030\001 \002(\t\022\023\n\013artis"
+  "etadataData\022\022\n\ntrack_name\030\001 \001(\t\022\023\n\013artis"
   "t_name\030\002 \001(\t\022\022\n\nalbum_name\030\003 \001(\t\022\021\n\talbu"
   "m_art\030\004 \001(\014\022\024\n\014track_length\030\006 \002(\005\022\020\n\010unk"
   "nown1\030\007 \002(\005"
@@ -119,14 +119,17 @@ class MediaInfoChannelMetadataData::_Internal {
     (*has_bits)[0] |= 32u;
   }
   static bool MissingRequiredFields(const HasBits& has_bits) {
-    return ((has_bits[0] & 0x00000031) ^ 0x00000031) != 0;
+    return ((has_bits[0] & 0x00000030) ^ 0x00000030) != 0;
   }
 };
 
-MediaInfoChannelMetadataData::MediaInfoChannelMetadataData(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+MediaInfoChannelMetadataData::MediaInfoChannelMetadataData(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.MediaInfoChannelMetadataData)
 }
 MediaInfoChannelMetadataData::MediaInfoChannelMetadataData(const MediaInfoChannelMetadataData& from)
@@ -159,7 +162,7 @@ MediaInfoChannelMetadataData::MediaInfoChannelMetadataData(const MediaInfoChanne
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.MediaInfoChannelMetadataData)
 }
 
-void MediaInfoChannelMetadataData::SharedCtor() {
+inline void MediaInfoChannelMetadataData::SharedCtor() {
 track_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 artist_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 album_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -172,11 +175,12 @@ album_art_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAl
 
 MediaInfoChannelMetadataData::~MediaInfoChannelMetadataData() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.MediaInfoChannelMetadataData)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void MediaInfoChannelMetadataData::SharedDtor() {
+inline void MediaInfoChannelMetadataData::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   track_name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   artist_name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -231,7 +235,7 @@ const char* MediaInfoChannelMetadataData::_InternalParse(const char* ptr, ::PROT
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     switch (tag >> 3) {
-      // required string track_name = 1;
+      // optional string track_name = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
           auto str = _internal_mutable_track_name();
@@ -319,7 +323,7 @@ failure:
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // required string track_name = 1;
+  // optional string track_name = 1;
   if (cached_has_bits & 0x00000001u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
       this->_internal_track_name().data(), static_cast<int>(this->_internal_track_name().length()),
@@ -379,13 +383,6 @@ size_t MediaInfoChannelMetadataData::RequiredFieldsByteSizeFallback() const {
 // @@protoc_insertion_point(required_fields_byte_size_fallback_start:aasdk.proto.messages.MediaInfoChannelMetadataData)
   size_t total_size = 0;
 
-  if (_internal_has_track_name()) {
-    // required string track_name = 1;
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_track_name());
-  }
-
   if (_internal_has_track_length()) {
     // required int32 track_length = 6;
     total_size += 1 +
@@ -406,12 +403,7 @@ size_t MediaInfoChannelMetadataData::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:aasdk.proto.messages.MediaInfoChannelMetadataData)
   size_t total_size = 0;
 
-  if (((_has_bits_[0] & 0x00000031) ^ 0x00000031) == 0) {  // All required fields are present.
-    // required string track_name = 1;
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_track_name());
-
+  if (((_has_bits_[0] & 0x00000030) ^ 0x00000030) == 0) {  // All required fields are present.
     // required int32 track_length = 6;
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
@@ -430,7 +422,14 @@ size_t MediaInfoChannelMetadataData::ByteSizeLong() const {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x0000000eu) {
+  if (cached_has_bits & 0x0000000fu) {
+    // optional string track_name = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_track_name());
+    }
+
     // optional string artist_name = 2;
     if (cached_has_bits & 0x00000002u) {
       total_size += 1 +
@@ -462,25 +461,22 @@ size_t MediaInfoChannelMetadataData::ByteSizeLong() const {
   return total_size;
 }
 
-void MediaInfoChannelMetadataData::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.MediaInfoChannelMetadataData)
-  GOOGLE_DCHECK_NE(&from, this);
-  const MediaInfoChannelMetadataData* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<MediaInfoChannelMetadataData>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.MediaInfoChannelMetadataData)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.MediaInfoChannelMetadataData)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData MediaInfoChannelMetadataData::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    MediaInfoChannelMetadataData::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*MediaInfoChannelMetadataData::GetClassData() const { return &_class_data_; }
+
+void MediaInfoChannelMetadataData::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<MediaInfoChannelMetadataData *>(to)->MergeFrom(
+      static_cast<const MediaInfoChannelMetadataData &>(from));
 }
+
 
 void MediaInfoChannelMetadataData::MergeFrom(const MediaInfoChannelMetadataData& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.MediaInfoChannelMetadataData)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -506,13 +502,7 @@ void MediaInfoChannelMetadataData::MergeFrom(const MediaInfoChannelMetadataData&
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void MediaInfoChannelMetadataData::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.MediaInfoChannelMetadataData)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void MediaInfoChannelMetadataData::CopyFrom(const MediaInfoChannelMetadataData& from) {

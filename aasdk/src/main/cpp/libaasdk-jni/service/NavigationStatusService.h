@@ -12,7 +12,7 @@ namespace service
     public:
         typedef std::shared_ptr<NavigationStatusService> Pointer;
 
-        NavigationStatusService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::INavigationStatusEvent::Pointer navigationEvent, IServiceEventHandler::Pointer serviceEventHandler);
+        NavigationStatusService(aasdk::io::ioService& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::INavigationStatusEvent::Pointer navigationEvent, IServiceEventHandler::Pointer serviceEventHandler);
         ~NavigationStatusService();
 
         void start() override;
@@ -26,8 +26,8 @@ namespace service
 
     private:
     	using std::enable_shared_from_this<NavigationStatusService>::shared_from_this;
-    	
-        boost::asio::io_service::strand strand_;
+
+        aasdk::io::strand strand_;
         aasdk::channel::navigation::NavigationStatusServiceChannel::Pointer channel_;
         projection::INavigationStatusEvent::Pointer navigationEvent_ = nullptr;
         IServiceEventHandler::Pointer serviceEventHandler_;

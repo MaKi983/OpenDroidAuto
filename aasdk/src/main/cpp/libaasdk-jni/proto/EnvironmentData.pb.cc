@@ -102,10 +102,13 @@ class Environment::_Internal {
   }
 };
 
-Environment::Environment(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+Environment::Environment(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.Environment)
 }
 Environment::Environment(const Environment& from)
@@ -118,7 +121,7 @@ Environment::Environment(const Environment& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.Environment)
 }
 
-void Environment::SharedCtor() {
+inline void Environment::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&temperature_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&rain_) -
@@ -127,11 +130,12 @@ void Environment::SharedCtor() {
 
 Environment::~Environment() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.Environment)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void Environment::SharedDtor() {
+inline void Environment::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -312,25 +316,22 @@ size_t Environment::ByteSizeLong() const {
   return total_size;
 }
 
-void Environment::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.Environment)
-  GOOGLE_DCHECK_NE(&from, this);
-  const Environment* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Environment>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.Environment)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.Environment)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Environment::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    Environment::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Environment::GetClassData() const { return &_class_data_; }
+
+void Environment::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<Environment *>(to)->MergeFrom(
+      static_cast<const Environment &>(from));
 }
+
 
 void Environment::MergeFrom(const Environment& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.Environment)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -347,13 +348,7 @@ void Environment::MergeFrom(const Environment& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void Environment::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.Environment)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Environment::CopyFrom(const Environment& from) {

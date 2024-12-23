@@ -100,7 +100,7 @@ void JMediaStatusEvent::mediaMetadataUpdate(const aasdk::proto::messages::MediaI
         me = nullptr;
     }
 
-    jint jtrackLength = metadata.track_length();
+    jint jtrackLength = metadata.has_track_length() ? metadata.track_length() : 0;
 
     // create metadataUpdateEvent obj
     jmethodID metadataUpdateEventConst = env->GetMethodID(metadataUpdateEventClass_, "<init>","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/nio/ByteBuffer;I)V");

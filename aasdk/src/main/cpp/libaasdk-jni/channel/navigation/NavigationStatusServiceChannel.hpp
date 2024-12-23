@@ -14,7 +14,8 @@ namespace navigation
 class NavigationStatusServiceChannel: public INavigationStatusServiceChannel, public ServiceChannel, public std::enable_shared_from_this<NavigationStatusServiceChannel>
 {
 public:
-    NavigationStatusServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger);
+    NavigationStatusServiceChannel(boost::optional<boost::asio::io_service::strand>& strand, messenger::IMessenger::Pointer messenger);
+    ~NavigationStatusServiceChannel();
 
     void receive(INavigationStatusServiceChannelEventHandler::Pointer eventHandler) override;
     messenger::ChannelId getId() const override;

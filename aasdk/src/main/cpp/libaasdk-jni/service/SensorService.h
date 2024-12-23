@@ -12,7 +12,7 @@ class SensorService: public aasdk::channel::sensor::ISensorServiceChannelEventHa
 public:
     typedef std::shared_ptr<SensorService> Pointer;
 
-    SensorService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, IServiceEventHandler::Pointer serviceEventHandler, bool nightMode=false);
+    SensorService(aasdk::io::ioService& ioService, aasdk::messenger::IMessenger::Pointer messenger, IServiceEventHandler::Pointer serviceEventHandler, bool nightMode=false);
     ~SensorService();
 
     void start() override;
@@ -28,7 +28,7 @@ private:
     void sendDrivingStatusUnrestricted();
     void sendNightData();
 
-    boost::asio::io_service::strand strand_;
+    aasdk::io::strand strand_;
     aasdk::channel::sensor::SensorServiceChannel::Pointer channel_;
     bool nightMode_;
     IServiceEventHandler::Pointer serviceEventHandler_;

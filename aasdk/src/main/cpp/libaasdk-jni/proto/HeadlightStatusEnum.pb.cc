@@ -106,10 +106,13 @@ class HeadlightStatus::_Internal {
  public:
 };
 
-HeadlightStatus::HeadlightStatus(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+HeadlightStatus::HeadlightStatus(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.enums.HeadlightStatus)
 }
 HeadlightStatus::HeadlightStatus(const HeadlightStatus& from)
@@ -118,16 +121,17 @@ HeadlightStatus::HeadlightStatus(const HeadlightStatus& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.enums.HeadlightStatus)
 }
 
-void HeadlightStatus::SharedCtor() {
+inline void HeadlightStatus::SharedCtor() {
 }
 
 HeadlightStatus::~HeadlightStatus() {
   // @@protoc_insertion_point(destructor:aasdk.proto.enums.HeadlightStatus)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void HeadlightStatus::SharedDtor() {
+inline void HeadlightStatus::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -205,35 +209,26 @@ size_t HeadlightStatus::ByteSizeLong() const {
   return total_size;
 }
 
-void HeadlightStatus::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.enums.HeadlightStatus)
-  GOOGLE_DCHECK_NE(&from, this);
-  const HeadlightStatus* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<HeadlightStatus>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.enums.HeadlightStatus)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.enums.HeadlightStatus)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData HeadlightStatus::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    HeadlightStatus::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*HeadlightStatus::GetClassData() const { return &_class_data_; }
+
+void HeadlightStatus::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<HeadlightStatus *>(to)->MergeFrom(
+      static_cast<const HeadlightStatus &>(from));
 }
+
 
 void HeadlightStatus::MergeFrom(const HeadlightStatus& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.enums.HeadlightStatus)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-}
-
-void HeadlightStatus::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.enums.HeadlightStatus)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void HeadlightStatus::CopyFrom(const HeadlightStatus& from) {

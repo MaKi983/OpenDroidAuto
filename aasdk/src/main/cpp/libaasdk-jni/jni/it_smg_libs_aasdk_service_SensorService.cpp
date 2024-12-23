@@ -22,7 +22,8 @@ void JSensorService::initJavaMethods() {
 }
 
 JSensorService::~JSensorService() {
-//    sensorService_.reset();
+    if (Log::isVerbose()) Log_v("destructor");
+    sensorService_.reset();
 }
 
 JSensorService::Pointer JSensorService::getJSensorService(JNIEnv *env, jobject jinputservice) {

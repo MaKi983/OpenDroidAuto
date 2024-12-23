@@ -80,10 +80,13 @@ class AVChannelStopIndication::_Internal {
  public:
 };
 
-AVChannelStopIndication::AVChannelStopIndication(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+AVChannelStopIndication::AVChannelStopIndication(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.AVChannelStopIndication)
 }
 AVChannelStopIndication::AVChannelStopIndication(const AVChannelStopIndication& from)
@@ -92,16 +95,17 @@ AVChannelStopIndication::AVChannelStopIndication(const AVChannelStopIndication& 
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.AVChannelStopIndication)
 }
 
-void AVChannelStopIndication::SharedCtor() {
+inline void AVChannelStopIndication::SharedCtor() {
 }
 
 AVChannelStopIndication::~AVChannelStopIndication() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.AVChannelStopIndication)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void AVChannelStopIndication::SharedDtor() {
+inline void AVChannelStopIndication::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -179,35 +183,26 @@ size_t AVChannelStopIndication::ByteSizeLong() const {
   return total_size;
 }
 
-void AVChannelStopIndication::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.AVChannelStopIndication)
-  GOOGLE_DCHECK_NE(&from, this);
-  const AVChannelStopIndication* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<AVChannelStopIndication>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.AVChannelStopIndication)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.AVChannelStopIndication)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData AVChannelStopIndication::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    AVChannelStopIndication::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*AVChannelStopIndication::GetClassData() const { return &_class_data_; }
+
+void AVChannelStopIndication::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<AVChannelStopIndication *>(to)->MergeFrom(
+      static_cast<const AVChannelStopIndication &>(from));
 }
+
 
 void AVChannelStopIndication::MergeFrom(const AVChannelStopIndication& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.AVChannelStopIndication)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-}
-
-void AVChannelStopIndication::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.AVChannelStopIndication)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void AVChannelStopIndication::CopyFrom(const AVChannelStopIndication& from) {

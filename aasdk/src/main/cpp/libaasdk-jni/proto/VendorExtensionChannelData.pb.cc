@@ -100,11 +100,14 @@ class VendorExtensionChannel::_Internal {
   }
 };
 
-VendorExtensionChannel::VendorExtensionChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+VendorExtensionChannel::VendorExtensionChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
   package_white_list_(arena) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.VendorExtensionChannel)
 }
 VendorExtensionChannel::VendorExtensionChannel(const VendorExtensionChannel& from)
@@ -125,18 +128,19 @@ VendorExtensionChannel::VendorExtensionChannel(const VendorExtensionChannel& fro
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.VendorExtensionChannel)
 }
 
-void VendorExtensionChannel::SharedCtor() {
+inline void VendorExtensionChannel::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 data_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 VendorExtensionChannel::~VendorExtensionChannel() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.VendorExtensionChannel)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void VendorExtensionChannel::SharedDtor() {
+inline void VendorExtensionChannel::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   data_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -318,25 +322,22 @@ size_t VendorExtensionChannel::ByteSizeLong() const {
   return total_size;
 }
 
-void VendorExtensionChannel::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.VendorExtensionChannel)
-  GOOGLE_DCHECK_NE(&from, this);
-  const VendorExtensionChannel* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<VendorExtensionChannel>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.VendorExtensionChannel)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.VendorExtensionChannel)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData VendorExtensionChannel::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    VendorExtensionChannel::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*VendorExtensionChannel::GetClassData() const { return &_class_data_; }
+
+void VendorExtensionChannel::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<VendorExtensionChannel *>(to)->MergeFrom(
+      static_cast<const VendorExtensionChannel &>(from));
 }
+
 
 void VendorExtensionChannel::MergeFrom(const VendorExtensionChannel& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.VendorExtensionChannel)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -350,13 +351,7 @@ void VendorExtensionChannel::MergeFrom(const VendorExtensionChannel& from) {
       _internal_set_data(from._internal_data());
     }
   }
-}
-
-void VendorExtensionChannel::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.VendorExtensionChannel)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void VendorExtensionChannel::CopyFrom(const VendorExtensionChannel& from) {

@@ -30,8 +30,8 @@ private:
     sp<ANativeWindow> nativeWindow_;
     OMXSource::Pointer source_;
 
-//    std::mutex& mutex_;
     int32_t frameRate_;
 
     status_t status_;
+    bool isRunning_;
 };

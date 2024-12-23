@@ -121,10 +121,13 @@ void NavigationChannel::clear_image_options() {
   if (image_options_ != nullptr) image_options_->Clear();
   _has_bits_[0] &= ~0x00000001u;
 }
-NavigationChannel::NavigationChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+NavigationChannel::NavigationChannel(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.NavigationChannel)
 }
 NavigationChannel::NavigationChannel(const NavigationChannel& from)
@@ -142,7 +145,7 @@ NavigationChannel::NavigationChannel(const NavigationChannel& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.NavigationChannel)
 }
 
-void NavigationChannel::SharedCtor() {
+inline void NavigationChannel::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&image_options_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&type_) -
@@ -151,11 +154,12 @@ void NavigationChannel::SharedCtor() {
 
 NavigationChannel::~NavigationChannel() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.NavigationChannel)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void NavigationChannel::SharedDtor() {
+inline void NavigationChannel::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   if (this != internal_default_instance()) delete image_options_;
 }
@@ -345,25 +349,22 @@ size_t NavigationChannel::ByteSizeLong() const {
   return total_size;
 }
 
-void NavigationChannel::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.NavigationChannel)
-  GOOGLE_DCHECK_NE(&from, this);
-  const NavigationChannel* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<NavigationChannel>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.NavigationChannel)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.NavigationChannel)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData NavigationChannel::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    NavigationChannel::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*NavigationChannel::GetClassData() const { return &_class_data_; }
+
+void NavigationChannel::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<NavigationChannel *>(to)->MergeFrom(
+      static_cast<const NavigationChannel &>(from));
 }
+
 
 void NavigationChannel::MergeFrom(const NavigationChannel& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.NavigationChannel)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -380,13 +381,7 @@ void NavigationChannel::MergeFrom(const NavigationChannel& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void NavigationChannel::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.NavigationChannel)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void NavigationChannel::CopyFrom(const NavigationChannel& from) {

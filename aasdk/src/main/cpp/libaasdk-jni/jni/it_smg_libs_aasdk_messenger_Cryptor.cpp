@@ -16,7 +16,7 @@ JCryptor::JCryptor(JNIEnv *env, jobject jcryptor)
 }
 
 JCryptor::~JCryptor() {
-//    cryptor_.reset();
+    cryptor_.reset();
 }
 
 JCryptor::Pointer JCryptor::getJCryptor(JNIEnv *env, jobject jcryptor) {

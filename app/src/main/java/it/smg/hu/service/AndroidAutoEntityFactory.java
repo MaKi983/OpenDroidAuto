@@ -1,43 +1,53 @@
 package it.smg.hu.service;
 
+import android.content.Context;
 import android.view.SurfaceView;
 
-import java.util.Map;
-
 import it.smg.hu.config.Settings;
-import it.smg.libs.aasdk.messenger.ChannelId;
-import it.smg.libs.aasdk.messenger.Cryptor;
-import it.smg.libs.aasdk.messenger.Messenger;
+import it.smg.hu.projection.DeviceFactory;
 import it.smg.libs.aasdk.service.AndroidAutoEntity;
-import it.smg.libs.aasdk.service.IPinger;
-import it.smg.libs.aasdk.service.IService;
-import it.smg.libs.aasdk.service.Pinger;
-import it.smg.libs.aasdk.transport.TCPTransport;
-import it.smg.libs.aasdk.transport.USBTransport;
+import it.smg.libs.aasdk.service.AndroidAutoEntityBuilder;
+import it.smg.libs.aasdk.tcp.TCPEndpoint;
+import it.smg.libs.aasdk.usb.LibUsbDevice;
 
 public class AndroidAutoEntityFactory {
 
     private static final String TAG = "AndroidAutoEntityFactory";
 
-    public static AndroidAutoEntity create(ODAService service, TCPTransport transport, SurfaceView surfaceView){
-        Cryptor cryptor = new Cryptor();
+    public static AndroidAutoEntity create(ODAService service, TCPEndpoint tcpEndpoint, SurfaceView surfaceView){
+        AndroidAutoEntityBuilder builder = new AndroidAutoEntityBuilder(tcpEndpoint, service, Settings.instance().car);
 
-        Messenger messenger = new Messenger(transport, cryptor);
+        createServices(builder, service.getApplicationContext(), surfaceView);
 
-        Map<ChannelId, IService> serviceList = ServiceFactory.create(messenger, service, surfaceView);
-        IPinger pinger = new Pinger(5000);
-
-        return new AndroidAutoEntity(cryptor, transport, messenger, Settings.instance().car, serviceList, pinger, Settings.instance().advanced.threads());
+        return builder.build();
     }
 
-    public static AndroidAutoEntity create(ODAService service, USBTransport transport, SurfaceView surfaceView){
-        Cryptor cryptor = new Cryptor();
+    public static AndroidAutoEntity create(ODAService service, LibUsbDevice device, SurfaceView surfaceView){
+        AndroidAutoEntityBuilder builder = new AndroidAutoEntityBuilder(device, service, Settings.instance().car);
 
-        Messenger messenger = new Messenger(transport, cryptor);
+        createServices(builder, service.getApplicationContext(), surfaceView);
 
-        Map<ChannelId, IService> serviceList = ServiceFactory.create(messenger, service, surfaceView);
-        IPinger pinger = new Pinger(5000);
+        return builder.build();
+    }
 
-        return new AndroidAutoEntity(cryptor, transport, messenger, Settings.instance().car, serviceList, pinger, Settings.instance().advanced.threads());
+    private static void createServices(AndroidAutoEntityBuilder builder, Context ctx, SurfaceView surfaceView){
+        builder.createMediaAudioService(DeviceFactory.createMediaAudioOutput());
+        builder.createSpeechAudioService(DeviceFactory.createSpeechAudioOutput());
+        builder.createSystemAudioService(DeviceFactory.createSystemAudioOutput());
+        builder.createAudioInputService(DeviceFactory.createAudioInput());
+        builder.createVideoService(DeviceFactory.createVideoOutput(surfaceView));
+        builder.createSensorService(DeviceFactory.createSensor(ctx));
+        builder.createBluetoothService(DeviceFactory.createBluetoothDevice());
+        builder.createInputService(DeviceFactory.createInputDevice(ctx, surfaceView));
+
+        if (Settings.instance().video.showNavigationNotification()) {
+            builder.createNavigationStatusService(DeviceFactory.createNavigationStatusEvent());
+        }
+
+        if (Settings.instance().video.showMediaNotification()) {
+            builder.createMediaStatusService(DeviceFactory.createMediaStatusEvent());
+        }
+
+        builder.setThreadNum(Settings.instance().advanced.threads());
     }
 }

@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk.service;
 
+import android.view.SurfaceView;
+
 import androidx.annotation.Keep;
 
 import java.util.ArrayList;
@@ -7,6 +9,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import it.smg.libs.aasdk.Runtime;
+import it.smg.libs.aasdk.transport.TCPTransport;
 import it.smg.libs.common.Log;
 import it.smg.libs.aasdk.configuration.ICarConfiguration;
 import it.smg.libs.aasdk.messenger.ChannelId;
@@ -25,17 +28,21 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
     private ICarConfiguration config_;
     private Map<ChannelId, IService> serviceList_;
 
-    public AndroidAutoEntity(Cryptor cryptor, Transport transport, Messenger messenger, ICarConfiguration config, Map<ChannelId, IService> serviceList, IPinger pinger, int threads) {
+    private Runtime runtime_;
+
+    /*private*/ AndroidAutoEntity(Runtime runtime, Cryptor cryptor, Transport transport, Messenger messenger, ICarConfiguration config, Map<ChannelId, IService> serviceList, IPinger pinger, int threads) {
         cryptor_ = cryptor;
         transport_ = transport;
         messenger_ = messenger;
         serviceList_ = serviceList;
         config_ = config;
         pinger_ = pinger;
-
-        Runtime.startThreads(threads);
+        runtime_ = runtime;
 
         handle_ = nativeSetup(cryptor_, messenger_, new ArrayList<>(serviceList_.values()), config_, pinger_);
+
+//        Runtime.startThreads(threads);
+        runtime_.startThreads(threads);
     }
 
     public void releaseFocus() {
@@ -78,10 +85,6 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
 
     @Override
     public void stop() {
-        nativeStop();
-
-        Runtime.stopThreads();
-
         messenger_.stop();
         transport_.stop();
 
@@ -93,7 +96,10 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
             pinger_.cancel();
         }
 
+        nativeStop();
 
+        runtime_.stopThreads();
+//        Runtime.stopThreads();
     }
 
     public void delete(){
@@ -107,12 +113,15 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
             pinger_.delete();
         }
         pinger_ = null;
-        cryptor_.delete();
-        cryptor_ = null;
         messenger_.delete();
         messenger_ = null;
+        cryptor_.delete();
+        cryptor_ = null;
         transport_.delete();
         transport_ = null;
+
+        runtime_.delete();
+//        Runtime.stopThreads();
     }
 
     // Native context

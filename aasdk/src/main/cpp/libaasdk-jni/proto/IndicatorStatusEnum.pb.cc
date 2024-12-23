@@ -106,10 +106,13 @@ class IndicatorStatus::_Internal {
  public:
 };
 
-IndicatorStatus::IndicatorStatus(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+IndicatorStatus::IndicatorStatus(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.enums.IndicatorStatus)
 }
 IndicatorStatus::IndicatorStatus(const IndicatorStatus& from)
@@ -118,16 +121,17 @@ IndicatorStatus::IndicatorStatus(const IndicatorStatus& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.enums.IndicatorStatus)
 }
 
-void IndicatorStatus::SharedCtor() {
+inline void IndicatorStatus::SharedCtor() {
 }
 
 IndicatorStatus::~IndicatorStatus() {
   // @@protoc_insertion_point(destructor:aasdk.proto.enums.IndicatorStatus)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void IndicatorStatus::SharedDtor() {
+inline void IndicatorStatus::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -205,35 +209,26 @@ size_t IndicatorStatus::ByteSizeLong() const {
   return total_size;
 }
 
-void IndicatorStatus::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.enums.IndicatorStatus)
-  GOOGLE_DCHECK_NE(&from, this);
-  const IndicatorStatus* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<IndicatorStatus>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.enums.IndicatorStatus)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.enums.IndicatorStatus)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData IndicatorStatus::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    IndicatorStatus::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*IndicatorStatus::GetClassData() const { return &_class_data_; }
+
+void IndicatorStatus::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<IndicatorStatus *>(to)->MergeFrom(
+      static_cast<const IndicatorStatus &>(from));
 }
+
 
 void IndicatorStatus::MergeFrom(const IndicatorStatus& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.enums.IndicatorStatus)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-}
-
-void IndicatorStatus::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.enums.IndicatorStatus)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void IndicatorStatus::CopyFrom(const IndicatorStatus& from) {

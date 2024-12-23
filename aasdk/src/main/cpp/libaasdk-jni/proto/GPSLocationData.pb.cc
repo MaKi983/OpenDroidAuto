@@ -128,10 +128,13 @@ class GPSLocation::_Internal {
   }
 };
 
-GPSLocation::GPSLocation(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+GPSLocation::GPSLocation(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.GPSLocation)
 }
 GPSLocation::GPSLocation(const GPSLocation& from)
@@ -144,7 +147,7 @@ GPSLocation::GPSLocation(const GPSLocation& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.GPSLocation)
 }
 
-void GPSLocation::SharedCtor() {
+inline void GPSLocation::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&timestamp_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&bearing_) -
@@ -153,11 +156,12 @@ void GPSLocation::SharedCtor() {
 
 GPSLocation::~GPSLocation() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.GPSLocation)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void GPSLocation::SharedDtor() {
+inline void GPSLocation::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -430,25 +434,22 @@ size_t GPSLocation::ByteSizeLong() const {
   return total_size;
 }
 
-void GPSLocation::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.GPSLocation)
-  GOOGLE_DCHECK_NE(&from, this);
-  const GPSLocation* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<GPSLocation>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.GPSLocation)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.GPSLocation)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData GPSLocation::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    GPSLocation::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GPSLocation::GetClassData() const { return &_class_data_; }
+
+void GPSLocation::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<GPSLocation *>(to)->MergeFrom(
+      static_cast<const GPSLocation &>(from));
 }
+
 
 void GPSLocation::MergeFrom(const GPSLocation& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.GPSLocation)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -477,13 +478,7 @@ void GPSLocation::MergeFrom(const GPSLocation& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void GPSLocation::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.GPSLocation)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void GPSLocation::CopyFrom(const GPSLocation& from) {

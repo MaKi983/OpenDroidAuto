@@ -7,7 +7,7 @@ namespace aasdk
 namespace channel
 {
 
-ServiceChannel::ServiceChannel(boost::asio::io_service::strand& strand,
+ServiceChannel::ServiceChannel(boost::optional<boost::asio::io_service::strand>& strand,
                                messenger::IMessenger::Pointer messenger,
                                messenger::ChannelId channelId)
     : strand_(strand)
@@ -22,7 +22,7 @@ void ServiceChannel::send(messenger::Message::Pointer message, SendPromise::Poin
 #if BOOST_VERSION < 106600
     auto sendPromise = messenger::SendPromise::defer(strand_.get_io_service(), "ServiceChannel_send");
 #else
-    auto sendPromise = messenger::SendPromise::defer(strand_.context(), "ServiceChannel_send");
+    auto sendPromise = messenger::SendPromise::defer(strand_->get_io_context(), "ServiceChannel_send");
 //    auto sendPromise = messenger::SendPromise::defer(strand_, "ServiceChannel_send");
 #endif
 

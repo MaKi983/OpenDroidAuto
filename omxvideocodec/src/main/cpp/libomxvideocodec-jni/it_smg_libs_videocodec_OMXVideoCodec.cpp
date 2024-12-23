@@ -1,4 +1,5 @@
 #include "it_smg_libs_videocodec_OMXVideoCodec.h"
+#include <Log.h>
 
 jfieldID JOMXVideoCodec::handleId = nullptr;
 

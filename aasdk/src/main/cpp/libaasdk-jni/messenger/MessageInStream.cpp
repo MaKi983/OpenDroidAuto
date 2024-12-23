@@ -7,18 +7,26 @@ namespace aasdk
 namespace messenger
 {
 
-MessageInStream::MessageInStream(boost::asio::io_service& ioService, transport::ITransport::Pointer transport, ICryptor::Pointer cryptor)
+MessageInStream::MessageInStream(aasdk::io::ioService& ioService, transport::ITransport::Pointer transport, ICryptor::Pointer cryptor)
     : strand_(ioService)
     , transport_(std::move(transport))
     , cryptor_(std::move(cryptor))
-//    , isStopping_(false)
+    , isStopping_(false)
 {
+}
 
+MessageInStream::~MessageInStream(){
+    if (Log::isVerbose()) Log_v("destructor");
 }
 
 void MessageInStream::startReceive(ReceivePromise::Pointer promise)
 {
-    strand_.dispatch([this, self = this->shared_from_this(), promise = std::move(promise)]() mutable {
+    if (isStopping_) {
+        if (Log::isInfo()) Log_i("Messenger stopped");
+        return;
+    }
+
+    strand_->dispatch([this, self = this->shared_from_this(), promise = std::move(promise)]() mutable {
         if (Log::isDebug()) Log_d("startReceive");
         if(promise_ == nullptr)
         {
@@ -162,9 +170,11 @@ void MessageInStream::receiveFramePayloadHandler(const common::DataConstBuffer& 
     }
 }
 
-//void MessageInStream::stop() {
-//    if(Log::isVerbose()) Log_v("set stop flag");
-//}
+void MessageInStream::stop() {
+    if(Log::isVerbose()) Log_v("stop");
+    isStopping_ = true;
+    strand_ = boost::none;
+}
 
 }
 }

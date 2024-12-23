@@ -16,10 +16,10 @@ namespace messenger
 class MessageOutStream: public IMessageOutStream, public std::enable_shared_from_this<MessageOutStream>, boost::noncopyable
 {
 public:
-    MessageOutStream(boost::asio::io_service& ioService, transport::ITransport::Pointer transport, ICryptor::Pointer cryptor);
-
+    MessageOutStream(aasdk::io::ioService& ioService, transport::ITransport::Pointer transport, ICryptor::Pointer cryptor);
+    ~MessageOutStream();
     void stream(Message::Pointer message, SendPromise::Pointer promise) override;
-//    void stop() override;
+    void stop() override;
 private:
     using std::enable_shared_from_this<MessageOutStream>::shared_from_this;
 
@@ -32,14 +32,14 @@ private:
     void setFrameSize(common::Data& data, FrameType frameType, size_t payloadSize, size_t totalSize);
     void reset();
 
-    boost::asio::io_service::strand strand_;
+    io::strand strand_;
     transport::ITransport::Pointer transport_;
     ICryptor::Pointer cryptor_;
 //    Message::Pointer message_;
 //    size_t offset_;
 //    size_t remainingSize_;
 //    SendPromise::Pointer promise_;
-//    bool isStopping_;
+    bool isStopping_;
 
     static constexpr size_t cMaxFramePayloadSize = 0x4000;
 };

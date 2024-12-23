@@ -11,6 +11,7 @@ public:
     typedef JVideoEventHandler* Pointer;
 
     JVideoEventHandler(JNIEnv *env, jobject jvideoeventhandler);
+    ~JVideoEventHandler();
 
     void initJavaMethods() override;
 

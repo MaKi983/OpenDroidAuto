@@ -15,7 +15,7 @@ namespace av
 class AudioServiceChannel: public IAudioServiceChannel, public ServiceChannel, public std::enable_shared_from_this<AudioServiceChannel>
 {
 public:
-    AudioServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger,  messenger::ChannelId channelId);
+    AudioServiceChannel(io::strand& strand, messenger::IMessenger::Pointer messenger,  messenger::ChannelId channelId);
 
     void receive(IAudioServiceChannelEventHandler::Pointer eventHandler) override;
     void sendChannelOpenResponse(const proto::messages::ChannelOpenResponse& response, SendPromise::Pointer promise) override;

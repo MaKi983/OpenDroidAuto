@@ -95,10 +95,13 @@ class AuthCompleteIndication::_Internal {
   }
 };
 
-AuthCompleteIndication::AuthCompleteIndication(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+AuthCompleteIndication::AuthCompleteIndication(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.AuthCompleteIndication)
 }
 AuthCompleteIndication::AuthCompleteIndication(const AuthCompleteIndication& from)
@@ -109,17 +112,18 @@ AuthCompleteIndication::AuthCompleteIndication(const AuthCompleteIndication& fro
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.AuthCompleteIndication)
 }
 
-void AuthCompleteIndication::SharedCtor() {
+inline void AuthCompleteIndication::SharedCtor() {
 status_ = 0;
 }
 
 AuthCompleteIndication::~AuthCompleteIndication() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.AuthCompleteIndication)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void AuthCompleteIndication::SharedDtor() {
+inline void AuthCompleteIndication::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -231,38 +235,29 @@ size_t AuthCompleteIndication::ByteSizeLong() const {
   return total_size;
 }
 
-void AuthCompleteIndication::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.AuthCompleteIndication)
-  GOOGLE_DCHECK_NE(&from, this);
-  const AuthCompleteIndication* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<AuthCompleteIndication>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.AuthCompleteIndication)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.AuthCompleteIndication)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData AuthCompleteIndication::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    AuthCompleteIndication::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*AuthCompleteIndication::GetClassData() const { return &_class_data_; }
+
+void AuthCompleteIndication::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<AuthCompleteIndication *>(to)->MergeFrom(
+      static_cast<const AuthCompleteIndication &>(from));
 }
+
 
 void AuthCompleteIndication::MergeFrom(const AuthCompleteIndication& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.AuthCompleteIndication)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_has_status()) {
     _internal_set_status(from._internal_status());
   }
-}
-
-void AuthCompleteIndication::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.AuthCompleteIndication)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void AuthCompleteIndication::CopyFrom(const AuthCompleteIndication& from) {

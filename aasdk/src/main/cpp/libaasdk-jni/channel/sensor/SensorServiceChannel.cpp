@@ -13,10 +13,13 @@ namespace channel
 namespace sensor
 {
 
-SensorServiceChannel::SensorServiceChannel(boost::asio::io_service::strand& strand,  messenger::IMessenger::Pointer messenger)
+SensorServiceChannel::SensorServiceChannel(boost::optional<boost::asio::io_service::strand>& strand,  messenger::IMessenger::Pointer messenger)
     : ServiceChannel(strand, std::move(messenger), messenger::ChannelId::SENSOR)
 {
+}
 
+SensorServiceChannel::~SensorServiceChannel(){
+    if (Log::isVerbose()) Log_v("destructor");
 }
 
 void SensorServiceChannel::receive(ISensorServiceChannelEventHandler::Pointer eventHandler)

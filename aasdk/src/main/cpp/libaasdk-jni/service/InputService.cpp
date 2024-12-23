@@ -5,24 +5,27 @@
 namespace service
 {
 
-InputService::InputService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IInputDevice::Pointer inputDevice, IServiceEventHandler::Pointer serviceEventHandler)
+InputService::InputService(aasdk::io::ioService& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IInputDevice::Pointer inputDevice, IServiceEventHandler::Pointer serviceEventHandler)
         : strand_(ioService)
         , channel_(std::make_shared<aasdk::channel::input::InputServiceChannel>(strand_, std::move(messenger)))
-        , serviceEventHandler_(std::move(serviceEventHandler))
-        , inputDevice_(std::move(inputDevice))
+        , serviceEventHandler_(serviceEventHandler)
+        , inputDevice_(inputDevice)
         , isRunning_(false)
 {
 }
 
 InputService::~InputService(){
-//    delete channel_;
+    if (Log::isVerbose()) Log_v("destructor");
+    channel_.reset();
+    serviceEventHandler_ = nullptr;
+    inputDevice_ = nullptr;
 }
 
 void InputService::start()
 {
     isRunning_ = true;
-//    strand_.dispatch([this, self = this->shared_from_this()]() {
-//    strand_.post([this, self = this->shared_from_this()]() {
+//    strand_->dispatch([this, self = this->shared_from_this()]() {
+//    strand_->post([this, self = this->shared_from_this()]() {
         if(Log::isInfo()) Log_i("start");
         channel_->receive(this->shared_from_this());
 //    });
@@ -136,7 +139,7 @@ void InputService::onButtonEvent(const projection::ButtonEvent& event)
 
     auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch());
 
-    strand_.dispatch([this, self = this->shared_from_this(), event = std::move(event), timestamp = std::move(timestamp)]() {
+    strand_->dispatch([this, self = this->shared_from_this(), event = std::move(event), timestamp = std::move(timestamp)]() {
         aasdk::proto::messages::InputEventIndication inputEventIndication;
         inputEventIndication.set_timestamp(timestamp.count());
 
@@ -186,7 +189,7 @@ void InputService::onTouchEvent(aasdk::proto::messages::InputEventIndication inp
 {
     if(!isRunning_) return;
 
-    strand_.dispatch([this, self = this->shared_from_this(), inputEventIndication = std::move(inputEventIndication)]() {
+    strand_->dispatch([this, self = this->shared_from_this(), inputEventIndication = std::move(inputEventIndication)]() {
 
         auto promise = aasdk::channel::SendPromise::defer(strand_, "InputService_touchEvent");
         promise->then([]() {}, std::bind(&InputService::onChannelError, this->shared_from_this(), std::placeholders::_1));
@@ -200,7 +203,7 @@ void InputService::onMouseEvent(const projection::TouchEvent& event)
 
     auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch());
 
-    strand_.dispatch([this, self = this->shared_from_this(), event = std::move(event), timestamp = std::move(timestamp)]() {
+    strand_->dispatch([this, self = this->shared_from_this(), event = std::move(event), timestamp = std::move(timestamp)]() {
         aasdk::proto::messages::InputEventIndication inputEventIndication;
         inputEventIndication.set_timestamp(timestamp.count());
 

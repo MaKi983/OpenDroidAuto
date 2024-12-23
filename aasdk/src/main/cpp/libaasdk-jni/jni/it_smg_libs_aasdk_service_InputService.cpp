@@ -14,6 +14,11 @@ JInputService::JInputService(JNIEnv *env, jobject jinputervice, jobject jmesseng
     inputService_ = std::make_shared<InputService>(JRuntime::ioService(), jMessenger->getMessenger(), jInputDevice, this);
 }
 
+JInputService::~JInputService() {
+    if (Log::isVerbose()) Log_v("destructor");
+    inputService_.reset();
+}
+
 void JInputService::initJavaMethods() {
 //    JNIEnv* env = getJniEnv();
 //    jclass cls = env->GetObjectClass(androidClass_);

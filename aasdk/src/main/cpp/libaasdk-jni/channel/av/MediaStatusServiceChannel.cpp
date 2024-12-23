@@ -16,7 +16,7 @@ namespace channel
 namespace av
 {
 
-MediaStatusServiceChannel::MediaStatusServiceChannel(boost::asio::io_service::strand& strand, messenger::IMessenger::Pointer messenger)
+MediaStatusServiceChannel::MediaStatusServiceChannel(io::strand& strand, messenger::IMessenger::Pointer messenger)
     : ServiceChannel(strand, std::move(messenger), messenger::ChannelId::MEDIA_STATUS)
 {
 
@@ -29,6 +29,10 @@ void MediaStatusServiceChannel::receive(IMediaStatusServiceChannelEventHandler::
                         std::bind(&IMediaStatusServiceChannelEventHandler::onChannelError, eventHandler,std::placeholders::_1));
 
     messenger_->enqueueReceive(channelId_, std::move(receivePromise));
+}
+
+MediaStatusServiceChannel::~MediaStatusServiceChannel() {
+    if (Log::isVerbose()) Log_v("destructor");
 }
 
 messenger::ChannelId MediaStatusServiceChannel::getId() const

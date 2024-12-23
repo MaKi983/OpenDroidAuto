@@ -6,18 +6,20 @@
 namespace service
 {
 
-BluetoothService::BluetoothService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IBluetoothDevice::Pointer bluetoothDevice, IServiceEventHandler::Pointer serviceEventHandler)
+BluetoothService::BluetoothService(aasdk::io::ioService& ioService, aasdk::messenger::IMessenger::Pointer messenger, projection::IBluetoothDevice::Pointer bluetoothDevice, IServiceEventHandler::Pointer serviceEventHandler)
         : strand_(ioService)
         , channel_(std::make_shared<aasdk::channel::bluetooth::BluetoothServiceChannel>(strand_, std::move(messenger)))
-        , serviceEventHandler_(std::move(serviceEventHandler))
-        , bluetoothDevice_(std::move(bluetoothDevice))
+        , serviceEventHandler_(serviceEventHandler)
+        , bluetoothDevice_(bluetoothDevice)
         , isRunning_(false)
 {
 
 }
 
 BluetoothService::~BluetoothService(){
-//    delete channel_;
+    if (Log::isVerbose()) Log_v("destructor");
+    channel_.reset();
+    serviceEventHandler_ = nullptr;
 }
 
 void BluetoothService::start()

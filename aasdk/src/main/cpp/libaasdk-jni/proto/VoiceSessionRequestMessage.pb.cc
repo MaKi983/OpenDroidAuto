@@ -82,10 +82,13 @@ class VoiceSessionRequest::_Internal {
  public:
 };
 
-VoiceSessionRequest::VoiceSessionRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+VoiceSessionRequest::VoiceSessionRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.VoiceSessionRequest)
 }
 VoiceSessionRequest::VoiceSessionRequest(const VoiceSessionRequest& from)
@@ -95,17 +98,18 @@ VoiceSessionRequest::VoiceSessionRequest(const VoiceSessionRequest& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.VoiceSessionRequest)
 }
 
-void VoiceSessionRequest::SharedCtor() {
+inline void VoiceSessionRequest::SharedCtor() {
 type_ = 0u;
 }
 
 VoiceSessionRequest::~VoiceSessionRequest() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.VoiceSessionRequest)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void VoiceSessionRequest::SharedDtor() {
+inline void VoiceSessionRequest::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -172,7 +176,7 @@ failure:
   (void) cached_has_bits;
 
   // uint32 type = 1;
-  if (this->type() != 0) {
+  if (this->_internal_type() != 0) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(1, this->_internal_type(), target);
   }
@@ -194,7 +198,7 @@ size_t VoiceSessionRequest::ByteSizeLong() const {
   (void) cached_has_bits;
 
   // uint32 type = 1;
-  if (this->type() != 0) {
+  if (this->_internal_type() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
         this->_internal_type());
@@ -209,38 +213,29 @@ size_t VoiceSessionRequest::ByteSizeLong() const {
   return total_size;
 }
 
-void VoiceSessionRequest::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.VoiceSessionRequest)
-  GOOGLE_DCHECK_NE(&from, this);
-  const VoiceSessionRequest* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<VoiceSessionRequest>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.VoiceSessionRequest)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.VoiceSessionRequest)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData VoiceSessionRequest::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    VoiceSessionRequest::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*VoiceSessionRequest::GetClassData() const { return &_class_data_; }
+
+void VoiceSessionRequest::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<VoiceSessionRequest *>(to)->MergeFrom(
+      static_cast<const VoiceSessionRequest &>(from));
 }
+
 
 void VoiceSessionRequest::MergeFrom(const VoiceSessionRequest& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.VoiceSessionRequest)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.type() != 0) {
+  if (from._internal_type() != 0) {
     _internal_set_type(from._internal_type());
   }
-}
-
-void VoiceSessionRequest::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.VoiceSessionRequest)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void VoiceSessionRequest::CopyFrom(const VoiceSessionRequest& from) {

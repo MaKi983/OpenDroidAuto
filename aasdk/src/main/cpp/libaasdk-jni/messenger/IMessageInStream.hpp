@@ -17,7 +17,7 @@ public:
     virtual ~IMessageInStream() = default;
 
     virtual void startReceive(ReceivePromise::Pointer promise) = 0;
-//    virtual void stop() = 0;
+    virtual void stop() = 0;
 };
 
 }

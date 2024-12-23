@@ -6,7 +6,7 @@
 namespace service
 {
 
-SensorService::SensorService(boost::asio::io_service& ioService, aasdk::messenger::IMessenger::Pointer messenger, IServiceEventHandler::Pointer serviceEventHandler, bool nightMode)
+SensorService::SensorService(aasdk::io::ioService& ioService, aasdk::messenger::IMessenger::Pointer messenger, IServiceEventHandler::Pointer serviceEventHandler, bool nightMode)
         : strand_(ioService)
         , channel_(std::make_shared<aasdk::channel::sensor::SensorServiceChannel>(strand_, std::move(messenger)))
         , serviceEventHandler_(std::move(serviceEventHandler))
@@ -17,7 +17,9 @@ SensorService::SensorService(boost::asio::io_service& ioService, aasdk::messenge
 }
 
 SensorService::~SensorService(){
-//    delete channel_;
+    if (Log::isVerbose()) Log_v("destructor");
+    channel_.reset();
+    serviceEventHandler_ = nullptr;
 }
 
 void SensorService::start()

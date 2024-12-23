@@ -9,7 +9,7 @@ namespace aasdk
 namespace usb
 {
 
-AOAPDevice::AOAPDevice(LibUsbDevice::Pointer libUsbDevice, boost::asio::io_service& ioService, const libusb_interface_descriptor* interfaceDescriptor)
+AOAPDevice::AOAPDevice(LibUsbDevice::Pointer libUsbDevice, aasdk::io::ioService& ioService, const libusb_interface_descriptor* interfaceDescriptor)
     : libUsbDevice_(libUsbDevice)
     , interfaceDescriptor_(interfaceDescriptor)
 {
@@ -44,7 +44,7 @@ IUSBEndpoint& AOAPDevice::getOutEndpoint()
     return *outEndpoint_;
 }
 
-IAOAPDevice::Pointer AOAPDevice::create(LibUsbDevice::Pointer libUsbDevice, boost::asio::io_service& ioService) {
+IAOAPDevice::Pointer AOAPDevice::create(LibUsbDevice::Pointer libUsbDevice, aasdk::io::ioService& ioService) {
 
     auto configDescriptor = libUsbDevice->configDescriptor();
     auto interface = libUsbDevice->interface(configDescriptor);

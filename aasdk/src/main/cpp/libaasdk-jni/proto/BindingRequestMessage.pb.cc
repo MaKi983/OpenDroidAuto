@@ -82,11 +82,14 @@ class BindingRequest::_Internal {
  public:
 };
 
-BindingRequest::BindingRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+BindingRequest::BindingRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
   scan_codes_(arena) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.messages.BindingRequest)
 }
 BindingRequest::BindingRequest(const BindingRequest& from)
@@ -96,16 +99,17 @@ BindingRequest::BindingRequest(const BindingRequest& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.messages.BindingRequest)
 }
 
-void BindingRequest::SharedCtor() {
+inline void BindingRequest::SharedCtor() {
 }
 
 BindingRequest::~BindingRequest() {
   // @@protoc_insertion_point(destructor:aasdk.proto.messages.BindingRequest)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void BindingRequest::SharedDtor() {
+inline void BindingRequest::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -219,36 +223,27 @@ size_t BindingRequest::ByteSizeLong() const {
   return total_size;
 }
 
-void BindingRequest::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.messages.BindingRequest)
-  GOOGLE_DCHECK_NE(&from, this);
-  const BindingRequest* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<BindingRequest>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.messages.BindingRequest)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.messages.BindingRequest)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData BindingRequest::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    BindingRequest::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*BindingRequest::GetClassData() const { return &_class_data_; }
+
+void BindingRequest::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<BindingRequest *>(to)->MergeFrom(
+      static_cast<const BindingRequest &>(from));
 }
+
 
 void BindingRequest::MergeFrom(const BindingRequest& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.messages.BindingRequest)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   scan_codes_.MergeFrom(from.scan_codes_);
-}
-
-void BindingRequest::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.messages.BindingRequest)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void BindingRequest::CopyFrom(const BindingRequest& from) {

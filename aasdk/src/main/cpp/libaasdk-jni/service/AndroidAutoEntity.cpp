@@ -1,17 +1,19 @@
 #include "AndroidAutoEntity.h"
 #include <channel/control/ControlServiceChannel.hpp>
 #include <Log.h>
+#include <boost/stacktrace.hpp>
 
 namespace service
 {
 
-AndroidAutoEntity::AndroidAutoEntity(boost::asio::io_service& ioService,
+AndroidAutoEntity::AndroidAutoEntity(aasdk::io::ioService& ioService,
                                      aasdk::messenger::ICryptor::Pointer cryptor,
                                      aasdk::messenger::IMessenger::Pointer messenger,
                                      configuration::IConfiguration::Pointer config,
                                      ServiceList serviceList,
                                      IPinger::Pointer pinger)
         : strand_(ioService)
+        , signals_(ioService)
         , cryptor_(std::move(cryptor))
         , messenger_(std::move(messenger))
         , controlServiceChannel_(std::make_shared<aasdk::channel::control::ControlServiceChannel>(strand_, messenger_))
@@ -20,7 +22,19 @@ AndroidAutoEntity::AndroidAutoEntity(boost::asio::io_service& ioService,
         , pinger_(std::move(pinger))
         , eventHandler_(nullptr)
 {
-    //controlServiceChannel_ = std::make_shared<aasdk::channel::control::ControlServiceChannel>(strand_, messenger_);
+//    signals_.add(SIGBUS);
+////    signals_.add(SIGKILL);
+//    signals_.add(SIGTERM);
+//    signals_.add(SIGSEGV);
+//
+//    signals_.async_wait([this](boost::system::error_code ec, int signo){
+//        Log_e("App fault with signo %d (%d) -> %s", signo, ec.value(), ec.message().c_str());
+//        std::stringstream ss;
+//        ss << boost::stacktrace::stacktrace();
+//        Log_e("%s", ss.str().c_str());
+//        aasdk::error::Error e(aasdk::error::ErrorCode::UNEXPECTED_ERROR, signo);
+//        triggerQuitOnError(e);
+//    });
 }
 
 AndroidAutoEntity::~AndroidAutoEntity()
@@ -32,11 +46,13 @@ AndroidAutoEntity::~AndroidAutoEntity()
 
 void AndroidAutoEntity::start(IAndroidAutoEntityEventHandler::Pointer eventHandler)
 {
-    strand_.dispatch([this, self = this->shared_from_this(), eventHandler = eventHandler]() {
+    strand_->dispatch([this, self = this->shared_from_this(), eventHandler = eventHandler]() {
         if(Log::isInfo()) Log_i("start");
         eventHandler_ = eventHandler;
 
         controlServiceChannel_->receive(this->shared_from_this());
+
+        this->schedulePing();
 
         auto versionRequestPromise = aasdk::channel::SendPromise::defer(strand_, "AndroidAutoEntity_versionRequest");
         versionRequestPromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));

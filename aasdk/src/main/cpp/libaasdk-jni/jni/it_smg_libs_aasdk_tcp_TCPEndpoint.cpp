@@ -14,14 +14,15 @@ JTCPEndpoint::JTCPEndpoint(JNIEnv *env, jobject jtcpendpoint, std::string ipAddr
 }
 
 JTCPEndpoint::~JTCPEndpoint(){
-//    tcpEndpoint_.reset();
+    if (Log::isVerbose()) Log_v("destructor");
+    tcpEndpoint_.reset();
 }
 
 JTCPEndpoint::Pointer JTCPEndpoint::getJTCPEndpoint(JNIEnv *env, jobject jtcpendpoint) {
     return (JTCPEndpoint::Pointer)env->GetLongField(jtcpendpoint, JTCPEndpoint::handleId);;
 }
 
-ITCPEndpoint::SocketPointer JTCPEndpoint::connect(JNIEnv* env, boost::asio::io_service& ioService, std::string ipAddress){
+ITCPEndpoint::SocketPointer JTCPEndpoint::connect(JNIEnv* env, aasdk::io::ioService& ioService, std::string ipAddress){
     auto socket = std::make_shared<boost::asio::ip::tcp::socket>(ioService);
 
     try {

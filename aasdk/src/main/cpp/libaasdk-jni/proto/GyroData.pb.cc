@@ -102,10 +102,13 @@ class Gyro::_Internal {
   }
 };
 
-Gyro::Gyro(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+Gyro::Gyro(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:aasdk.proto.data.Gyro)
 }
 Gyro::Gyro(const Gyro& from)
@@ -118,7 +121,7 @@ Gyro::Gyro(const Gyro& from)
   // @@protoc_insertion_point(copy_constructor:aasdk.proto.data.Gyro)
 }
 
-void Gyro::SharedCtor() {
+inline void Gyro::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&rotation_speed_x_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&rotation_speed_z_) -
@@ -127,11 +130,12 @@ void Gyro::SharedCtor() {
 
 Gyro::~Gyro() {
   // @@protoc_insertion_point(destructor:aasdk.proto.data.Gyro)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void Gyro::SharedDtor() {
+inline void Gyro::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -312,25 +316,22 @@ size_t Gyro::ByteSizeLong() const {
   return total_size;
 }
 
-void Gyro::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:aasdk.proto.data.Gyro)
-  GOOGLE_DCHECK_NE(&from, this);
-  const Gyro* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Gyro>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:aasdk.proto.data.Gyro)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:aasdk.proto.data.Gyro)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Gyro::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    Gyro::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Gyro::GetClassData() const { return &_class_data_; }
+
+void Gyro::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<Gyro *>(to)->MergeFrom(
+      static_cast<const Gyro &>(from));
 }
+
 
 void Gyro::MergeFrom(const Gyro& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:aasdk.proto.data.Gyro)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -347,13 +348,7 @@ void Gyro::MergeFrom(const Gyro& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-}
-
-void Gyro::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:aasdk.proto.data.Gyro)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Gyro::CopyFrom(const Gyro& from) {

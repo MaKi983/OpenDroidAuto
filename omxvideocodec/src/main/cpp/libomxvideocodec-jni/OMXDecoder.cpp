@@ -9,7 +9,8 @@ OMXDecoder::OMXDecoder():
         source_(nullptr),
         client_(new OMXClient()),
         frameRate_(0),
-        status_(-1){
+        status_(-1),
+        isRunning_(false){
 }
 
 void OMXDecoder::setNativeWindow(sp<ANativeWindow> &nativeWindow){
@@ -41,12 +42,14 @@ status_t OMXDecoder::init(){
         status_ = decoder_->start();
 
         if (Log::isInfo()) Log_i("decoder start %d", status_);
+        isRunning_ = true;
 
     }
     return status_;
 }
 
 void OMXDecoder::stop(){
+    isRunning_ = false;
     if (Log::isInfo()) Log_i("stop decoder");
     status_t ret = decoder_->stop();
     if (Log::isDebug()) Log_d("stopped %d", ret);
@@ -63,13 +66,18 @@ OMXDecoder::~OMXDecoder(){
 }
 
 status_t OMXDecoder::read(){
+    if (!isRunning_){
+        return -1;
+    }
+
     MediaBuffer *videoBuffer;
     MediaSource::ReadOptions options;
     options.setLateBy(0);
     status_t ret = decoder_->read(&videoBuffer, &options);
-    if (ret == OK) {
+    if (Log::isVerbose()) Log_v("decoder read ret = %d, isRunning_ = %s", ret, (isRunning_ ? "true" : "false"));
+    if (ret == OK && isRunning_) {
         if (videoBuffer->range_length() > 0) {
-            // If video frame availabe, render it to mNativeWindow
+            if (Log::isVerbose()) Log_v("videobuffer length %d", videoBuffer->range_length());
             sp<MetaData> metaData = videoBuffer->meta_data();
             int64_t timeUs = 0;
             metaData->findInt64(kKeyTime, &timeUs);
@@ -79,8 +87,14 @@ status_t OMXDecoder::read(){
                 metaData->setInt32(kKeyRendered, 1);
             }
         }
-        videoBuffer->release();
     }
+
+    if (videoBuffer != nullptr){
+        if (Log::isVerbose()) Log_v("release videobuffer");
+        videoBuffer->release();
+        videoBuffer = nullptr;
+    }
+
     return ret;
 }
 

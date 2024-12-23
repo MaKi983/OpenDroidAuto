@@ -21,9 +21,11 @@
 #include <functional>
 #include <boost/asio.hpp>
 #include <boost/core/noncopyable.hpp>
+#include <boost/optional.hpp>
 #include <error/Error.hpp>
 #include <io/IOContextWrapper.hpp>
 #include <Log.h>
+#include "IOService.h"
 
 namespace aasdk
 {
@@ -44,7 +46,7 @@ public:
         return std::make_shared<Promise>(ioService, name);
     }
 
-    static Pointer defer(boost::asio::io_service::strand& strand, std::string name)
+    static Pointer defer(io::strand& strand, std::string name)
     {
         return std::make_shared<Promise>(strand, name);
     }
@@ -56,7 +58,7 @@ public:
         if (Log::isVerbose()) Log_v("%s/create", name_.c_str());
     }
 
-    Promise(boost::asio::io_service::strand& strand, std::string name)
+    Promise(io::strand& strand, std::string name)
         : ioContextWrapper_(strand)
         , name_(std::move(name))
     {
@@ -124,7 +126,7 @@ public:
         return std::make_shared<Promise>(ioService, name);
     }
 
-    static Pointer defer(boost::asio::io_service::strand& strand, std::string name)
+    static Pointer defer(io::strand& strand, std::string name)
     {
         return std::make_shared<Promise>(strand, name);
     }
@@ -136,7 +138,7 @@ public:
         if (Log::isVerbose()) Log_v("%s/create", name_.c_str());
     }
 
-    Promise(boost::asio::io_service::strand& strand, std::string name)
+    Promise(io::strand& strand, std::string name)
         : ioContextWrapper_(strand)
         , name_(std::move(name))
     {
@@ -198,7 +200,7 @@ public:
         return std::make_shared<Promise>(ioService, name);
     }
 
-    static Pointer defer(boost::asio::io_service::strand& strand, std::string name)
+    static Pointer defer(io::strand& strand, std::string name)
     {
         return std::make_shared<Promise>(strand, name);
     }
@@ -210,7 +212,7 @@ public:
         if (Log::isVerbose()) Log_v("%s/create", name_.c_str());
     }
 
-    Promise(boost::asio::io_service::strand& strand, std::string name)
+    Promise(io::strand& strand, std::string name)
         : ioContextWrapper_(strand)
         , name_(std::move(name))
     {
@@ -272,7 +274,7 @@ public:
         return std::make_shared<Promise>(ioService, name);
     }
 
-    static Pointer defer(boost::asio::io_service::strand& strand, std::string name)
+    static Pointer defer(io::strand& strand, std::string name)
     {
         return std::make_shared<Promise>(strand, name);
     }
@@ -284,7 +286,7 @@ public:
         if (Log::isVerbose()) Log_v("%s/create", name_.c_str());
     }
 
-    Promise(boost::asio::io_service::strand& strand, std::string name)
+    Promise(io::strand& strand, std::string name)
         : ioContextWrapper_(strand)
         , name_(std::move(name))
     {
