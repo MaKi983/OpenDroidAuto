@@ -46,6 +46,9 @@ void JBluetoothDevice::pair(const std::string& address, PairingPromise::Pointer 
     JNIEnv* env = getJniEnv();
     jstring jstr = env->NewStringUTF(address.c_str());
     jboolean ret = env->CallBooleanMethod(androidClass_, pairMethodId_, jstr);
+
+    env->DeleteLocalRef(jstr);
+
     if (ret == JNI_TRUE){
         promise->resolve();
     } else {

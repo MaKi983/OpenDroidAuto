@@ -34,6 +34,7 @@ void JAndroidAutoEntityEventHandler::onAndroidAutoQuitOnError(const aasdk::error
     JNIEnv* env = getJniEnv();
     jstring jstr = env->NewStringUTF(aasdk::error::errorCodeToString(e.getCode()).c_str());
     env->CallVoidMethod(androidClass_, onAndroidAutoQuitOnErrorMethodId_, jstr, e.getNativeCode());
+    env->DeleteLocalRef(jstr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
