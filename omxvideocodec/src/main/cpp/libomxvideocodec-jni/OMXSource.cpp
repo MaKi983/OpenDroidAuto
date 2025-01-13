@@ -7,15 +7,13 @@
 #include <cinttypes>
 #include <sstream>
 
-#define BUFFERS_SIZE 5
-
 using namespace android;
 
 // https://www.programmersought.com/article/87712558400/
 // https://vec.io/posts/use-android-hardware-decoder-with-omxcodec-in-ndk
 // https://stackoverflow.com/questions/9832503/android-include-native-stagefright-features-in-my-own-project
-OMXSource::OMXSource(int width, int height, int fps, std::mutex& mutex):
-        format_(nullptr), quitFlag_(false), mutex_(mutex)
+OMXSource::OMXSource(int width, int height, int fps):
+        format_(nullptr), quitFlag_(false)
 {
 
     int32_t bufferSize = (width * height * 3) / 2;
@@ -40,7 +38,9 @@ OMXSource::~OMXSource() {
 }
 
 void OMXSource::queueBuffer(MediaBuffer* buffer){
+    if (Log::isVerbose()) Log_v("add buffer to queue");
     std::unique_lock<std::mutex> l(mutex_);
+
     if (!quitFlag_) {
         pbuffers_.push(buffer);
         if (Log::isVerbose()) Log_v("queueBuffer new size %d", pbuffers_.size());
@@ -52,42 +52,45 @@ sp<MetaData>  OMXSource::getFormat(){
     return format_;
 }
 
-//MediaBuffer* OMXSource::nextBuffer(){
-//    if (Log::isVerbose()) Log_v("nextBuffer pop new buffer from pool");
-//    MediaBuffer* buffer = pbuffers_.front();
-//    pbuffers_.pop();
-//
-//    return buffer;
-//}
+MediaBuffer* OMXSource::nextBuffer(){
+    if (Log::isVerbose()) Log_v("nextBuffer");
+    std::unique_lock<std::mutex> l(mutex_);
+
+    while (!quitFlag_) {
+        if (pbuffers_.empty()){
+            cond_.wait_until(l, std::chrono::steady_clock::now() + std::chrono::milliseconds(1000));
+            continue;
+        }
+
+        if (Log::isVerbose()) Log_v("buffer size %d", pbuffers_.size());
+        MediaBuffer *buffer = pbuffers_.front();
+        pbuffers_.pop();
+        if (Log::isVerbose()) Log_v("found buffer %d", pbuffers_.size());
+        return buffer;
+    }
+
+    return nullptr;
+}
 
 status_t OMXSource::read(MediaBuffer **buffer, const MediaSource::ReadOptions *options) {
-    std::unique_lock<std::mutex> l(mutex_);
     if (Log::isVerbose()) Log_v("read");
 
-    while (!quitFlag_ && pbuffers_.empty()) {
-        cond_.wait_until(l, std::chrono::steady_clock::now() + std::chrono::milliseconds(100));
+    MediaBuffer* mBuffer = nextBuffer();
+    if (!mBuffer){
+        return ERROR_END_OF_STREAM;
     }
 
-    if (!quitFlag_) {
-        if (Log::isVerbose()) Log_v("found buffer");
-        MediaBuffer* mBuffer = pbuffers_.front();
-        pbuffers_.pop();
-        mBuffer->setObserver(this);
-        mBuffer->add_ref();
-        mBuffer->meta_data()->setInt32(kKeyIsSyncFrame, 1);
-        (*buffer) = mBuffer;
+    mBuffer->setObserver(this);
+    mBuffer->add_ref();
+    mBuffer->meta_data()->setInt32(kKeyIsSyncFrame, 1);
+    (*buffer) = mBuffer;
 
-        return OK;
-    }
+    return OK;
 
-    if (Log::isDebug()) Log_d("quit flag set to true, stop");
-
-    return ERROR_END_OF_STREAM;
 }
 
 void OMXSource::signalBufferReturned(MediaBuffer *buffer) {
     if (Log::isVerbose()) Log_v("signalBufferReturned: %p", buffer);
-    std::unique_lock<std::mutex> l(mutex_);
     buffer->setObserver(nullptr);
     buffer->release();
 }
@@ -98,7 +101,9 @@ status_t OMXSource::start(MetaData *params){
 }
 
 status_t OMXSource::stop() {
+    if (Log::isDebug()) Log_d("stopping");
     std::unique_lock<std::mutex> l(mutex_);
+
     if (!quitFlag_) {
         if (Log::isInfo()) Log_i("stop");
         quitFlag_ = true;
@@ -109,7 +114,9 @@ status_t OMXSource::stop() {
             pbuffers_.pop();
             buffer->release();
         }
+        cond_.notify_one();
     }
+    if (Log::isDebug()) Log_d("stopped");
     return OK;
 }
 

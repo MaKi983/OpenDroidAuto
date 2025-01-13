@@ -62,10 +62,7 @@ public class MediaUpdateNotification extends Notification {
         // set album art image
         ImageView imageView = dialog_.findViewById(R.id.media_update_albumart);
         if (metadataUpdateEvent.albumArt != null){
-            ByteBuffer buffer = metadataUpdateEvent.albumArt.asReadOnlyBuffer();
-            if (Log.isDebug()) Log.d(TAG, "image buffer " + buffer);
-            byte[] image = new byte[buffer.limit()];
-            buffer.get(image);
+            byte[] image = metadataUpdateEvent.albumArt;
             BitmapFactory.Options opts = new BitmapFactory.Options();
             opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
             Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length, opts);

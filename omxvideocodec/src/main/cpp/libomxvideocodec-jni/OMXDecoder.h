@@ -11,13 +11,13 @@ class OMXDecoder {
 public:
     typedef OMXDecoder* Pointer;
 
-    OMXDecoder();
+    explicit OMXDecoder();
 
     virtual status_t read();
     void setNativeWindow(sp<ANativeWindow> &nativeWindow);
     void setSource(OMXSource *source);
     status_t  init();
-   int32_t frameRate() const;
+    int32_t frameRate() const;
     void stop();
     ~OMXDecoder();
     status_t getStatus() const;
@@ -29,9 +29,8 @@ private:
     sp<MediaSource> decoder_;
     sp<ANativeWindow> nativeWindow_;
     OMXSource::Pointer source_;
-
+    std::mutex mutex_;
     int32_t frameRate_;
 
     status_t status_;
-    bool isRunning_;
 };

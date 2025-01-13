@@ -38,7 +38,7 @@ private:
     std::mutex codecMutex_;
     std::condition_variable omxDecoderCond_;
 
-    bool omxDecoderThreadRunning_;
+//    bool omxDecoderThreadRunning_;
     bool decoderThreadInitialized_;
     bool decoderThreadQuitFlag_;
     sp<ANativeWindow> nativeWindow_;

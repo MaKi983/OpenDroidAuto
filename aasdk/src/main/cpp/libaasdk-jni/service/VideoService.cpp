@@ -74,7 +74,7 @@ void VideoService::onAVChannelSetupRequest(const aasdk::proto::messages::AVChann
     response.set_max_unacked(1);
     response.add_configs(0);
 
-    auto promise = aasdk::channel::SendPromise::defer(strand_, "VideoService_videoFocus");
+    auto promise = aasdk::channel::SendPromise::defer(strand_, "VideoService_sendVideoFocus");
     promise->then(std::bind(&VideoService::sendVideoFocusIndication, this->shared_from_this()),
                   std::bind(&VideoService::onChannelError, this->shared_from_this(), std::placeholders::_1));
     channel_->sendAVChannelSetupResponse(response, std::move(promise));

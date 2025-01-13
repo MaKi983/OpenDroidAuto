@@ -69,7 +69,6 @@ private:
 
     void sendPing();
 
-    boost::asio::signal_set signals_;
     aasdk::io::strand strand_;
     aasdk::messenger::ICryptor::Pointer cryptor_;
     aasdk::transport::ITransport::Pointer transport_;
