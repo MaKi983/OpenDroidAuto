@@ -1,25 +1,18 @@
 #include <Log.h>
 #include <google/protobuf/stubs/common.h>
-#include <boost/asio/signal_set.hpp>
-#include <boost/stacktrace.hpp>
 #include "it_smg_libs_aasdk_Runtime.h"
+#include "Backtrace.h"
 
 jfieldID JRuntime::handleId = nullptr;
 JRuntime::Pointer JRuntime::instance_ = nullptr;
-//jclass JRuntime::cls_ = NULL;
 
 JRuntime::JRuntime(JNIEnv *env, jobject androidApp) : JNIBase(env, androidApp, "JRuntime"),
-                                                      /*work_(ioService_),*/ i(0){
-
-//    jclass cls = env->FindClass("it/smg/libs/aasdk/Runtime");
-//    cls_ = (jclass)env->NewGlobalRef(cls);
+                                                      i(0){
 
     if (instance_ != nullptr){
         if(Log::isInfo()) Log_i("JRuntime already instanciated, delete it");
         delete instance_;
     }
-
-//    startIOServiceWorkers();
 
     instance_ = this;
 }
@@ -28,27 +21,19 @@ JRuntime::Pointer JRuntime::getJRuntime(JNIEnv *env, jobject jruntime) {
     return (JRuntime::Pointer)env->GetLongField(jruntime, JRuntime::handleId);;
 }
 
-//void JRuntime::initJavaExecptionHandler(JNIEnv* env) {
-//    jmethodID exceptionHandlerID  = env->GetStaticMethodID(cls_,  "initExceptionHanlder", "()V");
-//    env->CallStaticVoidMethod(cls_, exceptionHandlerID);
-//}
-
 JRuntime::~JRuntime() {
-//    stopIOServiceWorkers();
-//    getJniEnv()->DeleteGlobalRef(cls_);
     if(Log::isDebug()) Log_d("all done");
     instance_ = nullptr;
 }
 
 void JRuntime::stopIOServiceWorkers() {
     if(Log::isDebug()) Log_d("stopping IOService Workers");
-    i = 0;
+//    i = 0;
 
     if (!ioService_.stopped()) {
         if(Log::isDebug()) Log_d("stop ioService");
         work_.reset();
         ioService_.stop();
-        ioService_.reset();
     }
 
     if(Log::isDebug()) Log_d("stop all threads");
@@ -65,8 +50,12 @@ void JRuntime::stopIOServiceWorkers() {
     if(Log::isDebug()) Log_d("clear threadpool");
     threadPool_.clear();
 
-    std::this_thread::sleep_for (std::chrono::seconds(1));
+//    std::this_thread::sleep_for (std::chrono::seconds(1));
+//    std::unique_lock<std::mutex> lock(m);
+//    v.wait(lock, [&] { return i == 0; });
+//    if(Log::isDebug()) Log_d("all threads stopped");
 
+    ioService_.restart();
 //    ioService_.reset();
 }
 
@@ -80,23 +69,39 @@ void JRuntime::startIOServiceWorkers(int threads) {
         JNIEnv* env;
         JNIBase::javaAttachThread("IOService Worker", &env);
 
-//        initJavaExecptionHandler(env);
+        {
+            std::unique_lock<std::mutex> lock(m);
+            ++i;
+            if(Log::isVerbose()) Log_v("i= %d", i);
+            v.notify_all();
+        }
 
         if(Log::isVerbose()) Log_v("start ioService");
         ioService_.run();
         if(Log::isVerbose()) Log_v("ioService stopped");
+
         // Detach thread
         JNIBase::javaDetachThread();
+
+        {
+            std::unique_lock<std::mutex> lock(m);
+            --i;
+            if(Log::isVerbose()) Log_v("i= %d", i);
+            v.notify_all();
+        }
 
         if(Log::isInfo()) Log_i("ioservice worker thread complete");
     };
 
     if(Log::isInfo()) Log_i("Starting %d threads", threads);
 
-    for (int i = 1; i <= threads; i++) {
+    for (int w = 1; w <= threads; w++) {
         threadPool_.emplace_back(ioServiceWorker);
     }
-    std::this_thread::sleep_for (std::chrono::seconds(1));
+
+    std::unique_lock<std::mutex> lock(m);
+    v.wait(lock, [&] { return i == threads; });
+
     if(Log::isInfo()) Log_i("all ioservice thread started");
 }
 
@@ -111,15 +116,13 @@ JNIEXPORT void JNICALL
 Java_it_smg_libs_aasdk_Runtime_nativeInit(JNIEnv *env, jclass clazz) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+    Backtrace::init();
+
     jclass _class = env->FindClass("it/smg/libs/aasdk/Runtime");
     JRuntime::handleId = env->GetFieldID(_class, "handle_", "J");
 
     env->DeleteLocalRef(_class);
     _class = nullptr;
-
-//    //env->GetJavaVM(&JNIBase::javaVM);
-//    auto jruntime = new JRuntime(env, clazz);
-//    return (jlong)((size_t)jruntime);
 }
 
 extern "C"

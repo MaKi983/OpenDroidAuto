@@ -37,7 +37,7 @@ public interface IMediaStatusEvent {
         public final String trackName;
         public final String artistName; //optional
         public final String albumName; //optional
-        public final ByteBuffer albumArt; //optional
+        public final byte[] albumArt; //optional
         public final int trackLength;
 
         public MetadataUpdateEvent(String trackName, String artistName, String albumName, ByteBuffer albumArt, int trackLength){
@@ -48,14 +48,13 @@ public interface IMediaStatusEvent {
             this.trackLength = trackLength;
         }
 
-        private ByteBuffer clone(ByteBuffer b){
+        private byte[] clone(ByteBuffer b){
             if (b == null){
                 return null;
             }
 
-            final ByteBuffer clone = ByteBuffer.allocate(b.capacity());
-            clone.put(b);
-            clone.flip();
+            final byte[] clone = new byte[b.capacity()];
+            b.get(clone);
             return clone;
         }
     }

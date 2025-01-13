@@ -55,26 +55,14 @@ public class NavigationUpdateNotification extends Notification {
         TurnEvent turnEvent = navUpdateEvent.turnEvent;
         DistanceEvent distanceEvent = navUpdateEvent.distanceEvent;
 
-        // set album art image
+        // set turn image
         ImageView imageView = dialog_.findViewById(R.id.navigation_update_image);
         if (turnEvent.image != null){
-            ByteBuffer buffer = turnEvent.image.asReadOnlyBuffer();
-            byte[] image = new byte[buffer.limit()];
-            buffer.get(image);
+            byte[] image = turnEvent.image;
             BitmapFactory.Options opts = new BitmapFactory.Options();
-//            opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
-//            opts.inDither = false;
             Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length, opts);
             if (bmp != null) {
-//                ByteArrayOutputStream out = new ByteArrayOutputStream(image.length);
-//                bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
-//                byte[] imgOk = out.toByteArray();
-//
-//                Bitmap bmpOk = BitmapFactory.decodeByteArray(imgOk, 0, imgOk.length);
-//                if (bmpOk != null) {
                 imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 256, 256, false));
-//                    imageView.setImageBitmap(bmpOk);
-//                }
             }
         }
 

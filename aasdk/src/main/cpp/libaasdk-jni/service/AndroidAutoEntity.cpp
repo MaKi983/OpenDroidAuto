@@ -13,7 +13,6 @@ AndroidAutoEntity::AndroidAutoEntity(aasdk::io::ioService& ioService,
                                      ServiceList serviceList,
                                      IPinger::Pointer pinger)
         : strand_(ioService)
-        , signals_(ioService)
         , cryptor_(std::move(cryptor))
         , messenger_(std::move(messenger))
         , controlServiceChannel_(std::make_shared<aasdk::channel::control::ControlServiceChannel>(strand_, messenger_))
@@ -22,19 +21,6 @@ AndroidAutoEntity::AndroidAutoEntity(aasdk::io::ioService& ioService,
         , pinger_(std::move(pinger))
         , eventHandler_(nullptr)
 {
-//    signals_.add(SIGBUS);
-////    signals_.add(SIGKILL);
-//    signals_.add(SIGTERM);
-//    signals_.add(SIGSEGV);
-//
-//    signals_.async_wait([this](boost::system::error_code ec, int signo){
-//        Log_e("App fault with signo %d (%d) -> %s", signo, ec.value(), ec.message().c_str());
-//        std::stringstream ss;
-//        ss << boost::stacktrace::stacktrace();
-//        Log_e("%s", ss.str().c_str());
-//        aasdk::error::Error e(aasdk::error::ErrorCode::UNEXPECTED_ERROR, signo);
-//        triggerQuitOnError(e);
-//    });
 }
 
 AndroidAutoEntity::~AndroidAutoEntity()

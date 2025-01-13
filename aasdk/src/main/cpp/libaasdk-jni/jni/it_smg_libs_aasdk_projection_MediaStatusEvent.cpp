@@ -64,6 +64,8 @@ void JMediaStatusEvent::mediaPlaybackUpdate(const aasdk::proto::messages::MediaI
 
     env->CallVoidMethod(androidClass_, mediaPlaybackUpdateMethodId_, jPlaybackUpdateEvent);
 
+    env->DeleteLocalRef(jmediaSource);
+
     env->DeleteLocalRef(jPlaybackUpdateEvent);
     jPlaybackUpdateEvent = nullptr;
 
@@ -110,6 +112,10 @@ void JMediaStatusEvent::mediaMetadataUpdate(const aasdk::proto::messages::MediaI
 
     env->DeleteLocalRef(jMetadataUpdateEvent);
     jMetadataUpdateEvent = nullptr;
+
+    env->DeleteLocalRef(jtrackName);
+    env->DeleteLocalRef(jartistName);
+    env->DeleteLocalRef(jalbumName);
 
     if (imageByteBuffer != NULL) {
         env->DeleteLocalRef(imageByteBuffer);

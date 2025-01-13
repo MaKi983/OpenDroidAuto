@@ -113,7 +113,6 @@ void JNavigationStatusEvent::navigationTurnEvent(const aasdk::proto::messages::N
     jobject jManeuverDirection = env->GetStaticObjectField(maneuverDirectionClass_, maneuverDirectionID);
 
     // create streetName field
-
     jstring jstreetName = env->NewStringUTF(turnEvent.has_street_name() ? turnEvent.street_name().c_str() : "");
 
     // create roundaboutexitnumber field
@@ -128,6 +127,8 @@ void JNavigationStatusEvent::navigationTurnEvent(const aasdk::proto::messages::N
     jobject jTurnEvent = env->NewObject(turnEventClass_, turnEventConst, jstreetName, imageByteBuffer, jManeuverType, jManeuverDirection, roundaboutexitangle, roundaboutexitnumber);
 
     env->CallVoidMethod(androidClass_, navigationTurnEventMethodId_, jTurnEvent);
+
+    env->DeleteLocalRef(jstreetName);
 
     env->DeleteLocalRef(jTurnEvent);
     jTurnEvent = nullptr;

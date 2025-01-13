@@ -12,7 +12,6 @@
 	<string name="car_settings_left_drive">Left Drive</string>
 	<string name="car_settings_aa_wifi">Use Android Auto Wireless</string>
 
-	<string name="video_settings_use_direct_buffer">EXPERIMENTAL: Use direct buffer (better performance?)</string>
 	<string name="video_settings_sw_dec">Use software decoder (can be slow)</string>
 	<string name="video_settings">Video Settings</string>
 	<string name="video_settings_resolution">Resolution</string>
@@ -20,7 +19,6 @@
 	<string name="video_settings_dpi">DPI</string>
 	<string name="video_settings_margin">Margin</string>
 	<string name="video_settings_nightmode">Night Mode</string>
-	<string name="video_settings_exp_omxvideocodec">Use experimental OMXVideoCodec (port of MediaCodec API)</string>
 	<string name="video_show_media_notification">Show Media notification when app is in background</string>
 	<string name="video_show_navigation_notification">Show Navigation notification when app is in background</string>
 	<string name="video_show_app_badge">Show an application badge when app is in background</string>

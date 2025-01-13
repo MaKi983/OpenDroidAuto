@@ -209,9 +209,10 @@ LOCAL_STATIC_LIBRARIES := libusb-1.0 libssl libcrypto libboost_system libboost_t
 LOCAL_SHARED_LIBRARIES := common
 
 LOCAL_LDLIBS += -lz -llog -landroid
+LOCAL_LDFLAGS += -rdynamic
 
 LOCAL_CPPFLAGS += -fexceptions
-#LOCAL_CFLAGS := -pthread -funwind-tables -Wl,--no-merge-exidx-entries -fno-omit-frame-pointer
+LOCAL_CFLAGS := -funwind-tables -Wl,--no-merge-exidx-entries -fno-omit-frame-pointer
 LOCAL_ARM_NEON := true
 
 include $(BUILD_SHARED_LIBRARY)

@@ -21,7 +21,7 @@ LOCAL_C_INCLUDES := $(EXT_LIB)/include/system/core \
 
 LOCAL_SHARED_LIBRARIES := common
 
-LOCAL_CFLAGS += -DHAVE_PTHREADS -g -funwind-tables -Wl,--no-merge-exidx-entries -fno-omit-frame-pointer
+LOCAL_CFLAGS += -DHAVE_PTHREADS -funwind-tables -Wl,--no-merge-exidx-entries -fno-omit-frame-pointer
 LOCAL_LDFLAGS := -Wl,--allow-multiple-definition
 LOCAL_CPPFLAGS += -fno-rtti -fexceptions
 LOCAL_ARM_NEON := true

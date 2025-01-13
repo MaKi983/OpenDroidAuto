@@ -23,17 +23,15 @@ public:
 private:
     using ThreadPool = std::vector<std::thread>;
 
-//    void initJavaExecptionHandler(JNIEnv* env);
-
 //    aasdk::io::ioService ioService_;
     boost::asio::io_service ioService_;
     std::unique_ptr<boost::asio::io_service::work> work_;
     ThreadPool threadPool_;
 
     static JRuntime::Pointer instance_;
-//    static jclass cls_;
 
-    std::atomic<int> i;
+//    std::atomic<int> i;
+    int i;
     std::mutex m;
     std::condition_variable v;
 

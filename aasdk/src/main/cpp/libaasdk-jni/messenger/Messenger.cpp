@@ -57,15 +57,22 @@ void Messenger::enqueueSend(Message::Pointer message, SendPromise::Pointer promi
 
 void Messenger::inStreamMessageHandler(Message::Pointer message)
 {
+    if (isStopping_) {
+        if (Log::isInfo()) Log_i("Messenger stopped");
+        return;
+    }
+
     doReceive();
 
     auto channelId = message->getChannelId();
     if (Log::isDebug()) Log_d("%s/inStreamMessageHandler", channelIdToString(channelId).c_str());
-    ReceivePromise::Pointer promise = channelReceivePromiseQueue_.at(channelId);
-    if (promise) {
+    if (channelReceivePromiseQueue_.count(channelId) > 0) {
+        ReceivePromise::Pointer promise = channelReceivePromiseQueue_.at(channelId);
+        if (promise) {
 //    threadPool_.enqueue([message = std::move(message), promise]{
-        promise->resolve(std::move(message));
+            promise->resolve(std::move(message));
 //    });
+        }
     }
 }
 
@@ -113,9 +120,11 @@ void Messenger::outStreamMessageHandler(ChannelSendQueue::iterator queueElement)
 
 void Messenger::rejectReceivePromiseQueue(const error::Error& e)
 {
-    ReceivePromise::Pointer promise = channelReceivePromiseQueue_.at(messenger::ChannelId::CONTROL);
-    if (promise) {
-        promise->reject(e);
+    if (channelReceivePromiseQueue_.count(messenger::ChannelId::CONTROL) > 0) {
+        ReceivePromise::Pointer promise = channelReceivePromiseQueue_.at(messenger::ChannelId::CONTROL);
+        if (promise) {
+            promise->reject(e);
+        }
     }
 }
 
@@ -134,18 +143,12 @@ void Messenger::stop()
     if (Log::isInfo()) Log_i("Stop messenger");
 
     isStopping_ = true;
-//    boost::asio::io_context& ioContext = receiveStrand_->get_io_context();
     receiveStrand_ = boost::none;
-//    receiveStrand_ = io::strand(ioContext);
     sendStrand_ = boost::none;
-//    receiveStrand_ = io::strand(ioContext);
     messageInStream_->stop();
     messageOutStream_->stop();
-//    receiveStrand_.dispatch([this, self = this->shared_from_this()]() {
-//    channelReceiveMessageQueue_.clear();
     channelSendPromiseQueue_.clear();
     channelReceivePromiseQueue_.clear();
-//    });
 }
 
 }

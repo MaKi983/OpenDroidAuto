@@ -66,7 +66,7 @@ public interface INavigationStatusEvent {
     @Keep
     class TurnEvent {
         public final String street;
-        public final ByteBuffer image;
+        public final byte[] image;
         public final ManeuverType maneuverType;
         public final ManeuverDirection maneuverDirection;
         public final long roundAboutExitAngle;
@@ -81,14 +81,13 @@ public interface INavigationStatusEvent {
             this.roundAboutExitNumber = roundAboutExitNumber;
         }
 
-        private ByteBuffer clone(ByteBuffer b){
+        private byte[] clone(ByteBuffer b){
             if (b == null){
                 return null;
             }
 
-            final ByteBuffer clone = ByteBuffer.allocate(b.capacity());
-            clone.put(b);
-            clone.flip();
+            final byte[] clone = new byte[b.capacity()];
+            b.get(clone);
             return clone;
         }
     }

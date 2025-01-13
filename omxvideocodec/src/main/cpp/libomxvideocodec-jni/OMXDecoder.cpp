@@ -9,8 +9,8 @@ OMXDecoder::OMXDecoder():
         source_(nullptr),
         client_(new OMXClient()),
         frameRate_(0),
-        status_(-1),
-        isRunning_(false){
+        status_(-1)
+{
 }
 
 void OMXDecoder::setNativeWindow(sp<ANativeWindow> &nativeWindow){
@@ -41,20 +41,19 @@ status_t OMXDecoder::init(){
                                     nullptr, flags, nativeWindow_);
         status_ = decoder_->start();
 
-        if (Log::isInfo()) Log_i("decoder start %d", status_);
-        isRunning_ = true;
-
+        if (Log::isInfo()) Log_i("decoder started %d", status_);
     }
+
     return status_;
 }
 
 void OMXDecoder::stop(){
-    isRunning_ = false;
     if (Log::isInfo()) Log_i("stop decoder");
     status_t ret = decoder_->stop();
     if (Log::isDebug()) Log_d("stopped %d", ret);
     if (Log::isInfo()) Log_i("disconnect client");
     client_->disconnect();
+    if (Log::isDebug()) Log_d("stopped");
 }
 
 OMXDecoder::~OMXDecoder(){
@@ -62,34 +61,40 @@ OMXDecoder::~OMXDecoder(){
 
     if (Log::isDebug()) Log_d("clear mDecoder");
     decoder_.clear();
+
+    if (Log::isDebug()) Log_d("delete client");
+    delete client_;
+
     if (Log::isDebug()) Log_d("all done");
 }
 
 status_t OMXDecoder::read(){
-    if (!isRunning_){
-        return -1;
-    }
+    if (Log::isVerbose()) Log_v("read");
 
     MediaBuffer *videoBuffer;
     MediaSource::ReadOptions options;
     options.setLateBy(0);
     status_t ret = decoder_->read(&videoBuffer, &options);
-    if (Log::isVerbose()) Log_v("decoder read ret = %d, isRunning_ = %s", ret, (isRunning_ ? "true" : "false"));
-    if (ret == OK && isRunning_) {
+    if (Log::isVerbose()) Log_v("decoder read ret = %d", ret);
+
+    if (ret == OK) {
         if (videoBuffer->range_length() > 0) {
             if (Log::isVerbose()) Log_v("videobuffer length %d", videoBuffer->range_length());
             sp<MetaData> metaData = videoBuffer->meta_data();
             int64_t timeUs = 0;
             metaData->findInt64(kKeyTime, &timeUs);
-            native_window_set_buffers_timestamp(nativeWindow_.get(), timeUs); //NATIVE_WINDOW_TIMESTAMP_AUTO
-            ret = nativeWindow_->queueBuffer(nativeWindow_.get(), videoBuffer->graphicBuffer().get());
+            native_window_set_buffers_timestamp(nativeWindow_.get(),
+                                                timeUs); //NATIVE_WINDOW_TIMESTAMP_AUTO
+            ret = nativeWindow_->queueBuffer(nativeWindow_.get(),
+                                             videoBuffer->graphicBuffer().get());
             if (ret == 0) {
                 metaData->setInt32(kKeyRendered, 1);
             }
         }
     }
 
-    if (videoBuffer != nullptr){
+
+    if (videoBuffer != nullptr) {
         if (Log::isVerbose()) Log_v("release videobuffer");
         videoBuffer->release();
         videoBuffer = nullptr;

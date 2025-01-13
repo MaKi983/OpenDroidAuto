@@ -9,11 +9,14 @@ LOCAL_MODULE    := common
 
 LOCAL_SRC_FILES := Log.cpp \
                    JNIBase.cpp \
-                   Data.cpp
+                   Data.cpp \
+                   Backtrace.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/include \
                     $(EXT_LIB)/include/base \
                     $(EXT_LIB)/include/system/core
+
+LOCAL_LDFLAGS       += -rdynamic
 
 LOCAL_LDLIBS := -lz -llog -landroid
 LOCAL_LDLIBS += -l$(ANDROID_LIB)/libandroid_runtime.so -l$(ANDROID_LIB)/libcutils.so
