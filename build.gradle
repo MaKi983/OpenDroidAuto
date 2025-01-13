@@ -9,8 +9,8 @@ ext {
     compileSdk = 34
     minSdk = 15
     targetSdk = 15
-    versionCode = 200400 // major (x)-minor (xxx)-fix (xx)
-    versionName =  "2.4.0"
+    versionCode = 200401 // major (x)-minor (xxx)-fix (xx)
+    versionName =  "2.4.1"
     SupportedABIs = ['armeabi-v7a']
     ndkVersion = '17.2.4988734'
 }
