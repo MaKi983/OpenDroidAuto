@@ -38,7 +38,7 @@ public:
     void commit(common::Data::size_type size);
 
     common::Data::size_type getAvailableSize();
-    common::Data consume(common::Data::size_type size);
+    std::shared_ptr<common::Data> consume(common::Data::size_type size);
 
 private:
     boost::circular_buffer<common::Data::value_type> data_;

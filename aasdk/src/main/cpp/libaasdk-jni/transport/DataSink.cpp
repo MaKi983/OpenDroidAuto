@@ -39,15 +39,15 @@ common::Data::size_type DataSink::getAvailableSize()
     return data_.size();
 }
 
-common::Data DataSink::consume(common::Data::size_type size)
+std::shared_ptr<common::Data> DataSink::consume(common::Data::size_type size)
 {
     if(size > data_.size())
     {
         throw error::Error(error::ErrorCode::DATA_SINK_CONSUME_UNDERFLOW);
     }
 
-    common::Data data(size, 0);
-    std::copy(data_.begin(), data_.begin() + size, data.begin());
+    auto data = std::make_shared<common::Data>(size, 0);
+    std::copy(data_.begin(), data_.begin() + size, data->begin());
     data_.erase_begin(size);
 
     return data;

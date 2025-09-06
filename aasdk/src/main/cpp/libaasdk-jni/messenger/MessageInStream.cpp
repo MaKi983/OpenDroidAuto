@@ -34,8 +34,8 @@ void MessageInStream::startReceive(ReceivePromise::Pointer promise)
 
             auto transportPromise = transport::ITransport::ReceivePromise::defer(strand_, "MessageInStream_receive");
             transportPromise->then(
-                    [this, self = this->shared_from_this()](common::Data data) mutable {
-                        this->receiveFrameHeaderHandler(common::DataConstBuffer(data));
+                    [this, self = this->shared_from_this()](std::shared_ptr<common::Data> data) mutable {
+                        this->receiveFrameHeaderHandler(common::DataConstBuffer(*data));
                     },
                     [this, self = this->shared_from_this()](const error::Error& e) mutable {
                         promise_->reject(e);
@@ -93,8 +93,8 @@ void MessageInStream::receiveFrameHeaderHandler(const common::DataConstBuffer& b
 
     auto transportPromise = transport::ITransport::ReceivePromise::defer(strand_, "MessageInStream_frameSizeHandler");
     transportPromise->then(
-        [this, self = this->shared_from_this()](common::Data data) mutable {
-            this->receiveFrameSizeHandler(common::DataConstBuffer(data));
+        [this, self = this->shared_from_this()](std::shared_ptr<common::Data> data) mutable {
+            this->receiveFrameSizeHandler(common::DataConstBuffer(*data));
         },
         [this, self = this->shared_from_this()](const error::Error& e) mutable {
             message_.reset();
@@ -111,8 +111,8 @@ void MessageInStream::receiveFrameSizeHandler(const common::DataConstBuffer& buf
     if (Log::isVerbose() && Log::logProtocol()) Log_v("%s/receiveFrameSizeHandler %s", channelIdToString(message_->getChannelId()).c_str(), common::dump(buffer).c_str());
     auto transportPromise = transport::ITransport::ReceivePromise::defer(strand_, "MessageInStream_framePayloadHandler");
     transportPromise->then(
-            [this, self = this->shared_from_this()](common::Data data) mutable {
-                this->receiveFramePayloadHandler(common::DataConstBuffer(data));
+            [this, self = this->shared_from_this()](std::shared_ptr<common::Data> data) mutable {
+                this->receiveFramePayloadHandler(common::DataConstBuffer(*data));
             },
             [this, self = this->shared_from_this()](const error::Error& e) mutable {
                 message_.reset();
@@ -157,8 +157,8 @@ void MessageInStream::receiveFramePayloadHandler(const common::DataConstBuffer& 
 //        messageBuffer_[frameHeader.getChannelId()] = message;
         auto transportPromise = transport::ITransport::ReceivePromise::defer(strand_, "MessageInStream_frameHeaderHandler_continue");
         transportPromise->then(
-                [this, self = this->shared_from_this()](common::Data data) mutable {
-                    this->receiveFrameHeaderHandler(common::DataConstBuffer(data));
+                [this, self = this->shared_from_this()](std::shared_ptr<common::Data> data) mutable {
+                    this->receiveFrameHeaderHandler(common::DataConstBuffer(*data));
                 },
                 [this, self = this->shared_from_this()](const error::Error &e) mutable {
                     message_.reset();
