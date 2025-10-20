@@ -1,23 +1,20 @@
 package it.smg.hu.ui;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.widget.Toast;
 
 import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import it.smg.hu.config.Settings;
 import it.smg.hu.service.ODAService;
 import it.smg.hu.R;
 import it.smg.hu.manager.USBManager;
@@ -110,6 +107,13 @@ public class MainActivity extends FragmentActivity {
             final String TAG = "MainActivity-UsbReceiver";
 
             if (Log.isDebug()) Log.d(TAG, intent.getAction());
+
+            if (Settings.instance().video.disableStartUsbBadge()) {
+                if (Log.isDebug()) Log.d(TAG, "stopping service because usb startup is disabled");
+                exitApp();
+                return;
+            }
+
             if (isOpenFromUsb_) {
                 if (intent.getAction().equals(USBManager.ATTACH_AOAP_DEVICE)) {
                     if (Log.isDebug()) Log.d(TAG, "open popup activity");

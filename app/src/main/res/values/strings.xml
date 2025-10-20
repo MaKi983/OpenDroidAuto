@@ -22,6 +22,7 @@
 	<string name="video_show_media_notification">Show Media notification when app is in background</string>
 	<string name="video_show_navigation_notification">Show Navigation notification when app is in background</string>
 	<string name="video_show_app_badge">Show an application badge when app is in background</string>
+	<string name="video_disable_start_usb_badge">Disable auto-start when a USB is plugged in</string>
 
 	<string name="enable_media_channel_settings">Enable Media Audio Channel</string>
 	<string name="enable_speech_channel_settings">Enable Speech Audio Channel</string>
