@@ -108,16 +108,15 @@ public class MainActivity extends FragmentActivity {
 
             if (Log.isDebug()) Log.d(TAG, intent.getAction());
 
-            if (Settings.instance().video.disableStartUsbBadge()) {
-                if (Log.isDebug()) Log.d(TAG, "stopping service because usb startup is disabled");
-                exitApp();
-                return;
-            }
-
             if (isOpenFromUsb_) {
                 if (intent.getAction().equals(USBManager.ATTACH_AOAP_DEVICE)) {
-                    if (Log.isDebug()) Log.d(TAG, "open popup activity");
-                    NotificationFactory.instance().notifyStartRequest();
+                    if (Settings.instance().video.disableStartUsbBadge()) {
+                        if (Log.isDebug()) Log.d(TAG, "notification startup is disabled");
+                        moveTaskToBack(true);
+                    } else {
+                        if (Log.isDebug()) Log.d(TAG, "open popup activity");
+                        NotificationFactory.instance().notifyStartRequest();
+                    }
 
 //                    MainActivity.this.finish();
                 }
