@@ -109,8 +109,8 @@ public class MainActivity extends FragmentActivity {
             if (Log.isDebug()) Log.d(TAG, intent.getAction());
 
             if (isOpenFromUsb_) {
-                if (intent.getAction().equals(USBManager.ATTACH_AOAP_DEVICE)) {
-                    if (Settings.instance().video.disableStartUsbBadge()) {
+                if (USBManager.ATTACH_AOAP_DEVICE.equals(intent.getAction())) {
+                    if (Settings.instance().car.disableStartUsbBadge()) {
                         if (Log.isDebug()) Log.d(TAG, "notification startup is disabled");
                         moveTaskToBack(true);
                     } else {

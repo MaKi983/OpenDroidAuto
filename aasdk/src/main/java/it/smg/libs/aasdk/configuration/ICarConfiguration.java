@@ -9,4 +9,6 @@ public interface ICarConfiguration {
     public String swVersion();
     public boolean playMediaDuringVr();
     public boolean leftHandDrive();
+
+    public int autoStartTimer();
 }

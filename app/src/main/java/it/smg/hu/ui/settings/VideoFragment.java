@@ -96,9 +96,6 @@ public class VideoFragment extends BaseSettingsFragment {
         CheckBox showAppBadge = view.findViewById(R.id.showAppBadge);
         initCheckBox(showAppBadge, settings.video, Settings.Video.VIDEO_SHOW_APP_BADGE, Settings.Video.VIDEO_SHOW_APP_BADGE_DEFAULT_VALUE);
 
-        CheckBox disableAutoStartOnUsb = view.findViewById(R.id.disableStartUsbBadge);
-        initCheckBox(disableAutoStartOnUsb, settings.video, Settings.Video.DISABLE_START_USB_BADGE, Settings.Video.DISABLE_START_USB_BADGE_DEFAULT_VALUE);
-
         return view;
 
     }

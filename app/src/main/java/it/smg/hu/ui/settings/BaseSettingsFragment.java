@@ -8,7 +8,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
@@ -184,6 +186,31 @@ public abstract class BaseSettingsFragment extends Fragment {
                         Log.e(tag(), "errore in custom check", e);
                     }
                 }
+            }
+        });
+    }
+
+    protected void initSeekBar(SeekBar seekBar, TextView valueNumber, Settings.Base base, String settingsKey, int defaultValue, int minValue, int maxValue) {
+        seekBar.setMax(maxValue - minValue);
+
+        int savedValue = base.get(settingsKey, defaultValue);
+        seekBar.setProgress(savedValue - minValue);
+        valueNumber.setText(String.valueOf(savedValue));
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                int value = minValue + progress;
+                valueNumber.setText(String.valueOf(value));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) { }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                int value = minValue + seekBar.getProgress();
+                base.set(settingsKey, value);
             }
         });
     }

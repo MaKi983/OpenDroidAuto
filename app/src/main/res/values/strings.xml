@@ -11,6 +11,7 @@
 	<string name="car_settings_hide_clock">Hide Clock</string>
 	<string name="car_settings_left_drive">Left Drive</string>
 	<string name="car_settings_aa_wifi">Use Android Auto Wireless</string>
+	<string name="car_settings_auto_start_timer">Automatically start from home screen (0 to disable)</string>
 
 	<string name="video_settings_sw_dec">Use software decoder (can be slow)</string>
 	<string name="video_settings">Video Settings</string>
@@ -52,6 +53,8 @@
 	<string name="advanced_settings_threads">Threads num</string>
 	<string name="advanced_settings_sendlog">Send Log</string>
 
+	<string name="main_connect">Connect your phone</string>
+	<string name="main_starting">Connect your phone</string>
 	<string name="settings">Settings</string>
 	<string name="exit">Exit</string>
 	<string name="start">Start WiFi</string>

@@ -120,13 +120,4 @@
         android:text="@string/video_show_app_badge"
         android:textColor="#000" />
 
-    <CheckBox
-        android:id="@+id/disableStartUsbBadge"
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
-        android:text="@string/video_disable_start_usb_badge"
-        android:textColor="#000" />
-
 </LinearLayout>

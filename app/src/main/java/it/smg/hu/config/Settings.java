@@ -57,6 +57,8 @@ public class Settings {
         public final static String CAR_SETTINGS_PLAY_MEDIA_DURING_VR = "play_media_during_vr";
         public final static String CAR_SETTINGS_HIDE_CLOCK = "hide_clock";
         public final static String CAR_SETTINGS_LEFT_HAND_DRIVE = "left_drive";
+        public final static String DISABLE_START_USB_BADGE = "disable_start_usb_badge";
+        public final static String AUTO_START_TIMER = "auto_start_timer";
 
         public final static String CAR_SETTINGS_HU_NAME_DEFAULT_VALUE = "Honda";
         public final static String CAR_SETTINGS_MODEL_DEFAULT_VALUE = "HRV";
@@ -68,6 +70,8 @@ public class Settings {
         public final static boolean CAR_SETTINGS_PLAY_MEDIA_DURING_VR_DEFAULT_VALUE = true;
         public final static boolean CAR_SETTINGS_HIDE_CLOCK_DEFAULT_VALUE = false;
         public final static boolean CAR_SETTINGS_LEFT_HAND_DRIVE_DEFAULT_VALUE = true;
+        public final static boolean DISABLE_START_USB_BADGE_DEFAULT_VALUE = false;
+        public final static int AUTO_START_TIMER_DEFAULT_VALUE = 0;
 
         @Keep
         public String huName() {
@@ -158,6 +162,23 @@ public class Settings {
         public void leftHandDrive(boolean value){
             set(CAR_SETTINGS_LEFT_HAND_DRIVE, value);
         }
+
+
+        public boolean disableStartUsbBadge() {
+            return get(DISABLE_START_USB_BADGE, DISABLE_START_USB_BADGE_DEFAULT_VALUE);
+        }
+        public void disableStartUsbBadge(boolean value){
+            set(DISABLE_START_USB_BADGE, value);
+        }
+
+        @Keep
+        public int autoStartTimer() {
+            return get(AUTO_START_TIMER, AUTO_START_TIMER_DEFAULT_VALUE);
+        }
+
+        public void autoStartTimer(int value){
+            set(AUTO_START_TIMER, value);
+        }
     }
 
 //    public class Keymap extends Base {
@@ -182,7 +203,6 @@ public class Settings {
         public final static String VIDEO_SHOW_MEDIA_NOTIFICATION = "video_show_media_notification";
         public final static String VIDEO_SHOW_NAVIGATION_NOTIFICATION = "video_show_navigation_notification";
         public final static String VIDEO_SHOW_APP_BADGE = "video_show_app_badge";
-        public final static String DISABLE_START_USB_BADGE = "video_disable_start_usb_badge";
 
         public final static int VIDEO_RESOLUTION_DEFAULT_VALUE = 1; // 480p
         public final static int VIDEO_FPS_DEFAULT_VALUE = 1; // 30 fps
@@ -192,7 +212,6 @@ public class Settings {
         public final static boolean VIDEO_SHOW_MEDIA_NOTIFICATION_DEFAULT_VALUE = true;
         public final static boolean VIDEO_SHOW_NAVIGATION_NOTIFICATION_DEFAULT_VALUE = true;
         public final static boolean VIDEO_SHOW_APP_BADGE_DEFAULT_VALUE = true;
-        public final static boolean DISABLE_START_USB_BADGE_DEFAULT_VALUE = false;
 
         public int resolution(){
             return SP.getInt(VIDEO_RESOLUTION,VIDEO_RESOLUTION_DEFAULT_VALUE);
@@ -248,13 +267,6 @@ public class Settings {
         }
         public void showAppBadge(boolean value){
             set(VIDEO_SHOW_APP_BADGE, value);
-        }
-
-        public boolean disableStartUsbBadge() {
-            return get(DISABLE_START_USB_BADGE, DISABLE_START_USB_BADGE_DEFAULT_VALUE);
-        }
-        public void disableStartUsbBadge(boolean value){
-            set(DISABLE_START_USB_BADGE, value);
         }
     }
 

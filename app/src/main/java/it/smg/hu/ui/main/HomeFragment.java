@@ -1,18 +1,22 @@
 package it.smg.hu.ui.main;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
@@ -41,6 +45,12 @@ public class HomeFragment extends Fragment {
     private TextView txtWifiIconConnection_;
     private Button startBtn_;
     private Button startUsbBtn_;
+
+    private LinearLayout logoContainer;
+    private LinearLayout progressContainer;
+    private ObjectAnimator progressAnimator;
+    private ProgressBar progressBar;
+    private boolean progressCancelled = false;
 
     private BroadcastReceiver localReceiver_;
     private LocalBroadcastManager localBroadcastManager_;
@@ -128,6 +138,10 @@ public class HomeFragment extends Fragment {
             dialog.show();
         });
 
+        logoContainer = view.findViewById(R.id.logoContainer);
+        progressContainer = view.findViewById(R.id.progressContainer);
+        progressBar = view.findViewById(R.id.progressbar);
+
         initUsbDeviceIcon();
     }
 
@@ -139,6 +153,8 @@ public class HomeFragment extends Fragment {
             txtUsbIconConnection_.setText(device.product);
             startUsbBtn_.setEnabled(true);
             startUsbBtn_.setAlpha(1f);
+
+            autoStartAnimation();
         }
     }
 
@@ -190,6 +206,43 @@ public class HomeFragment extends Fragment {
         super.onStop();
         if (Log.isDebug()) Log.d(TAG, "onStop");
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(localReceiver_);
+
+        cancelAutoStartAnimation();
+    }
+
+    private void autoStartAnimation() {
+        Log.d(TAG, "autoStartAnimation: " + settings_.car.autoStartTimer());
+        if (settings_.car.autoStartTimer() <= 0) return;
+
+        logoContainer.setVisibility(View.GONE);
+        progressContainer.setVisibility(View.VISIBLE);
+
+        // Animate progress over 3 seconds
+        progressAnimator = ObjectAnimator.ofInt(progressBar, "progress", 0, 100);
+        progressAnimator.setDuration(settings_.car.autoStartTimer() * 1000L);
+        progressAnimator.setInterpolator(new LinearInterpolator());
+        progressAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                Log.d(TAG, "progressAnimator end: " + progressCancelled);
+                progressContainer.setVisibility(View.GONE);
+                if (!progressCancelled) {
+                    start(ODAService.MODE_USB);
+                }
+            }
+        });
+
+        progressAnimator.start();
+    }
+
+    private void cancelAutoStartAnimation() {
+        if (progressAnimator != null && progressAnimator.isRunning()) {
+            progressCancelled = true;
+            progressAnimator.cancel();
+        }
+
+        logoContainer.setVisibility(View.VISIBLE);
+        progressContainer.setVisibility(View.GONE);
     }
 
     private class LocalReceiver extends BroadcastReceiver {
@@ -203,12 +256,16 @@ public class HomeFragment extends Fragment {
                 txtUsbIconConnection_.setText("");
                 startUsbBtn_.setEnabled(false);
                 startUsbBtn_.setAlpha(0.5f);
+
+                cancelAutoStartAnimation();
             } else if (USBManager.ATTACH_AOAP_DEVICE.equalsIgnoreCase(intent.getAction())){
                 LibUsbDevice device = usbManager_.aoapDevice();
                 usbIconConnection_.setImageResource(R.drawable.usb);
                 txtUsbIconConnection_.setText(device.product);
                 startUsbBtn_.setEnabled(true);
                 startUsbBtn_.setAlpha(1f);
+
+                autoStartAnimation();
             } else if (WIFIManager.CONNECT_WIFI.equalsIgnoreCase(intent.getAction())){
                 String ssid = intent.getStringExtra(WIFIManager.EXTRA_SSID);
                 wifiIconConnection_.setImageResource(R.drawable.wifi);

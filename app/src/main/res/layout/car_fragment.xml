@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#F1F1F1"
-    android:layout_marginBottom="64dp">
+    android:layout_marginBottom="64dp"
+    android:padding="10dp">
 
     <TextView
         android:layout_width="match_parent"
@@ -145,7 +146,7 @@
 
     <CheckBox
         android:id="@+id/play_media_during_vr"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_gravity="center"
         android:layout_marginTop="10dp"
@@ -154,7 +155,7 @@
 
     <CheckBox
         android:id="@+id/hide_clock"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_gravity="center"
         android:layout_marginTop="10dp"
@@ -163,7 +164,7 @@
 
     <CheckBox
         android:id="@+id/left_drive"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_gravity="center"
         android:layout_marginTop="10dp"
@@ -179,4 +180,70 @@
         android:layout_marginTop="10dp"
         android:text="@string/car_settings_aa_wifi" />
 -->
+
+    <CheckBox
+        android:id="@+id/disableStartUsbBadge"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:text="@string/video_disable_start_usb_badge"
+        android:textColor="#000" />
+
+    <LinearLayout
+        android:id="@+id/autoStartTimerContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="10dp"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/autoStartTimerLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/car_settings_auto_start_timer"
+            android:textColor="#000"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <SeekBar
+                android:id="@+id/autoStartTimerSeekBar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="10"
+                android:progress="0" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:id="@+id/autoStartTimerValueNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="16sp"
+                    android:textColor="#000" />
+
+                <TextView
+                    android:id="@+id/autoStartTimerValueSuffix"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="s"
+                    android:textSize="16sp"
+                    android:textColor="#000"
+                    android:layout_marginStart="2dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>
