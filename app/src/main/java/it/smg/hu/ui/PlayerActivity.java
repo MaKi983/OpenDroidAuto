@@ -12,18 +12,23 @@ import android.os.IBinder;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import it.smg.hu.R;
+import it.smg.hu.config.Settings;
+import it.smg.hu.manager.HondaConnectManager;
+import it.smg.hu.projection.InputDevice;
 import it.smg.hu.service.ODAService;
 import it.smg.hu.ui.notification.AppBadge;
 import it.smg.hu.ui.notification.NotificationFactory;
 import it.smg.libs.common.Log;
 
-public class PlayerActivity extends Activity implements ServiceConnection, SurfaceHolder.Callback {
+public class PlayerActivity extends Activity implements ServiceConnection, SurfaceHolder.Callback, InputDevice.OnKeyHolder {
 
     private final static String TAG = "PlayerActivity";
     private ODAService odaService_;
@@ -32,6 +37,7 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
     private BroadcastReceiver localReceiver_;
 
     private SurfaceView surfaceView_;
+    private View.OnKeyListener keyListener_;
 
     private String startMode_;
     private boolean isRunning_ = false;
@@ -83,14 +89,23 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
     @Override
     public void onBackPressed() {
         if (Log.isDebug()) Log.d(TAG, "onBackPressed");
+
+        if (Settings.instance().advanced.hondaIntegrationEnabled()){
+            HondaConnectManager.instance().endAudioBinding();
+        }
+
         odaService_.stop();
-//        odaService_.shutdown();
     }
 
     @Override
     public boolean onKeyLongPress(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (Log.isInfo()) Log.i(TAG, "Back button long pressed");
+
+            if (Settings.instance().advanced.hondaIntegrationEnabled()){
+                HondaConnectManager.instance().endAudioBinding();
+            }
+
             odaService_.stop();
             return true;
         }
@@ -105,6 +120,10 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
         Intent odaServiceIntent = new Intent(this, ODAService.class);
         startService(odaServiceIntent);
         bindService(odaServiceIntent, this, BIND_AUTO_CREATE | BIND_ABOVE_CLIENT | BIND_IMPORTANT);
+
+        if (Settings.instance().advanced.hondaIntegrationEnabled()){
+            HondaConnectManager.instance().initAudioBinding();
+        }
 
         NotificationFactory.instance().dismissAll();
         AppBadge.instance().dismiss();
@@ -123,10 +142,36 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
             unbindService(this);
         }
 
+        if (Settings.instance().advanced.hondaIntegrationEnabled()){
+            HondaConnectManager.instance().sendToBackground();
+        }
+
         AppBadge.instance().show();
 
         localBroadcastManager_.unregisterReceiver(localReceiver_);
         isActive_ = false;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (Log.isDebug()) Log.d(TAG, "onKeyDown: " + keyCode);
+
+        if (event.getKeyCode() != KeyEvent.KEYCODE_BACK && keyListener_ != null){
+            return keyListener_.onKey(surfaceView_, keyCode, event);
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (Log.isDebug()) Log.d(TAG, "onKeyUp: " + keyCode);
+
+        if (event.getKeyCode() != KeyEvent.KEYCODE_BACK && keyListener_ != null){
+            return keyListener_.onKey(surfaceView_, keyCode, event);
+        }
+
+        return super.onKeyUp(keyCode, event);
     }
 
     @Override
@@ -178,12 +223,17 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
     }
 
     private void start(){
+
+        if (Settings.instance().advanced.hondaIntegrationEnabled()){
+            HondaConnectManager.instance().adjustPermission();
+        }
+
         switch (startMode_){
             case ODAService.MODE_USB:
-                odaService_.startUsb(surfaceView_);
+                odaService_.startUsb(surfaceView_, this);
                 break;
             case ODAService.MODE_WIFI:
-                odaService_.startWifi(surfaceView_);
+                odaService_.startWifi(surfaceView_, this);
                 break;
             default:
                 if (Log.isWarn()) Log.w(TAG, "unknown startMode: " + startMode_);
@@ -198,6 +248,11 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
         if (Log.isDebug()) Log.d(TAG, "onServiceDisconnected");
         odaService_ = null;
         isServiceBound_ = false;
+    }
+
+    @Override
+    public void setOnKeyListener(View.OnKeyListener listener) {
+        keyListener_ = listener;
     }
 
     private class LocalReceiver extends BroadcastReceiver {

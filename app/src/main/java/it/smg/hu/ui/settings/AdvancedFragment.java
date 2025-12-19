@@ -12,6 +12,7 @@ import java.util.concurrent.Callable;
 
 import it.smg.hu.R;
 import it.smg.hu.config.Settings;
+import it.smg.hu.manager.HondaConnectManager;
 import it.smg.libs.common.Log;
 
 public class AdvancedFragment extends BaseSettingsFragment {
@@ -51,18 +52,36 @@ public class AdvancedFragment extends BaseSettingsFragment {
             return null;
         });
 
-        EditText threads = view.findViewById(R.id.num_threads);
-        initEditText(threads, settings.advanced, Settings.Advanced.ADVANCED_THREADS_NUM, Settings.Advanced.ADVANCED_THREADS_NUM_DEFAULT_VALUE, new Callable<Void>() {
-            @Override
-            public Void call() {
-                int value = settings.advanced.threads();
-                if (value == 0 || value > 10) {
-                    settings.advanced.threads(Settings.Advanced.ADVANCED_THREADS_NUM_DEFAULT_VALUE);
-                    threads.setText(Settings.Advanced.ADVANCED_THREADS_NUM_DEFAULT_VALUE);
-                }
-                return null;
+        CheckBox enableHondaIntegration = view.findViewById(R.id.enable_hondaintegration);
+        initCheckBox(enableHondaIntegration, settings.advanced, Settings.Advanced.ADVANCED_ENABLE_HONDA_INTEGRATION, Settings.Advanced.ADVANCED_ENABLE_HONDA_INTEGRATION_DEFAULT_VALUE, () -> {
+            if (Settings.instance().advanced.hondaIntegrationEnabled()) {
+                HondaConnectManager.init(getActivity().getApplicationContext());
             }
+            return null;
         });
+
+        Spinner swMode = view.findViewById(R.id.sw_mode);
+        initSpinner(swMode, R.array.swmode, R.array.swmode, settings.advanced, Settings.Advanced.ADVANCED_SW_MODE, Settings.Advanced.ADVANCED_SW_MODE_DEFAULT_VALUE, () -> {
+            EditText swIdx =  view.findViewById(R.id.steeringwheel_idx);
+            switch (settings.advanced.swMode()){
+                case HondaConnectManager.SWMode.SW_SERVICE:
+                    swIdx.setEnabled(true);
+                    break;
+                case HondaConnectManager.SWMode.MODEMGR_KEY_CALLBACK:
+                    swIdx.setEnabled(false);
+                    break;
+                default:
+                    break;
+            }
+
+            return null;
+        });
+
+        EditText modeMgrAudioIdx = view.findViewById(R.id.modemgraudio_idx);
+        initEditText(modeMgrAudioIdx, settings.advanced, Settings.Advanced.ADVANCED_MODEMGRAUDIO_IDX, Settings.Advanced.ADVANCED_MODEMGRAUDIO_IDX_DEFAULT_VALUE);
+
+        EditText steeringWheelIdx = view.findViewById(R.id.steeringwheel_idx);
+        initEditText(steeringWheelIdx, settings.advanced, Settings.Advanced.ADVANCED_SW_IDX, Settings.Advanced.ADVANCED_SW_IDX_DEFAULT_VALUE);
 
         return view;
     }
