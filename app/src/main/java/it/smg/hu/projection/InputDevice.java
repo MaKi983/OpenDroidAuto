@@ -68,13 +68,20 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
         for (KeymapFragment.KeyMap c : KeymapFragment.KeyMap.values()){
             int k = settings.keymap.key(c.keyName() + "_code");
             if (k == 0){
-                settings.keymap.key(c.keyName(), c.defaultValue());
-                supportedButtonCodes_.put(k, c.defaultValue());
-            } else if (k != -1){
+                settings.keymap.key(c.keyName() + "_code", c.defaultValue());
+                k = c.defaultValue();
+            }
+
+            if (k != -1){
                 int v = settings.keymap.key(c.keyName());
+                if (v == 0){
+                    settings.keymap.key(c.keyName(), c.defaultAction());
+                    v = c.defaultAction();
+                }
                 supportedButtonCodes_.put(k, v);
             }
         }
+
         if (Log.isDebug()) Log.d(TAG, "supported button codes: " + supportedButtonCodes_);
     }
 

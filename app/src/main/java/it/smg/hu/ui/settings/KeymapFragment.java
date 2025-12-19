@@ -57,7 +57,8 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
 
                 int currentValue = settings.keymap.key(c.keyName() + "_code");
                 if (currentValue == 0){
-                    b.setText("" + c.defaultValue_);
+                    settings.keymap.key(c.keyName() + "_code", c.defaultValue());
+                    b.setText("" + c.defaultValue());
                 } else if (currentValue != -1){
                     b.setText("" + currentValue);
                 } else {
@@ -70,18 +71,34 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
             }
         }
 
+        Settings settings = Settings.instance();
+        if (settings.keymap.key(Settings.Keymap.KEYMAP_BTN_LEFT) == 0){
+            settings.keymap.key(Settings.Keymap.KEYMAP_BTN_LEFT, Settings.Keymap.KEYMAP_BTN_LEFT_DEFAULT_VALUE);
+        }
         Spinner btnLeft = view.findViewById(R.id.btn_left);
-        initSpinner(btnLeft, R.array.keymap_btn_labels, R.array.keymap_btn_values, settings.keymap, KEYMAP_BTN_LEFT, Settings.Keymap.KEYMAP_BTN_LEFT_DEFAULT_VALUE);
+        initSpinner(btnLeft, R.array.keymap_btn_labels, R.array.keymap_btn_values, settings.keymap, Settings.Keymap.KEYMAP_BTN_LEFT, Settings.Keymap.KEYMAP_BTN_LEFT_DEFAULT_VALUE);
 
+        if (settings.keymap.key(KEYMAP_BTN_RIGHT) == 0){
+            settings.keymap.key(Settings.Keymap.KEYMAP_BTN_RIGHT, Settings.Keymap.KEYMAP_BTN_RIGHT_DEFAULT_VALUE);
+        }
         Spinner btnRight = view.findViewById(R.id.btn_right);
         initSpinner(btnRight, R.array.keymap_btn_labels, R.array.keymap_btn_values, settings.keymap, Settings.Keymap.KEYMAP_BTN_RIGHT, Settings.Keymap.KEYMAP_BTN_RIGHT_DEFAULT_VALUE);
 
+        if (settings.keymap.key(Settings.Keymap.KEYMAP_BTN_SOURCE) == 0){
+            settings.keymap.key(Settings.Keymap.KEYMAP_BTN_SOURCE, Settings.Keymap.KEYMAP_BTN_SOURCE_DEFAULT_VALUE);
+        }
         Spinner btnSource = view.findViewById(R.id.btn_source);
         initSpinner(btnSource, R.array.keymap_btn_labels, R.array.keymap_btn_values, settings.keymap, Settings.Keymap.KEYMAP_BTN_SOURCE, Settings.Keymap.KEYMAP_BTN_SOURCE_DEFAULT_VALUE);
 
+        if (settings.keymap.key(Settings.Keymap.KEYMAP_BTN_PLUS) == 0){
+            settings.keymap.key(Settings.Keymap.KEYMAP_BTN_PLUS, Settings.Keymap.KEYMAP_BTN_PLUS_DEFAULT_VALUE);
+        }
         Spinner btnPlus = view.findViewById(R.id.btn_plus);
         initSpinner(btnPlus, R.array.keymap_btn_labels, R.array.keymap_btn_values, settings.keymap, Settings.Keymap.KEYMAP_BTN_PLUS, Settings.Keymap.KEYMAP_BTN_PLUS_DEFAULT_VALUE);
 
+        if (settings.keymap.key(Settings.Keymap.KEYMAP_BTN_MINUS) == 0){
+            settings.keymap.key(Settings.Keymap.KEYMAP_BTN_MINUS, Settings.Keymap.KEYMAP_BTN_MINUS_DEFAULT_VALUE);
+        }
         Spinner btnMinus = view.findViewById(R.id.btn_minus);
         initSpinner(btnMinus, R.array.keymap_btn_labels, R.array.keymap_btn_values, settings.keymap, Settings.Keymap.KEYMAP_BTN_MINUS, Settings.Keymap.KEYMAP_BTN_MINUS_DEFAULT_VALUE);
 
@@ -145,20 +162,22 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
     }
 
     public enum KeyMap {
-        LEFT(KEYMAP_BTN_LEFT, R.id.keycode_left, -65532),
-        RIGHT(KEYMAP_BTN_RIGHT, R.id.keycode_right, -65533),
-        SOURCE(KEYMAP_BTN_SOURCE, R.id.keycode_source, -65531),
-        PLUS(KEYMAP_BTN_PLUS, R.id.keycode_plus, -65535),
-        MINUS(KEYMAP_BTN_MINUS, R.id.keycode_min, -65534);
+        LEFT(KEYMAP_BTN_LEFT, R.id.keycode_left, -65532, Settings.Keymap.KEYMAP_BTN_LEFT_DEFAULT_VALUE),
+        RIGHT(KEYMAP_BTN_RIGHT, R.id.keycode_right, -65533, Settings.Keymap.KEYMAP_BTN_RIGHT_DEFAULT_VALUE),
+        SOURCE(KEYMAP_BTN_SOURCE, R.id.keycode_source, -65531, Settings.Keymap.KEYMAP_BTN_SOURCE_DEFAULT_VALUE),
+        PLUS(KEYMAP_BTN_PLUS, R.id.keycode_plus, -65535, Settings.Keymap.KEYMAP_BTN_PLUS_DEFAULT_VALUE),
+        MINUS(KEYMAP_BTN_MINUS, R.id.keycode_min, -65534, Settings.Keymap.KEYMAP_BTN_MINUS_DEFAULT_VALUE);
 
         private final String keyName_;
         private final int id_;;
         private final int defaultValue_;;
+        private final int defaultAction_;;
 
-        KeyMap(String keyName, int id, int defaultValue){
+        KeyMap(String keyName, int id, int defaultValue, int defaultAction){
             keyName_ = keyName;
             id_ = id;
             defaultValue_ = defaultValue;
+            defaultAction_ = defaultAction;
         }
 
         public String keyName(){
@@ -171,6 +190,10 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
 
         public int defaultValue(){
             return defaultValue_;
+        }
+
+        public int defaultAction(){
+            return defaultAction_;
         }
 
     }
