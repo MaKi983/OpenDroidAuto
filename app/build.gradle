@@ -24,6 +24,10 @@ android {
                 outputFileName = rootProject.apkName + ".apk"
             }
         }
+
+        buildFeatures {
+            aidl = true;
+        }
     }
 
     splits {
@@ -66,6 +70,8 @@ android {
 }
 
 dependencies {
+    compileOnly files('../ext-libs/framework/ada-ext-api.jar')
+
     implementation libs.appcompat
     implementation libs.material
     implementation libs.constraintlayout

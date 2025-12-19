@@ -112,4 +112,51 @@
         <item>6</item>
     </integer-array>
 
+    <string-array name="keymap_btn_labels">
+        <item>NONE</item>
+        <item>MICROPHONE_2</item>
+        <item>MENU</item>
+        <item>HOME</item>
+        <item>BACK</item>
+        <item>PHONE</item>
+        <item>CALL_END</item>
+        <item>UP</item>
+        <item>DOWN</item>
+        <item>LEFT</item>
+        <item>RIGHT</item>
+        <item>ENTER</item>
+        <item>MICROPHONE_1</item>
+        <item>TOGGLE_PLAY</item>
+        <item>NEXT</item>
+        <item>PREV</item>
+        <item>PLAY</item>
+        <item>PAUSE</item>
+    </string-array>
+
+    <integer-array name="keymap_btn_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>19</item>
+        <item>20</item>
+        <item>21</item>
+        <item>22</item>
+        <item>23</item>
+        <item>84</item>
+        <item>85</item>
+        <item>87</item>
+        <item>88</item>
+        <item>126</item>
+        <item>127</item>
+    </integer-array>
+
+    <string-array name="swmode">
+        <item>SW SERVICE</item>
+        <item>MODEMGR KEY CALLBACK</item>
+    </string-array>
+
 </resources>

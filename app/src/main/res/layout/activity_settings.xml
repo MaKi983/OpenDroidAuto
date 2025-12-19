@@ -50,41 +50,40 @@
             android:id="@+id/video_settings"
             android:layout_width="128dp"
             android:layout_height="64dp"
-            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
             android:adjustViewBounds="true"
             android:background="#039BE5"
             android:contentDescription="@string/video_settings"
             android:scaleType="fitCenter"
             android:src="@drawable/video_settings" />
 
-
         <ImageButton
             android:id="@+id/conn_settings"
             android:layout_width="128dp"
             android:layout_height="64dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginStart="15dp"
             android:adjustViewBounds="true"
             android:background="#039BE5"
             android:contentDescription="@string/conn_settings"
             android:scaleType="fitCenter"
             android:src="@drawable/connectivity_settings"/>
 
-        <!--
         <ImageButton
             android:id="@+id/keymap_settings"
             android:layout_width="128dp"
             android:layout_height="64dp"
+            android:layout_marginStart="15dp"
+            android:background="#039BE5"
             android:src="@drawable/keymap_settings"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:contentDescription="@string/keymap_settings" />
-        -->
 
         <ImageButton
             android:id="@+id/advanced_settings"
             android:layout_width="128dp"
             android:layout_height="64dp"
+            android:layout_marginStart="15dp"
             android:adjustViewBounds="true"
             android:background="#039BE5"
             android:contentDescription="@string/advanced_settings"

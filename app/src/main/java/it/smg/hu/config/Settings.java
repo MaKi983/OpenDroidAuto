@@ -19,7 +19,7 @@ public class Settings {
     private SharedPreferences SP;
 
     public Car car;
-//    public Keymap keymap;
+    public Keymap keymap;
     public Advanced advanced;
     public Video video;
     public Audio audio;
@@ -39,7 +39,7 @@ public class Settings {
         SP = PreferenceManager.getDefaultSharedPreferences(context);
 
         car = new Car();
-//        keymap = new Keymap();
+        keymap = new Keymap();
         connectivity = new Connectivity();
         advanced = new Advanced();
         video = new Video();
@@ -160,18 +160,70 @@ public class Settings {
         }
     }
 
-//    public class Keymap extends Base {
-//        private Keymap(){}
-//
-//        public void key(String key, int code){
-//            set(key, code);
+    public class Keymap extends Base {
+
+        public final static String KEYMAP_BTN_LEFT = "keymap_btn_left";
+        public final static String KEYMAP_BTN_RIGHT = "keymap_btn_right";
+        public final static String KEYMAP_BTN_SOURCE = "keymap_btn_source";
+        public final static String KEYMAP_BTN_PLUS = "keymap_btn_plus";
+        public final static String KEYMAP_BTN_MINUS = "keymap_btn_minus";
+
+        public final static int KEYMAP_BTN_LEFT_DEFAULT_VALUE = 88; // PREV
+        public final static int KEYMAP_BTN_RIGHT_DEFAULT_VALUE = 87; // NEXT
+        public final static int KEYMAP_BTN_SOURCE_DEFAULT_VALUE = 85; // TOGGLE_PLAY
+        public final static int KEYMAP_BTN_PLUS_DEFAULT_VALUE = 19; // UP
+        public final static int KEYMAP_BTN_MINUS_DEFAULT_VALUE = 20; // DOWN
+
+        private Keymap(){}
+
+//        public void left(int code){
+//            set(KEYMAP_BTN_LEFT, code);
 //        }
 //
-//        public int key(String key){
-//            return get(key, -1);
+//        public int left(){
+//            return get(KEYMAP_BTN_LEFT, KEYMAP_BTN_LEFT_DEFAULT_VALUE);
+//        }
+//        public void right(int code){
+//            set(KEYMAP_BTN_RIGHT, code);
 //        }
 //
-//    }
+//        public int right(String key){
+//            return get(KEYMAP_BTN_RIGHT, KEYMAP_BTN_RIGHT_DEFAULT_VALUE);
+//        }
+//
+//        public void source(int code){
+//            set(KEYMAP_BTN_SOURCE, code);
+//        }
+//
+//        public int source(String key){
+//            return get(KEYMAP_BTN_SOURCE, KEYMAP_BTN_SOURCE_DEFAULT_VALUE);
+//        }
+
+//        public void plus(int code){
+//            set(KEYMAP_BTN_PLUS, code);
+//        }
+//
+//        public int plus(){
+//            return get(KEYMAP_BTN_PLUS, KEYMAP_BTN_PLUS_DEFAULT_VALUE);
+//        }
+//
+//        public void minus(int code){
+//            set(KEYMAP_BTN_MINUS, code);
+//        }
+//
+//        public int minus(){
+//            return get(KEYMAP_BTN_MINUS, KEYMAP_BTN_MINUS_DEFAULT_VALUE);
+//        }
+
+        public void key(String key, int code){
+            set(key, code);
+        }
+
+        public int key(String key){
+            return get(key, 0);
+        }
+
+    }
 
     public class Video extends Base {
         public final static String VIDEO_RESOLUTION = "video_resolution";
@@ -441,7 +493,10 @@ public class Settings {
         public final static String ADVANCED_LOG_LEVEL = "logLevel";
         public final static String ADVANCED_LOG_PROTOCOL = "logProtocol";
         public final static String ADVANCED_THREADS_NUM = "threads";
-        public final static String ADVANCED_AUTOSTART = "autostart";
+        public final static String ADVANCED_ENABLE_HONDA_INTEGRATION = "enablehondaintegration";
+        public final static String ADVANCED_SW_MODE = "swmode";
+        public final static String ADVANCED_MODEMGRAUDIO_IDX = "modemgridx";
+        public final static String ADVANCED_SW_IDX = "steeringwheelidx";
 
         public final static boolean ADVANCED_ENABLED_DEBUG_DEFAULT_VALUE = false;
         public final static String ADVANCED_LOG_DIR_DEFAULT_VALUE = "/mnt/sdcard/usbdrive2/ODA/";
@@ -449,7 +504,10 @@ public class Settings {
         public final static int ADVANCED_LOG_LEVEL_DEFAULT_VALUE = ILog.DEFAULT_LOG_LEVEL;
         public final static boolean ADVANCED_LOG_PROTOCOL_DEFAULT_VALUE = false;
         public final static int ADVANCED_THREADS_NUM_DEFAULT_VALUE = 4;
-        public final static boolean ADVANCED_AUTOSTART_DEFAULT_VALUE = true;
+        public final static boolean ADVANCED_ENABLE_HONDA_INTEGRATION_DEFAULT_VALUE = true;
+        public final static String ADVANCED_SW_MODE_DEFAULT_VALUE = "SW SERVICE";
+        public final static int ADVANCED_MODEMGRAUDIO_IDX_DEFAULT_VALUE = 213; // 223 appmode, 220 appmodepic, 213 3rd party, 214 3rd party pic, 197 bt, 92 cam, 98 cd, 196 dab, 216 hdmi, 201 ipod, 222 mirrolink, 221 mirrorlink pic, 255 off, 87 phone, 198 tel rcv, 199 usb audio, 133 voicetag, 136 siri, 96 radio
+        public final static int ADVANCED_SW_IDX_DEFAULT_VALUE = 260; // 258 source, 263 source header, 259 disp, 260 menu, 265 launcher, 266 imid
 
         public void logDir(String logDir){
             SP.edit().putString(ADVANCED_LOG_DIR, logDir).apply();
@@ -497,6 +555,38 @@ public class Settings {
 
         public void threads(int threads){
             SP.edit().putInt(ADVANCED_THREADS_NUM, threads).apply();
+        }
+
+        public boolean hondaIntegrationEnabled(){
+            return SP.getBoolean(ADVANCED_ENABLE_HONDA_INTEGRATION, ADVANCED_ENABLE_HONDA_INTEGRATION_DEFAULT_VALUE);
+        }
+
+        public void hondaIntegrationEnabled(boolean integration){
+            SP.edit().putBoolean(ADVANCED_ENABLE_HONDA_INTEGRATION, integration).apply();
+        }
+
+        public String swMode(){
+            return SP.getString(ADVANCED_SW_MODE, ADVANCED_SW_MODE_DEFAULT_VALUE);
+        }
+
+        public void swMode(String mode){
+            SP.edit().putString(ADVANCED_SW_MODE, mode).apply();
+        }
+
+        public int modeMgrAudioIdx(){
+            return SP.getInt(ADVANCED_MODEMGRAUDIO_IDX, ADVANCED_MODEMGRAUDIO_IDX_DEFAULT_VALUE);
+        }
+
+        public void modeMgrAudioIdx(int idx){
+            SP.edit().putInt(ADVANCED_MODEMGRAUDIO_IDX, idx).apply();
+        }
+
+        public int steeringWheelIdx(){
+            return SP.getInt(ADVANCED_SW_IDX, ADVANCED_SW_IDX_DEFAULT_VALUE);
+        }
+
+        public void steeringWheelIdx(int idx){
+            SP.edit().putInt(ADVANCED_SW_IDX, idx).apply();
         }
     }
 
