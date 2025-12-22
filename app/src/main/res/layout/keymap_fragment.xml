@@ -1,15 +1,195 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
     android:background="#F1F1F1"
     android:layout_marginBottom="64dp">
 
+    <RelativeLayout
+        android:layout_width="446dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="top|left">
+
+        <Button
+            android:id="@+id/keycode_left"
+            android:layout_width="56dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginTop="235dp"
+            android:background="#039BE5"
+            android:text=""
+            android:textSize="12sp"
+            android:textColor="#FFF" />
+
+        <Button
+            android:id="@+id/keycode_plus"
+            android:layout_width="56dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="60dp"
+            android:layout_marginTop="160dp"
+            android:background="#039BE5"
+            android:text=""
+            android:textSize="12sp"
+            android:textColor="#FFF" />
+        <!--
+        <Button
+            android:id="@+id/keycode_disp"
+            android:layout_width="56dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="215dp"
+            android:layout_marginTop="50dp"
+            android:background="#039BE5"
+            android:textColor="#FFF"
+            android:text="" />
+-->
+        <Button
+            android:id="@+id/keycode_min"
+            android:layout_width="56dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="55dp"
+            android:layout_marginTop="300dp"
+            android:background="#039BE5"
+            android:text=""
+            android:textSize="12sp"
+            android:textColor="#FFF" />
+
+        <Button
+            android:id="@+id/keycode_source"
+            android:layout_width="56dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="350dp"
+            android:layout_marginTop="205dp"
+            android:background="#039BE5"
+            android:textSize="12sp"
+            android:textColor="#FFF" />
+
+        <Button
+            android:id="@+id/keycode_right"
+            android:layout_width="56dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="350dp"
+            android:layout_marginTop="270dp"
+            android:background="#039BE5"
+            android:text=""
+            android:textSize="12sp"
+            android:textColor="#FFF" />
+        <!--
+        <Button
+            android:id="@+id/keycode_menu"
+            android:layout_width="56dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="545dp"
+            android:layout_marginTop="252dp"
+            android:background="#039BE5"
+            android:textColor="#FFF"
+            android:text="" />
+-->
+        <ImageView
+            android:id="@+id/steeringwheel"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="100dp"
+            android:contentDescription="@string/keymap_steeringwheel_desc"
+            android:src="@drawable/steeringwheel" />
+
+    </RelativeLayout>
+    <LinearLayout
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginLeft="10dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textColor="#000"
+            android:labelFor="@id/btn_left"
+            android:text="@string/keymap_settings_btnleft"/>
+
+        <Spinner
+            android:id="@+id/btn_left"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:textColor="#000"
+            android:gravity="center_horizontal"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textColor="#000"
+            android:labelFor="@id/btn_right"
+            android:text="@string/keymap_settings_btnright"/>
+
+        <Spinner
+            android:id="@+id/btn_right"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:textColor="#000"
+            android:gravity="center_horizontal"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textColor="#000"
+            android:labelFor="@id/btn_source"
+            android:text="@string/keymap_settings_btnsource"/>
+
+        <Spinner
+            android:id="@+id/btn_source"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:textColor="#000"
+            android:gravity="center_horizontal"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textColor="#000"
+            android:labelFor="@id/btn_plus"
+            android:text="@string/keymap_settings_btnplus"/>
+
+        <Spinner
+            android:id="@+id/btn_plus"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:textColor="#000"
+            android:gravity="center_horizontal"
+            android:textAlignment="center"
+            android:clickable="false" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textColor="#000"
+            android:labelFor="@id/btn_minus"
+            android:text="@string/keymap_settings_btnminus"/>
+
+        <Spinner
+            android:id="@+id/btn_minus"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:textColor="#000"
+            android:gravity="center_horizontal"
+            android:textAlignment="center"
+            android:clickable="false"/>
+    </LinearLayout>
+<!--
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -42,13 +222,7 @@
                 android:layout_marginLeft="6dp"></TextView>
 
         </RelativeLayout>
-<!--
-        <Button
-            android:id="@+id/keycode_soft_left"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:text="SL" />
--->
+
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -103,14 +277,6 @@
                 android:layout_marginLeft="6dp"></TextView>
 
         </RelativeLayout>
-<!--
-        <Button
-            android:id="@+id/keycode_soft_right"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_marginLeft="128dp"
-            android:text="SR" />
--->
 
         <RelativeLayout
             android:layout_width="wrap_content"
@@ -425,22 +591,7 @@
                 android:layout_marginLeft="6dp"></TextView>
 
         </RelativeLayout>
-<!--
-        <Button
-            android:id="@+id/keycode_night"
-            android:layout_width="72dp"
-            android:layout_height="64dp"
-            android:layout_marginLeft="288dp"
-            android:textSize="14dp"
-            android:text="NIGHT" />
--->
+
     </FrameLayout>
-<!--
-    <Button
-        android:id="@+id/reset_codes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|right"
-        android:text="@string/reset" />
 -->
-</FrameLayout>
+</LinearLayout>

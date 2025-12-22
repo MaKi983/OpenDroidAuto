@@ -16,6 +16,7 @@ public class AudioCodec implements IAudioCodec, Runnable {
 
     private final String name_;
     private AudioTrack audioTrack_;
+    private final int streamType_;
     private final int sampleRate_;
     private final int channelConfig_;
     private final int sampleSize_;
@@ -24,8 +25,9 @@ public class AudioCodec implements IAudioCodec, Runnable {
     private final Queue<byte[]> queue_;
     private Thread codecThread_;
 
-    public AudioCodec(String name, int sampleRate, int channelConfig, int sampleSize){
+    public AudioCodec(String name, int streamType, int sampleRate, int channelConfig, int sampleSize){
         name_ = name;
+        streamType_ = streamType;
         sampleRate_ = sampleRate;
         channelConfig_ = channelConfig;
         sampleSize_ = sampleSize;
@@ -154,7 +156,7 @@ public class AudioCodec implements IAudioCodec, Runnable {
             try {
                 int bufferSize_ = AudioTrack.getMinBufferSize(sampleRate_, channels2num(channelConfig_), sampleSizeFromInt(sampleSize_));
                 if (Log.isInfo()) Log.i(TAG, "Buffer size " + bufferSize_ + "*2");
-                audioTrack_ = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate_, channels2num(channelConfig_), sampleSizeFromInt(sampleSize_), bufferSize_ * 3, AudioTrack.MODE_STREAM);
+                audioTrack_ = new AudioTrack(streamType_, sampleRate_, channels2num(channelConfig_), sampleSizeFromInt(sampleSize_), bufferSize_ * 3, AudioTrack.MODE_STREAM);
             } catch (Exception e) {
                 Log.e(TAG, "error in audiotrack creation", e);
                 return;
