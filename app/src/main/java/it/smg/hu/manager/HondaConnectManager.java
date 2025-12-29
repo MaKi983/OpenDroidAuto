@@ -64,7 +64,7 @@ public class HondaConnectManager {
     // SteeringWheel service
     private ISteeringMenuService steeringMenuServiceIface_;
     private final ServiceConnection steeringMenuServiceConnection_;
-//    private SteeringMenuServiceCallback steeringMenuServiceCallback_;
+    //    private SteeringMenuServiceCallback steeringMenuServiceCallback_;
     private boolean boundToWheelService_;
 
     private final Context context_;
@@ -281,11 +281,30 @@ public class HondaConnectManager {
     public void increaseVolume(){
         if (Log.isVerbose()) Log.v(TAG, "increaseVolume");
         modeMgrManager_.reqModeMgrSteeringVolCmd(true);
+        if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
+            if (Log.isVerbose()) Log.v(TAG, "increaseVolume -> swMode SW_SERVICE -> bind HC sw service");
+            unbindToWheelService();
+            bindToWheelService();
+        } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
+            if (Log.isWarn()) Log.w(TAG, "increaseVolume ->  swMode MODEMGR_KEY_CALLBACK -> USE MODEMGR_KEY_CALLBACK ONLY WITH PREINSTALL");
+            unregisterModeMgrSWEvent();
+            registerModeMgrSWEvent();
+        }
     }
 
     public void decreaseVolume(){
         if (Log.isVerbose()) Log.v(TAG, "decreaseVolume");
         modeMgrManager_.reqModeMgrSteeringVolCmd(false);
+        if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
+            if (Log.isVerbose()) Log.v(TAG, "decreaseVolume ->  swMode SW_SERVICE -> bind HC sw service");
+            unbindToWheelService();
+            bindToWheelService();
+        } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
+            if (Log.isWarn()) Log.w(TAG, "decreaseVolume -> swMode MODEMGR_KEY_CALLBACK -> USE MODEMGR_KEY_CALLBACK ONLY WITH PREINSTALL");
+            unregisterModeMgrSWEvent();
+            registerModeMgrSWEvent();
+        }
+
     }
 
     // Used in onResume
@@ -295,6 +314,17 @@ public class HondaConnectManager {
         if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
             if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> app auth = preinstall");
             bindToModeMgrService();
+            if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
+                if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> using authType PREINSTALL and swMode SW_SERVICE -> bind HC sw service");
+                bindToWheelService();
+            } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
+                if (Log.isWarn()) Log.w(TAG, "initAudioBinding -> using authType PREINSTALL and swMode MODEMGR_KEY_CALLBACK -> USE MODEMGR_KEY_CALLBACK ONLY WITH PREINSTALL");
+                registerModeMgrSWEvent();
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "initAudioBinding -> wrong steeringwheel mode " + settings_.advanced.swMode());
+            }
+
+
         } else {
             if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> app auth not preinstall");
 
@@ -318,6 +348,7 @@ public class HondaConnectManager {
                 unbindToWheelService();
             } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
                 if (Log.isVerbose()) Log.v(TAG, "sendToBackground -> using authType PREINSTALL and swMode MODEMGR_KEY_CALLBACK -> do nothing");
+                unregisterModeMgrSWEvent();
             } else {
                 if (Log.isWarn()) Log.w(TAG, "sendToBackground -> wrong steeringwheel mode " + settings_.advanced.swMode());
             }
