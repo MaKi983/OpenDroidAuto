@@ -111,6 +111,8 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
         if (keyHolder_ != null){
             keyHolder_.setOnKeyListener(this);
         }
+
+        HondaConnectManager.instance().reRegisterWheel();
     }
 
     @Keep
@@ -123,6 +125,8 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
         if (keyHolder_ != null){
             keyHolder_.setOnKeyListener(null);
         }
+
+        HondaConnectManager.instance().reRegisterWheel();
     }
 
     @Keep
@@ -168,6 +172,7 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
             }
             sendTouchEvent(event.getActionMasked(), event.getActionIndex(), ta);
         }
+        HondaConnectManager.instance().reRegisterWheel();
         return true;
     }
 
@@ -195,6 +200,11 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
             }
             HondaConnectManager.instance().reRegisterWheel();
             return true;
+        }
+        if (Log.isDebug()) {
+            new Handler(Looper.getMainLooper()).post(() -> {
+                Toast.makeText(context_, "Unknown event button key: " + keyCode + " action: " + event.getAction(), Toast.LENGTH_SHORT).show();
+            });
         }
         HondaConnectManager.instance().reRegisterWheel();
         return false;
