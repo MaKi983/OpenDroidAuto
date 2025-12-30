@@ -278,9 +278,8 @@ public class HondaConnectManager {
         }
     }
 
-    public void increaseVolume(){
-        if (Log.isVerbose()) Log.v(TAG, "increaseVolume");
-        modeMgrManager_.reqModeMgrSteeringVolCmd(true);
+    public void reRegisterWheel(){
+
         if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
             if (Log.isVerbose()) Log.v(TAG, "increaseVolume -> swMode SW_SERVICE -> bind HC sw service");
             unbindToWheelService();
@@ -290,21 +289,18 @@ public class HondaConnectManager {
             unregisterModeMgrSWEvent();
             registerModeMgrSWEvent();
         }
+
+    }
+
+    public void increaseVolume(){
+        if (Log.isVerbose()) Log.v(TAG, "increaseVolume");
+        modeMgrManager_.reqModeMgrSteeringVolCmd(true);
+
     }
 
     public void decreaseVolume(){
         if (Log.isVerbose()) Log.v(TAG, "decreaseVolume");
         modeMgrManager_.reqModeMgrSteeringVolCmd(false);
-        if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
-            if (Log.isVerbose()) Log.v(TAG, "decreaseVolume ->  swMode SW_SERVICE -> bind HC sw service");
-            unbindToWheelService();
-            bindToWheelService();
-        } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
-            if (Log.isWarn()) Log.w(TAG, "decreaseVolume -> swMode MODEMGR_KEY_CALLBACK -> USE MODEMGR_KEY_CALLBACK ONLY WITH PREINSTALL");
-            unregisterModeMgrSWEvent();
-            registerModeMgrSWEvent();
-        }
-
     }
 
     // Used in onResume

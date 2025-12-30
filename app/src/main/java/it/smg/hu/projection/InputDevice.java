@@ -193,10 +193,10 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
                 int action = event.getAction(); // 1 - UP, 0 - DOWN
                 sendButtonEvent(action, button);
             }
-
+            HondaConnectManager.instance().reRegisterWheel();
             return true;
         }
-
+        HondaConnectManager.instance().reRegisterWheel();
         return false;
     }
 
