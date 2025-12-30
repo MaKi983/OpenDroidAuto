@@ -73,7 +73,7 @@ public class HondaConnectManager {
     private boolean hasAudioFocus_;
     private boolean boundToModeMgrService_;
     private ProcessControl pControl_;
-//    private CountDownLatch waitCond_;
+//  private CountDownLatch waitCond_;
 
     private final Handler mainHandler_;
 
@@ -279,7 +279,6 @@ public class HondaConnectManager {
     }
 
     public void reRegisterWheel(){
-
         if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
             if (Log.isVerbose()) Log.v(TAG, "increaseVolume -> swMode SW_SERVICE -> bind HC sw service");
             unbindToWheelService();
@@ -289,13 +288,11 @@ public class HondaConnectManager {
             unregisterModeMgrSWEvent();
             registerModeMgrSWEvent();
         }
-
     }
 
     public void increaseVolume(){
         if (Log.isVerbose()) Log.v(TAG, "increaseVolume");
         modeMgrManager_.reqModeMgrSteeringVolCmd(true);
-
     }
 
     public void decreaseVolume(){
@@ -577,6 +574,11 @@ public class HondaConnectManager {
 
         public boolean onSteeringSWDown(int keytype) {
             Log.v(TAG, "onSteeringSWDown " + keytype);
+            if (Log.isDebug()) {
+                mainHandler_.post(() -> {
+                    Toast.makeText(context_, "onSteeringSWDown keytype: " + keytype, Toast.LENGTH_SHORT).show();
+                });
+            }
             return true;
         }
     };
