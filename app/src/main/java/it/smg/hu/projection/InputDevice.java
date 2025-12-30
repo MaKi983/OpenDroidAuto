@@ -43,10 +43,10 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
                 screenGeometry_ = new Rect(1280, 720);
                 break;
             case 3: // 1080p
-                screenGeometry_ = new Rect(1920, 1080);;
+                screenGeometry_ = new Rect(1920, 1080);
                 break;
             case 4: // 1440p
-                screenGeometry_ = new Rect(2560, 1440);;
+                screenGeometry_ = new Rect(2560, 1440);
                 break;
             default: // 480p
                 screenGeometry_ = new Rect(800, 480);
@@ -111,6 +111,7 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
         if (keyHolder_ != null){
             keyHolder_.setOnKeyListener(this);
         }
+        HondaConnectManager.instance().reRegisterWheel();
     }
 
     @Keep
@@ -123,6 +124,7 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
         if (keyHolder_ != null){
             keyHolder_.setOnKeyListener(null);
         }
+        HondaConnectManager.instance().reRegisterWheel();
     }
 
     @Keep
@@ -168,6 +170,7 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
             }
             sendTouchEvent(event.getActionMasked(), event.getActionIndex(), ta);
         }
+        HondaConnectManager.instance().reRegisterWheel();
         return true;
     }
 
@@ -193,10 +196,15 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
                 int action = event.getAction(); // 1 - UP, 0 - DOWN
                 sendButtonEvent(action, button);
             }
-
+            HondaConnectManager.instance().reRegisterWheel();
             return true;
         }
-
+        if (Log.isDebug()) {
+            new Handler(Looper.getMainLooper()).post(() -> {
+                Toast.makeText(context_, "Unknown event button key: " + keyCode + " action: " + event.getAction(), Toast.LENGTH_SHORT).show();
+            });
+        }
+        HondaConnectManager.instance().reRegisterWheel();
         return false;
     }
 
