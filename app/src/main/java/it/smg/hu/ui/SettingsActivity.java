@@ -11,7 +11,6 @@ import androidx.fragment.app.FragmentActivity;
 
 import it.smg.hu.R;
 import it.smg.hu.config.Settings;
-import it.smg.hu.manager.HondaConnectManager;
 import it.smg.hu.projection.InputDevice;
 import it.smg.hu.ui.settings.AdvancedFragment;
 import it.smg.hu.ui.settings.CarFragment;
