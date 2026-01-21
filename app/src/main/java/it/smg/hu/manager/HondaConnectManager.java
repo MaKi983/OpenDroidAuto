@@ -23,9 +23,6 @@ import com.fujitsu_ten.displayaudio.whitelist.common.Constants;
 import com.fujitsu_ten.displayaudio.whitelist.common.IWhiteList;
 import com.fujitsu_ten.displayaudio.whitelist.common.ProcessControl;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import it.smg.hu.config.Settings;
 //import it.smg.hu.manager.steeringmenu.SteeringMenuServiceCallback;
 import it.smg.libs.aasdk.messenger.ChannelId;
@@ -46,7 +43,7 @@ public class HondaConnectManager {
         public static final int ADA_INTERRUPT_NAVI = 15;
     }
 
-    private static class ModeMgrMode {
+    static class ModeMgrMode {
         public static final int REQUEST_MODE = Integer.parseInt("011111", 2); //31
         public static final int CONFIRM_MODE = Integer.parseInt("111", 2); //7
         public static final int NOTIFY_MODE = Integer.parseInt("11", 2); //3
@@ -64,8 +61,16 @@ public class HondaConnectManager {
     // SteeringWheel service
     private ISteeringMenuService steeringMenuServiceIface_;
     private final ServiceConnection steeringMenuServiceConnection_;
-//    private SteeringMenuServiceCallback steeringMenuServiceCallback_;
+
+    private ISteeringMenuServiceCallback steeringMenuServiceCallback_;
+    private IModeMgrServiceCallBack modeMgrServiceCallBack_;
+    private IModeMgrServiceSWKeyEventCallBack modeMgrServiceSWKeyEventCallBack_;
     private boolean boundToWheelService_;
+
+    // Volume service
+//    private IVolumeService volumeServiceIface_;
+//    private final ServiceConnection volumeServiceConnection_;
+//    private boolean boundToVolumeService_;
 
     private final Context context_;
     private final Settings settings_;
@@ -108,13 +113,12 @@ public class HondaConnectManager {
                 boundToWheelService_ = true;
                 steeringMenuServiceIface_ = ISteeringMenuService.Stub.asInterface(service);
                 try {
-//                    steeringMenuServiceCallback_ = new SteeringMenuServiceCallback();
-
                     int idx = settings_.advanced.steeringWheelIdx();
                     if (idx > 0){
                         if (Log.isVerbose()) Log.v(TAG, "notifySteeringMenuDispMode 1 addr " + idx);
                         steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, 1);
                         if (Log.isVerbose()) Log.v(TAG, "registerCallbackEx swaddr " + idx);
+                        steeringMenuServiceCallback_ = new SteeringMenuServiceCallback();
                         steeringMenuServiceIface_.registerCallbackEx(steeringMenuServiceCallback_, idx);
                     }
 
@@ -135,7 +139,7 @@ public class HondaConnectManager {
                             steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, 0);
                             if (Log.isVerbose()) Log.v(TAG, "unregisterCallbackEx swaddr " + idx);
                             steeringMenuServiceIface_.unregisterCallbackEx(steeringMenuServiceCallback_, idx);
-//                            steeringMenuServiceCallback_ = null;
+                            steeringMenuServiceCallback_ = null;
                         }
                     }
                 } catch (RemoteException e) {
@@ -145,6 +149,22 @@ public class HondaConnectManager {
                 steeringMenuServiceIface_ = null;
             }
         };
+
+//        volumeServiceConnection_ = new ServiceConnection() {
+//            @Override
+//            public void onServiceConnected(ComponentName componentName, IBinder service) {
+//                if (Log.isVerbose()) Log.v(TAG, "Volume Service connected");
+//                boundToVolumeService_ = true;
+//                volumeServiceIface_ = IVolumeService.Stub.asInterface(service);
+//            }
+//
+//            @Override
+//            public void onServiceDisconnected(ComponentName componentName) {
+//                if (Log.isVerbose()) Log.v(TAG, "Volume Service disconnected");
+//                boundToVolumeService_ = false;
+//                volumeServiceIface_ = null;
+//            }
+//        };
 
         try {
             pControl_ = IWhiteList.getProcessControl("it.smg.hu", null);
@@ -365,6 +385,7 @@ public class HondaConnectManager {
         if (!boundToWheelService_) {
             int idx = settings_.advanced.modeMgrAudioIdx();
             if (Log.isDebug()) Log.d(TAG, "registerModeMgrSWKeyEventCallback idx " + idx);
+            modeMgrServiceSWKeyEventCallBack_ = new ModeMgrServiceSWKeyEventCallBack();
             int ret = modeMgrManager_.registerModeMgrSWKeyEventCallback(idx, modeMgrServiceSWKeyEventCallBack_);
             if (Log.isDebug()) Log.d(TAG, "registerModeMgrSWKeyEventCallback ret " + ret);
             boundToWheelService_ = true;
@@ -377,6 +398,7 @@ public class HondaConnectManager {
             if (Log.isDebug()) Log.d(TAG, "unregisterModeMgrSWKeyEventCallback idx " + idx);
             int ret = modeMgrManager_.unregisterModeMgrSWKeyEventCallback(idx);
             if (Log.isDebug()) Log.d(TAG, "unregisterModeMgrSWKeyEventCallback ret " + ret);
+            modeMgrServiceSWKeyEventCallBack_ = null;
             boundToWheelService_ = false;
         }
     }
@@ -395,6 +417,7 @@ public class HondaConnectManager {
                     steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, 0);
                     Log.v(TAG, "unregisterCallbackEx swaddr " + idx);
                     steeringMenuServiceIface_.unregisterCallbackEx(steeringMenuServiceCallback_, idx);
+                    steeringMenuServiceCallback_ = null;
                 }
             } catch (RemoteException e) {
                 Log.e(TAG, "errore", e);
@@ -412,6 +435,7 @@ public class HondaConnectManager {
             int ret = modeMgrManager_.unregisterModeMgrCallback(idx);
             if (Log.isVerbose()) Log.v(TAG, "unregisterModeMgrCallback ret " + ret);
 
+            modeMgrServiceCallBack_ = null;
             boundToModeMgrService_ = false;
         }
     }
@@ -423,6 +447,7 @@ public class HondaConnectManager {
                 boundToModeMgrService_ = true;
                 int idx = settings_.advanced.modeMgrAudioIdx();
                 if (Log.isVerbose()) Log.v(TAG, "registerModeMgrCallback idx " + idx);
+                modeMgrServiceCallBack_ = new ModeMgrServiceCallBack();
                 int ret = modeMgrManager_.registerModeMgrCallback(idx, modeMgrServiceCallBack_);
                 if (Log.isVerbose()) Log.v(TAG, "registerModeMgrCallback ret " + ret);
             } else {
@@ -449,7 +474,7 @@ public class HondaConnectManager {
 //        return res;
 //    }
 
-    private final IModeMgrServiceSWKeyEventCallBack.Stub modeMgrServiceSWKeyEventCallBack_ = new IModeMgrServiceSWKeyEventCallBack.Stub() {
+    private class ModeMgrServiceSWKeyEventCallBack extends IModeMgrServiceSWKeyEventCallBack.Stub {
         private static final String TAG = "HondaConnectManager-IModeMgrServiceSWKeyEventCallBack";
 
         @Override
@@ -464,18 +489,40 @@ public class HondaConnectManager {
         }
     };
 
-    private final IModeMgrServiceCallBack modeMgrServiceCallBack_ = new IModeMgrServiceCallBack.Stub() {
-        private static final String TAG = "HondaConnectManager-IModeMgrServiceCallBack";
+    private class SteeringMenuServiceCallback extends ISteeringMenuServiceCallback.Stub {
+        private static final String TAG = "HondaConnectManager-ISteeringMenuServiceCallback";
+
+        public void onShowView() {
+            if (Log.isVerbose()) Log.v(TAG, "onShowView");
+            unbindToWheelService();
+            bindToWheelService();
+        }
+
+        public boolean onFinishView(boolean flg, boolean anime) {
+            if (Log.isVerbose()) Log.v(TAG, "onFinishView");
+            return true;
+        }
+
+        public boolean onSteeringSWDown(int keytype) {
+            if (Log.isVerbose()) Log.v(TAG, "onSteeringSWDown " + keytype);
+            return true;
+        }
+    };
+
+    private class ModeMgrServiceCallBack extends IModeMgrServiceCallBack.Stub {
+
+        private static final String TAG = "HondaConnectManager-ModeMgrServiceCallBack";
+
         public void rcvOnInsCmd(int modestate) throws RemoteException {
             if (Log.isVerbose()) Log.v(TAG, "rcvOnInsCmd modestate = " + modestate);
             int idx = settings_.advanced.modeMgrAudioIdx();
 
-            if (Log.isVerbose()) Log.v(TAG, "sendModeMgrOnCnf idx= " + idx + ",state = " + ModeMgrMode.CONFIRM_MODE);
-            int ret = modeMgrManager_.sendModeMgrOnCnf(idx, ModeMgrMode.CONFIRM_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "sendModeMgrOnCnf idx= " + idx + ",state = " + HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
+            int ret = modeMgrManager_.sendModeMgrOnCnf(idx, HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
             if (Log.isVerbose()) Log.v(TAG, "sendModeMgrOnCnf ret = " + ret);
 
-            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus idx= " + idx + ", state = " + ModeMgrMode.NOTIFY_MODE);
-            ret = modeMgrManager_.notifyModeMgrStatus(idx, ModeMgrMode.NOTIFY_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus idx= " + idx + ", state = " + HondaConnectManager.ModeMgrMode.NOTIFY_MODE);
+            ret = modeMgrManager_.notifyModeMgrStatus(idx, HondaConnectManager.ModeMgrMode.NOTIFY_MODE);
             if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus ret = " + ret);
 
             if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iAudioAddr = " + modeMgrManager_.getModeMgrOnAudioAddr());
@@ -495,8 +542,8 @@ public class HondaConnectManager {
             if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd sound_param= " + sound_param + " image_param= " + image_param);
 
             int idx = settings_.advanced.modeMgrAudioIdx();
-            if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd sendModeMgrOffCnf idx= " + idx + ", state = " + ModeMgrMode.CONFIRM_MODE);
-            int ret = modeMgrManager_.sendModeMgrOffCnf(idx, ModeMgrMode.CONFIRM_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd sendModeMgrOffCnf idx= " + idx + ", state = " + HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
+            int ret = modeMgrManager_.sendModeMgrOffCnf(idx, HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
             if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd sendModeMgrOffCnf ret = " + ret);
 
 //            if (waitCond_ != null) {
@@ -533,24 +580,6 @@ public class HondaConnectManager {
 
         public void insDispApl(int disp, int extInfo1, int extInfo2) throws RemoteException {
             if (Log.isVerbose()) Log.v(TAG, "insDispApl " + disp + "/" + extInfo1 + "/" + extInfo2);
-        }
-    };
-
-    private final ISteeringMenuServiceCallback steeringMenuServiceCallback_ = new ISteeringMenuServiceCallback.Stub() {
-        private static final String TAG = "HondaConnectManager-ISteeringMenuServiceCallback";
-
-        public void onShowView() {
-            Log.v(TAG, "onShowView");
-        }
-
-        public boolean onFinishView(boolean flg, boolean anime) {
-            Log.v(TAG, "onFinishView");
-            return true;
-        }
-
-        public boolean onSteeringSWDown(int keytype) {
-            Log.v(TAG, "onSteeringSWDown " + keytype);
-            return true;
         }
     };
 }

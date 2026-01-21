@@ -8,8 +8,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 
-import java.util.concurrent.Callable;
-
 import it.smg.hu.R;
 import it.smg.hu.config.Settings;
 import it.smg.hu.manager.HondaConnectManager;
