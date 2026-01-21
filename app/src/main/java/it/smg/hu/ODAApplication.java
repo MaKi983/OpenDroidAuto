@@ -1,7 +1,6 @@
 package it.smg.hu;
 
 import android.content.Context;
-import android.content.Intent;
 
 import androidx.multidex.MultiDexApplication;
 
@@ -10,7 +9,6 @@ import it.smg.hu.config.Settings;
 import it.smg.hu.manager.HondaConnectManager;
 import it.smg.hu.manager.USBManager;
 import it.smg.hu.manager.WIFIManager;
-import it.smg.hu.service.ODAService;
 
 import it.smg.hu.ui.notification.AppBadge;
 import it.smg.libs.aasdk.Runtime;
