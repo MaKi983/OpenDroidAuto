@@ -41,6 +41,7 @@
         android:text="@string/advanced_settings_enabledebug"
         android:textColor="#000" />
 
+<!--
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -58,6 +59,7 @@
         android:gravity="center_horizontal"
         android:textColor="#000"
         android:imeOptions="actionDone" />
+-->
 
     <TextView
         android:layout_width="match_parent"
@@ -66,7 +68,7 @@
         android:gravity="center"
         android:labelFor="@id/log_dir"
         android:text="@string/advanced_settings_logDir"
-        android:textColor="#000"></TextView>
+        android:textColor="#000" />
 
     <EditText
         android:id="@+id/log_dir"
@@ -86,14 +88,69 @@
         android:layout_marginTop="10dp"
         android:text="@string/advanced_settings_enablewifi"
         android:textColor="#000" />
-<!--
+
     <CheckBox
-        android:id="@+id/enable_autostart"
+        android:id="@+id/enable_hondaintegration"
         android:layout_width="wrap_content"
         android:layout_height="64dp"
         android:layout_gravity="center"
         android:layout_marginTop="10dp"
-        android:text="@string/advanced_settings_enableautostart"
+        android:text="@string/advanced_settings_enablehondaintegration"
         android:textColor="#000" />
--->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:labelFor="@id/modemgraudio_idx"
+        android:textColor="#000"
+        android:text="@string/advanced_settings_modeMgrAudioIdx"/>
+
+    <EditText
+        android:id="@+id/modemgraudio_idx"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:inputType="number"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:imeOptions="actionDone"
+        android:text=""/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:labelFor="@id/sw_mode"
+        android:textColor="#000"
+        android:text="@string/advanced_settings_swmode"/>
+
+    <Spinner
+        android:id="@+id/sw_mode"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:textAlignment="center"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:labelFor="@id/steeringwheel_idx"
+        android:textColor="#000"
+        android:text="@string/advanced_settings_steeringWheelIdx"/>
+
+    <EditText
+        android:id="@+id/steeringwheel_idx"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:inputType="number"
+        android:gravity="center_horizontal"
+        android:textColor="#000"
+        android:imeOptions="actionDone"
+        android:enabled="false"
+        android:text=""/>
 </LinearLayout>

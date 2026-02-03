@@ -19,6 +19,7 @@ public abstract class InputDevice implements IInputDevice {
     }
 
     protected native void sendTouchEvent(int action, int index, TouchAction[] actions);
+    protected native void sendButtonEvent(int action, int code);
     private native long nativeSetup();
     private native void nativeDelete();
     private static native void nativeInit();

@@ -134,7 +134,7 @@ void InputService::onChannelError(const aasdk::error::Error& e)
 
 void InputService::onButtonEvent(const projection::ButtonEvent& event)
 {
-//    if(!serviceActive) return;
+    if(Log::isDebug()) Log_d("onButtonEvent");
     if(!isRunning_) return;
 
     auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch());

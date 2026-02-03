@@ -58,9 +58,9 @@ public class DeviceFactory {
         return new AudioInput();
     }
 
-    public static IInputDevice createInputDevice(Context ctx, SurfaceView surfaceView){
+    public static IInputDevice createInputDevice(Context ctx, SurfaceView surfaceView, InputDevice.OnKeyHolder keyHolder){
         if (Log.isInfo()) Log.i(TAG, "create input device");
-        return new InputDevice(ctx, surfaceView);
+        return new InputDevice(ctx, surfaceView, keyHolder);
     }
 
     public static IVideoOutput createVideoOutput(SurfaceView surfaceView){

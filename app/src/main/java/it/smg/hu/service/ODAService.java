@@ -15,6 +15,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import it.smg.hu.manager.USBManager;
 import it.smg.hu.manager.WIFIManager;
+import it.smg.hu.projection.InputDevice;
 import it.smg.hu.ui.notification.NotificationFactory;
 import it.smg.libs.aasdk.tcp.TCPConnectException;
 import it.smg.libs.common.Log;
@@ -68,7 +69,7 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         localBroadcastManager_ = LocalBroadcastManager.getInstance(this);
     }
 
-    public void startUsb(SurfaceView surfaceView){
+    public void startUsb(SurfaceView surfaceView, InputDevice.OnKeyHolder keyHolder){
         startThread_ = new Thread(() -> {
             Looper.prepare();
 
@@ -80,7 +81,7 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
                     LibUsbDevice device = usbManager_.aoapDevice();
                     if (device.open()) {
                         if (Log.isInfo()) Log.i(TAG, "device opened");
-                        androidAutoEntity_ = AndroidAutoEntityFactory.create(this, device, surfaceView);
+                        androidAutoEntity_ = AndroidAutoEntityFactory.create(this, device, surfaceView, keyHolder);
                         androidAutoEntity_.start(this);
                     } else {
                         Log.e(TAG, "Error in open usb device");
@@ -98,7 +99,7 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         startThread_.start();
     }
 
-    public void startWifi(SurfaceView surfaceView){
+    public void startWifi(SurfaceView surfaceView, InputDevice.OnKeyHolder keyHolder){
         startThread_ = new Thread(() -> {
             Looper.prepare();
 
@@ -109,7 +110,7 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
 
 //                    if (Log.isInfo()) Log.i(TAG, "Connect to ip " + ipAddress);
                     TCPEndpoint tcpEndpoint = new TCPEndpoint(ipAddress);
-                    androidAutoEntity_ = AndroidAutoEntityFactory.create(this, tcpEndpoint, surfaceView);
+                    androidAutoEntity_ = AndroidAutoEntityFactory.create(this, tcpEndpoint, surfaceView, keyHolder);
                     androidAutoEntity_.start(this);
                 }
                 if (Log.isInfo()) Log.i(TAG, "start wifi thead completed");

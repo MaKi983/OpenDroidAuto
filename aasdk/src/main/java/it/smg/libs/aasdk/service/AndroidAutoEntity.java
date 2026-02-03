@@ -1,5 +1,6 @@
 package it.smg.libs.aasdk.service;
 
+import android.view.KeyEvent;
 import android.view.SurfaceView;
 
 import androidx.annotation.Keep;

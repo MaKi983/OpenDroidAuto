@@ -140,6 +140,12 @@ void JInputDevice::sendTouchEvent(aasdk::proto::messages::InputEventIndication i
     }
 }
 
+void JInputDevice::sendButtonEvent(const projection::ButtonEvent& buttonEvent) {
+    if (eventHandler_ != nullptr){
+        eventHandler_->onButtonEvent(buttonEvent);
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C"
@@ -157,6 +163,31 @@ JNIEXPORT jlong JNICALL
 Java_it_smg_libs_aasdk_projection_InputDevice_nativeSetup(JNIEnv *env, jobject thiz) {
     auto jInputDevice = new JInputDevice(env, thiz);
     return (jlong)((size_t)jInputDevice);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_it_smg_libs_aasdk_projection_InputDevice_sendButtonEvent(JNIEnv *env, jobject thiz, jint action,
+                                                             jint code) {
+    JInputDevice::Pointer jInputDevice = JInputDevice::getJInputDevice(env, thiz);
+
+    ButtonEvent buttonEvent;
+    switch (action) {
+        case 0: //keydown
+            buttonEvent.type = ButtonEventType::PRESS;
+            break;
+        case 1: //keyup
+            buttonEvent.type = ButtonEventType::RELEASE;
+            break;
+        default:
+            buttonEvent.type = ButtonEventType::NONE;
+            break;
+    }
+
+    buttonEvent.wheelDirection = WheelDirection::NONE;
+    buttonEvent.code = jInputDevice->int2ButtonCode(code);
+
+    jInputDevice->sendButtonEvent(buttonEvent);
 }
 
 extern "C"

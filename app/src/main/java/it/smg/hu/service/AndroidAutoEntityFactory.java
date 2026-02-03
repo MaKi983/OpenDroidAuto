@@ -5,6 +5,7 @@ import android.view.SurfaceView;
 
 import it.smg.hu.config.Settings;
 import it.smg.hu.projection.DeviceFactory;
+import it.smg.hu.projection.InputDevice;
 import it.smg.libs.aasdk.service.AndroidAutoEntity;
 import it.smg.libs.aasdk.service.AndroidAutoEntityBuilder;
 import it.smg.libs.aasdk.tcp.TCPEndpoint;
@@ -14,23 +15,23 @@ public class AndroidAutoEntityFactory {
 
     private static final String TAG = "AndroidAutoEntityFactory";
 
-    public static AndroidAutoEntity create(ODAService service, TCPEndpoint tcpEndpoint, SurfaceView surfaceView){
+    public static AndroidAutoEntity create(ODAService service, TCPEndpoint tcpEndpoint, SurfaceView surfaceView, InputDevice.OnKeyHolder keyHolder){
         AndroidAutoEntityBuilder builder = new AndroidAutoEntityBuilder(tcpEndpoint, service, Settings.instance().car);
 
-        createServices(builder, service.getApplicationContext(), surfaceView);
+        createServices(builder, service.getApplicationContext(), surfaceView, keyHolder);
 
         return builder.build();
     }
 
-    public static AndroidAutoEntity create(ODAService service, LibUsbDevice device, SurfaceView surfaceView){
+    public static AndroidAutoEntity create(ODAService service, LibUsbDevice device, SurfaceView surfaceView, InputDevice.OnKeyHolder keyHolder){
         AndroidAutoEntityBuilder builder = new AndroidAutoEntityBuilder(device, service, Settings.instance().car);
 
-        createServices(builder, service.getApplicationContext(), surfaceView);
+        createServices(builder, service.getApplicationContext(), surfaceView, keyHolder);
 
         return builder.build();
     }
 
-    private static void createServices(AndroidAutoEntityBuilder builder, Context ctx, SurfaceView surfaceView){
+    private static void createServices(AndroidAutoEntityBuilder builder, Context ctx, SurfaceView surfaceView, InputDevice.OnKeyHolder keyHolder){
         builder.createMediaAudioService(DeviceFactory.createMediaAudioOutput());
         builder.createSpeechAudioService(DeviceFactory.createSpeechAudioOutput());
         builder.createSystemAudioService(DeviceFactory.createSystemAudioOutput());
@@ -38,7 +39,7 @@ public class AndroidAutoEntityFactory {
         builder.createVideoService(DeviceFactory.createVideoOutput(surfaceView));
         builder.createSensorService(DeviceFactory.createSensor(ctx));
         builder.createBluetoothService(DeviceFactory.createBluetoothDevice());
-        builder.createInputService(DeviceFactory.createInputDevice(ctx, surfaceView));
+        builder.createInputService(DeviceFactory.createInputDevice(ctx, surfaceView, keyHolder));
 
         if (Settings.instance().video.showNavigationNotification()) {
             builder.createNavigationStatusService(DeviceFactory.createNavigationStatusEvent());
