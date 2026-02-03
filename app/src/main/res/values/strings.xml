@@ -80,6 +80,13 @@
 	<string name="media_status_update_message">Media Status Update: source %1$s, status %2$s, progress %3$d</string>
 <!--	<string name="media_metadata_update_message">Media Metadata Update: track %1$s, album: %2$s, artist %3$s, length %4$d</string>-->
 
+	<!-- Widgets -->
+	<string name="widget_start_label_no_usb">No USB</string>
+	<string name="widget_start_label">Start</string>
+
+	<string name="widget_exit_label">Exit</string>
+	<string name="widget_exit_preview_text">Exit</string>
+
 	<!-- error messages -->
 	<string name="usb_config_error">USB configuration error. Native AA error: %1$d</string>
 	<string name="usb_transfer_error">USB communication error. Native AA error: %1$d</string>
