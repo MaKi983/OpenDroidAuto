@@ -27,7 +27,7 @@ public class ExitWidget extends AppWidgetProvider {
                 context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
         );
 
-        views.setOnClickPendingIntent(R.id.widget_exit_layout, pendingIntent);
+        views.setOnClickPendingIntent(R.id.widget_exit, pendingIntent);
 
         for (int id : appWidgetIds) {
             manager.updateAppWidget(id, views);
