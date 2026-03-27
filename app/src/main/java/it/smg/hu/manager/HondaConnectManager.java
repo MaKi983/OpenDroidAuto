@@ -1,630 +1,752 @@
-package it.smg.hu.config;
+package it.smg.hu.manager;
 
+import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.media.AudioTrack;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.RemoteException;
+import android.widget.Toast;
 
-import androidx.annotation.Keep;
+import com.fujitsu_ten.displayaudio.ecncservice.IEcNcService;
+import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrManager;
+import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrServiceCallBack;
+import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrServiceSWKeyEventCallBack;
+import com.fujitsu_ten.displayaudio.modemanagement.ModeMgrManager;
+import com.fujitsu_ten.displayaudio.oom.OomManager;
+import com.fujitsu_ten.displayaudio.steeringmenuservice.service.ISteeringMenuService;
+import com.fujitsu_ten.displayaudio.steeringmenuservice.service.ISteeringMenuServiceCallback;
+import com.fujitsu_ten.displayaudio.whitelist.common.Constants;
+import com.fujitsu_ten.displayaudio.whitelist.common.IWhiteList;
+import com.fujitsu_ten.displayaudio.whitelist.common.ProcessControl;
 
-import it.smg.libs.common.ILog;
-import it.smg.libs.aasdk.configuration.ICarConfiguration;
+import it.smg.hu.config.Settings;
+//import it.smg.hu.manager.steeringmenu.SteeringMenuServiceCallback;
+import it.smg.libs.aasdk.messenger.ChannelId;
+import it.smg.libs.common.Log;
 
-//import it.smg.hu.oda.service.input.KeyCode;
-//import it.smg.hu.oda.service.sensor.IDayNightSensor;
+public class HondaConnectManager {
 
-public class Settings {
-
-    private static final String TAG = "Settings";
-
-    private SharedPreferences SP;
-
-    public Car car;
-    public Keymap keymap;
-    public Advanced advanced;
-    public Video video;
-    public Audio audio;
-    public Connectivity connectivity;
-
-    private static Settings settings = null;
-
-    public static Settings instance(){
-        return settings;
+    public static class SWMode {
+        public static final String SW_SERVICE = "SW SERVICE";
+        public static final String MODEMGR_KEY_CALLBACK = "MODEMGR KEY CALLBACK";
     }
 
-    public static void build(Context context){
-        settings = new Settings(context);
+    public static class  AudioStreamType {
+        public static final int ADA_NORMAL = 11;
+        public static final int ADA_INTERRUPT = 12;
+        public static final int ADA_INTERRUPT_LP = 13;
+        public static final int ADA_INTERRUPT_VR = 14;
+        public static final int ADA_INTERRUPT_NAVI = 15;
     }
 
-    private Settings(Context context) {
-        SP = PreferenceManager.getDefaultSharedPreferences(context);
-
-        car = new Car();
-        keymap = new Keymap();
-        connectivity = new Connectivity();
-        advanced = new Advanced();
-        video = new Video();
-        audio = new Audio();
+    static class ModeMgrMode {
+        public static final int REQUEST_MODE = Integer.parseInt("011111", 2); //31
+        public static final int CONFIRM_MODE = Integer.parseInt("111", 2); //7
+        public static final int NOTIFY_MODE = Integer.parseInt("11", 2); //3
+        public static final int AUDIO_MODE = Integer.parseInt("01", 2); //1
     }
 
-    public class Car extends Base implements ICarConfiguration {
-        public final static String CAR_SETTINGS_HU_NAME = "hu_name";
-        public final static String CAR_SETTINGS_MODEL = "car_model";
-        public final static String CAR_SETTINGS_YEAR = "car_year";
-        public final static String CAR_SETTINGS_HU_MAKE = "hu_make";
-        public final static String CAR_SETTINGS_HU_MODEL = "hu_model";
-        public final static String CAR_SETTINGS_SW_VERSION = "sw_version";
-        public final static String CAR_SETTINGS_SW_BUILD = "sw_build";
-        public final static String CAR_SETTINGS_PLAY_MEDIA_DURING_VR = "play_media_during_vr";
-        public final static String CAR_SETTINGS_HIDE_CLOCK = "hide_clock";
-        public final static String CAR_SETTINGS_LEFT_HAND_DRIVE = "left_drive";
+    private static final String TAG = "HondaConnectManager";
+    private static final String ModeMgrService = "ModeMgrService";
+    private static final String StateMgrService = "StateMgrService";
 
-        public final static String CAR_SETTINGS_HU_NAME_DEFAULT_VALUE = "Google";
-        public final static String CAR_SETTINGS_MODEL_DEFAULT_VALUE = "Desktop Head Unit";
-        public final static String CAR_SETTINGS_YEAR_DEFAULT_VALUE = "2025";
-        public final static String CAR_SETTINGS_HU_MAKE_DEFAULT_VALUE = "Google";
-        public final static String CAR_SETTINGS_HU_MODEL_DEFAULT_VALUE = "Desktop Head Unit";
-        public final static String CAR_SETTINGS_SW_VERSION_DEFAULT_VALUE = "0.1.0";
-        public final static String CAR_SETTINGS_SW_BUILD_DEFAULT_VALUE = "1";
-        public final static boolean CAR_SETTINGS_PLAY_MEDIA_DURING_VR_DEFAULT_VALUE = false;
-        public final static boolean CAR_SETTINGS_HIDE_CLOCK_DEFAULT_VALUE = false;
-        public final static boolean CAR_SETTINGS_LEFT_HAND_DRIVE_DEFAULT_VALUE = true;
+    private static HondaConnectManager instance_;
 
-        @Keep
-        public String huName() {
-            return get(CAR_SETTINGS_HU_NAME, CAR_SETTINGS_HU_NAME_DEFAULT_VALUE);
+    private final ModeMgrManager modeMgrManager_;
+
+    // SteeringWheel service
+    private ISteeringMenuService steeringMenuServiceIface_;
+    private final ServiceConnection steeringMenuServiceConnection_;
+
+    // EcNc service
+    private IEcNcService ecNcServiceIface_;
+    private final ServiceConnection ecNcServiceConnection_;
+    private boolean ecNcBindingRequested_;
+    private boolean boundToEcNcService_;
+    private boolean micVrPendingStart_;
+    private boolean micVrStarted_;
+    private int micSessionCount_;
+
+    private ISteeringMenuServiceCallback steeringMenuServiceCallback_;
+    private IModeMgrServiceCallBack modeMgrServiceCallBack_;
+    private IModeMgrServiceSWKeyEventCallBack modeMgrServiceSWKeyEventCallBack_;
+    private boolean boundToWheelService_;
+
+    // Volume service
+//    private IVolumeService volumeServiceIface_;
+//    private final ServiceConnection volumeServiceConnection_;
+//    private boolean boundToVolumeService_;
+
+    private final Context context_;
+    private final Settings settings_;
+
+    private boolean hasAudioFocus_;
+    private boolean boundToModeMgrService_;
+    private ProcessControl pControl_;
+//    private CountDownLatch waitCond_;
+
+    private final Handler mainHandler_;
+
+    public static void init(Context context){
+        instance_ = new HondaConnectManager(context);
+    }
+
+    public static HondaConnectManager instance(){
+        return instance_;
+    }
+
+    @SuppressLint("WrongConstant")
+    private HondaConnectManager(Context context){
+        if (Log.isInfo()) Log.i(TAG, "init");
+        context_ = context;
+        settings_ = Settings.instance();
+        hasAudioFocus_ = false;
+        boundToModeMgrService_ = false;
+        ecNcBindingRequested_ = false;
+        boundToEcNcService_ = false;
+        micVrPendingStart_ = false;
+        micVrStarted_ = false;
+        micSessionCount_ = 0;
+        mainHandler_ = new Handler(Looper.getMainLooper());
+
+        modeMgrManager_ = (ModeMgrManager) context.getSystemService(ModeMgrService);
+        if (modeMgrManager_ == null){
+            if (Log.isWarn()) Log.w(TAG, "modeMgrManager null");
         }
 
-        public void huName(String value){
-            set(CAR_SETTINGS_HU_NAME, value);
+        steeringMenuServiceConnection_ = new ServiceConnection() {
+            private static final String TAG = "HondaConnectManager-steeringServiceConnection";
+
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                if (Log.isVerbose()) Log.v(TAG, "Honda Wheel Service connected");
+                boundToWheelService_ = true;
+                steeringMenuServiceIface_ = ISteeringMenuService.Stub.asInterface(service);
+                try {
+                    int idx = settings_.advanced.steeringWheelIdx();
+                    if (idx > 0){
+                        if (Log.isVerbose()) Log.v(TAG, "notifySteeringMenuDispMode 1 addr " + idx);
+                        steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, 1);
+                        if (Log.isVerbose()) Log.v(TAG, "registerCallbackEx swaddr " + idx);
+                        steeringMenuServiceCallback_ = new SteeringMenuServiceCallback();
+                        steeringMenuServiceIface_.registerCallbackEx(steeringMenuServiceCallback_, idx);
+                    }
+
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Error registering", e);
+                    boundToWheelService_ = false;
+                }
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                if (Log.isVerbose()) Log.v(TAG, "Honda Wheel Service disconnected");
+                try {
+                    if (boundToWheelService_) {
+                        int idx = settings_.advanced.steeringWheelIdx();
+                        if (idx > 0) {
+                            if (Log.isVerbose())  Log.v(TAG, "notifySteeringMenuDispMode 0 addr " + idx);
+                            steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, 0);
+                            if (Log.isVerbose()) Log.v(TAG, "unregisterCallbackEx swaddr " + idx);
+                            steeringMenuServiceIface_.unregisterCallbackEx(steeringMenuServiceCallback_, idx);
+                            steeringMenuServiceCallback_ = null;
+                        }
+                    }
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Error unregistering ", e);
+                }
+                boundToWheelService_ = false;
+                steeringMenuServiceIface_ = null;
+            }
+        };
+
+        ecNcServiceConnection_ = new ServiceConnection() {
+            private static final String TAG = "HondaConnectManager-ecNcServiceConnection";
+
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                if (Log.isVerbose()) Log.v(TAG, "Honda EcNc Service connected");
+
+                synchronized (HondaConnectManager.this) {
+                    ecNcServiceIface_ = IEcNcService.Stub.asInterface(service);
+                    boundToEcNcService_ = ecNcServiceIface_ != null;
+                    tryStartMicVrLocked();
+                }
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                if (Log.isVerbose()) Log.v(TAG, "Honda EcNc Service disconnected");
+
+                synchronized (HondaConnectManager.this) {
+                    boundToEcNcService_ = false;
+                    ecNcServiceIface_ = null;
+                    micVrStarted_ = false;
+                }
+            }
+        };
+
+//        volumeServiceConnection_ = new ServiceConnection() {
+//            @Override
+//            public void onServiceConnected(ComponentName componentName, IBinder service) {
+//                if (Log.isVerbose()) Log.v(TAG, "Volume Service connected");
+//                boundToVolumeService_ = true;
+//                volumeServiceIface_ = IVolumeService.Stub.asInterface(service);
+//            }
+//
+//            @Override
+//            public void onServiceDisconnected(ComponentName componentName) {
+//                if (Log.isVerbose()) Log.v(TAG, "Volume Service disconnected");
+//                boundToVolumeService_ = false;
+//                volumeServiceIface_ = null;
+//            }
+//        };
+
+        try {
+            pControl_ = IWhiteList.getProcessControl("it.smg.hu", null);
+            if (pControl_ != null) {
+                Log.d(TAG, "ProcessControl [ ");
+                Log.d(TAG, "appType= " + pControl_.appType);
+                Log.d(TAG, "authType= " + pControl_.authType);
+                Log.d(TAG, "lastMode= " + pControl_.lastMode);
+                Log.d(TAG, "oomSetPerm= " + pControl_.oomSetPerm);
+                Log.d(TAG, "result= " + pControl_.result);
+                Log.d(TAG, "soundInterrupt= " + pControl_.soundInterrupt);
+                Log.d(TAG, "soundInterruptMute= " + pControl_.soundInterruptMute);
+                Log.d(TAG, "soundOut= " + pControl_.soundOut);
+                Log.d(TAG, "videoOut= " + pControl_.videoOut);
+                Log.d(TAG, "]");
+            }
+        } catch (Throwable t){
+            Log.e(TAG, "process control error", t);
         }
 
-        @Keep
-        public String model() {
-            return get(CAR_SETTINGS_MODEL, CAR_SETTINGS_MODEL_DEFAULT_VALUE);
+    }
+
+    public int mediaAudioStream(ChannelId audioChannel){
+        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
+            switch (audioChannel) {
+                case SPEECH_AUDIO:
+                case SYSTEM_AUDIO:
+                    return AudioStreamType.ADA_INTERRUPT_NAVI;
+                case MEDIA_AUDIO:
+                default:
+                    return AudioStreamType.ADA_NORMAL;
+            }
         }
 
-        public void model(String value){
-            set(CAR_SETTINGS_MODEL, value);
-        }
+        return AudioTrack.MODE_STREAM;
+    }
 
-        @Keep
-        public String year() {
-            return get(CAR_SETTINGS_YEAR, CAR_SETTINGS_YEAR_DEFAULT_VALUE);
-        }
-
-        public void year(String value){
-            set(CAR_SETTINGS_YEAR, value);
-        }
-
-        @Keep
-        public String huMake() {
-            return get(CAR_SETTINGS_HU_MAKE, CAR_SETTINGS_HU_MAKE_DEFAULT_VALUE);
-        }
-
-        public void huMake(String value){
-            set(CAR_SETTINGS_HU_MAKE, value);
-        }
-
-        @Keep
-        public String huModel() {
-            return get(CAR_SETTINGS_HU_MODEL, CAR_SETTINGS_HU_MODEL_DEFAULT_VALUE);
-        }
-
-        public void huModel(String value){
-            set(CAR_SETTINGS_HU_MODEL, value);
-        }
-
-        @Keep
-        public String swVersion() {
-            return get(CAR_SETTINGS_SW_VERSION, CAR_SETTINGS_SW_VERSION_DEFAULT_VALUE);
-        }
-
-        public void swVersion(String value){
-            set(CAR_SETTINGS_SW_VERSION, value);
-        }
-
-        @Keep
-        public String swBuild() {
-            return get(CAR_SETTINGS_SW_BUILD, CAR_SETTINGS_SW_BUILD_DEFAULT_VALUE);
-        }
-
-        public void swBuild(String value){
-            set(CAR_SETTINGS_SW_BUILD, value);
-        }
-
-        @Keep
-        public boolean playMediaDuringVr() {
-            return get(CAR_SETTINGS_PLAY_MEDIA_DURING_VR, CAR_SETTINGS_PLAY_MEDIA_DURING_VR_DEFAULT_VALUE);
-        }
-
-        public void playMediaDuringVr(boolean value){
-            set(CAR_SETTINGS_PLAY_MEDIA_DURING_VR, value);
-        }
-
-        @Keep
-        public boolean hideClock() {
-            return get(CAR_SETTINGS_HIDE_CLOCK, CAR_SETTINGS_HIDE_CLOCK_DEFAULT_VALUE);
-        }
-
-        public void hideClock(boolean value){
-            set(CAR_SETTINGS_HIDE_CLOCK, value);
-        }
-
-        @Keep
-        public boolean leftHandDrive() {
-            return get(CAR_SETTINGS_LEFT_HAND_DRIVE, CAR_SETTINGS_LEFT_HAND_DRIVE_DEFAULT_VALUE);
-        }
-
-        public void leftHandDrive(boolean value){
-            set(CAR_SETTINGS_LEFT_HAND_DRIVE, value);
+    public void adjustPermission(){
+        try {
+            int ret = OomManager.getOomAdjustment(context_);
+            if (Log.isDebug()) Log.d(TAG, "getOomAdjustment " + ret);
+            ret = OomManager.setOomAdjustmentCoreServer(context_);
+            if (Log.isDebug()) Log.d(TAG, "setOomAdjustment " + ret);
+        } catch (Exception e){
+            Log.e(TAG, "error in adjustPermission", e);
         }
     }
 
-    public class Keymap extends Base {
+    public void requestAudioFocus(){
+        if (Log.isDebug()) Log.d(TAG, "requestAudioFocus -> app with auth " + pControl_.authType);
+        if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus modeMgr audio hasAudioFocus= " + hasAudioFocus_);
 
-        public final static String KEYMAP_BTN_LEFT = "keymap_btn_left";
-        public final static String KEYMAP_BTN_RIGHT = "keymap_btn_right";
-        public final static String KEYMAP_BTN_SOURCE = "keymap_btn_source";
-        public final static String KEYMAP_BTN_PLUS = "keymap_btn_plus";
-        public final static String KEYMAP_BTN_MINUS = "keymap_btn_minus";
+        // If AUTH_TYPE <> preinstall the app has already audio focus
+        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL && !hasAudioFocus_) {
+            int idx = settings_.advanced.modeMgrAudioIdx();
+            int ret;
 
-        public final static int KEYMAP_BTN_LEFT_DEFAULT_VALUE = 88; // PREV
-        public final static int KEYMAP_BTN_RIGHT_DEFAULT_VALUE = 87; // NEXT
-        public final static int KEYMAP_BTN_SOURCE_DEFAULT_VALUE = 127; // PAUSE
-        public final static int KEYMAP_BTN_PLUS_DEFAULT_VALUE = 19; // UP
-        public final static int KEYMAP_BTN_MINUS_DEFAULT_VALUE = 20; // DOWN
+            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnReq idx= " + idx + ", mode= " + ModeMgrMode.REQUEST_MODE);
+            ret = modeMgrManager_.sendModeMgrOnReq(idx, ModeMgrMode.REQUEST_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnReq result= " + ret);
 
-        private Keymap(){}
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+            }
 
-//        public void left(int code){
-//            set(KEYMAP_BTN_LEFT, code);
+            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnCnf idx= " + idx + ",state = " + ModeMgrMode.CONFIRM_MODE);
+            ret = modeMgrManager_.sendModeMgrOnCnf(idx, ModeMgrMode.CONFIRM_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnCnf ret = " + ret);
+
+            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus notifyModeMgrStatus idx= " + idx + ", state = " + ModeMgrMode.NOTIFY_MODE);
+            ret = modeMgrManager_.notifyModeMgrStatus(idx, ModeMgrMode.NOTIFY_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus notifyModeMgrStatus ret = " + ret);
+
+            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iAudioAddr = " + modeMgrManager_.getModeMgrOnAudioAddr());
+            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iVideoAddr = " + modeMgrManager_.getModeMgrOnVideoAddr());
+
+//            if (Log.isDebug()) Log.d(TAG, "requestAudioFocus -> wait for cond");
+//            waitForCond(500);
+
+            if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
+                if (Log.isDebug()) Log.d(TAG, "requestAudioFocus -> using authType PREINSTALL and swMode SW_SERVICE -> bind to sw service");
+                bindToWheelService();
+            } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
+                if (Log.isDebug()) Log.d(TAG, "requestAudioFocus -> using authType PREINSTALL and swMode MODEMGR_KEY_CALLBACK -> register ModeMgr key event");
+                registerModeMgrSWEvent();
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "requestAudioFocus -> wrong steeringwheel mode " + settings_.advanced.swMode());
+            }
+
+            hasAudioFocus_ = true;
+        }
+    }
+
+    public void releaseAudioFocus(){
+        if (Log.isDebug()) Log.d(TAG, "releaseAudioFocus -> app with auth " + pControl_.authType);
+        if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus modeMgr audio hasAudioFocus= " + hasAudioFocus_);
+
+        // If AUTH_TYPE <> preinstall the app has already audio focus
+        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL && hasAudioFocus_) {
+            int idx = settings_.advanced.modeMgrAudioIdx();
+            int ret;
+
+            if (Log.isVerbose())  Log.v(TAG, "releaseAudioFocus sendModeMgrOffReq idx= " + idx + ", state = " + ModeMgrMode.REQUEST_MODE);
+            ret = modeMgrManager_.sendModeMgrOffReq(idx, ModeMgrMode.REQUEST_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffReq ret= " + ret);
+
+//            if (Log.isDebug()) Log.d(TAG, "releaseAudioFocus -> wait for cond");
+//            waitForCond(500);
+
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+            }
+
+            if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffCnf idx= " + idx + ", state = " + ModeMgrMode.CONFIRM_MODE);
+            ret = modeMgrManager_.sendModeMgrOffCnf(idx, ModeMgrMode.CONFIRM_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffCnf ret = " + ret);
+
+            if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
+                if (Log.isDebug()) Log.d(TAG, "releaseAudioFocus -> using authType PREINSTALL and swMode SW_SERVICE -> unbind to sw service");
+                unbindToWheelService();
+            } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
+                if (Log.isDebug()) Log.d(TAG, "releaseAudioFocus -> using authType PREINSTALL and swMode MODEMGR_KEY_CALLBACK -> unregister ModeMgr key event");
+                unregisterModeMgrSWEvent();
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "releaseAudioFocus -> wrong steeringwheel mode " + settings_.advanced.swMode());
+            }
+
+            hasAudioFocus_ = false;
+        }
+    }
+
+    public void increaseVolume(){
+        if (Log.isVerbose()) Log.v(TAG, "increaseVolume");
+        modeMgrManager_.reqModeMgrSteeringVolCmd(true);
+    }
+
+    public void decreaseVolume(){
+        if (Log.isVerbose()) Log.v(TAG, "decreaseVolume");
+        modeMgrManager_.reqModeMgrSteeringVolCmd(false);
+    }
+
+    // Used in onResume
+    public void initAudioBinding(){
+        if (Log.isDebug()) Log.d(TAG, "initAudioBinding -> app with auth " + pControl_.authType);
+        // if app has THIRD_PARTY auth will have exclusive audio focus, only bind wheel service
+        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
+            if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> app auth = preinstall");
+            bindToModeMgrService();
+        } else {
+            if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> app auth not preinstall");
+
+            if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
+                if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> using authType not PREINSTALL and swMode SW_SERVICE -> bind HC sw service");
+                bindToWheelService();
+            } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
+                if (Log.isWarn()) Log.w(TAG, "initAudioBinding -> using authType not PREINSTALL and swMode MODEMGR_KEY_CALLBACK -> USE MODEMGR_KEY_CALLBACK ONLY WITH PREINSTALL");
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "initAudioBinding -> wrong steeringwheel mode " + settings_.advanced.swMode());
+            }
+        }
+    }
+
+    // Used in onPause (app in background)
+    public void sendToBackground(){
+        if (Log.isDebug()) Log.d(TAG, "sendToBackground -> app with auth " + pControl_.authType);
+        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
+            if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
+                if (Log.isVerbose()) Log.v(TAG, "sendToBackground -> using authType PREINSTALL and swMode SW_SERVICE -> unbind HC sw service");
+                unbindToWheelService();
+            } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
+                if (Log.isVerbose()) Log.v(TAG, "sendToBackground -> using authType PREINSTALL and swMode MODEMGR_KEY_CALLBACK -> do nothing");
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "sendToBackground -> wrong steeringwheel mode " + settings_.advanced.swMode());
+            }
+        } else {
+            if (Log.isVerbose()) Log.v(TAG, "sendToBackground -> app auth not preinstall");
+            if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
+                if (Log.isVerbose()) Log.d(TAG, "sendToBackground -> using authType not PREINSTALL and swMode SW_SERVICE -> unbind HC sw service");
+                unbindToWheelService();
+            } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
+                if (Log.isWarn()) Log.w(TAG, "sendToBackground -> using authType not PREINSTALL and swMode MODEMGR_KEY_CALLBACK -> USE MODEMGR_KEY_CALLBACK ONLY WITH PREINSTALL");
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "sendToBackground -> wrong steeringwheel mode " + settings_.advanced.swMode());
+            }
+        }
+    }
+
+    public void endAudioBinding(){
+        if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> app with auth " + pControl_.authType);
+
+        forceReleaseMicSession();
+
+        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
+            releaseAudioFocus();
+            unbindToModeMgrService();
+        } else {
+            if (Log.isVerbose()) Log.v(TAG, "endAudioBinding -> app auth not preinstall");
+            if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
+                if (Log.isVerbose()) Log.v(TAG, "endAudioBinding -> using authType not PREINSTALL and swMode SW_SERVICE -> unbind HC sw service");
+                unbindToWheelService();
+            } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
+                if (Log.isWarn()) Log.w(TAG, "endAudioBinding -> using authType not PREINSTALL and swMode MODEMGR_KEY_CALLBACK -> USE MODEMGR_KEY_CALLBACK ONLY WITH PREINSTALL");
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "endAudioBinding -> wrong steeringwheel mode " + settings_.advanced.swMode());
+            }
+        }
+    }
+
+    public synchronized void startMicSession() {
+        if (!settings_.advanced.hondaIntegrationEnabled() || !settings_.advanced.hondaMicVrEnabled()) {
+            return;
+        }
+
+        micSessionCount_++;
+        if (Log.isDebug()) Log.d(TAG, "startMicSession count=" + micSessionCount_);
+        if (micSessionCount_ > 1) {
+            return;
+        }
+
+        micVrPendingStart_ = true;
+        bindToEcNcService();
+        tryStartMicVrLocked();
+    }
+
+    public synchronized void stopMicSession() {
+        if (micSessionCount_ <= 0) {
+            micSessionCount_ = 0;
+            micVrPendingStart_ = false;
+            return;
+        }
+
+        micSessionCount_--;
+        if (Log.isDebug()) Log.d(TAG, "stopMicSession count=" + micSessionCount_);
+        if (micSessionCount_ > 0) {
+            return;
+        }
+
+        micVrPendingStart_ = false;
+        endMicVrLocked();
+        unbindFromEcNcService();
+    }
+
+    public synchronized void forceReleaseMicSession() {
+        micSessionCount_ = 0;
+        micVrPendingStart_ = false;
+        endMicVrLocked();
+        unbindFromEcNcService();
+    }
+
+    private synchronized void bindToEcNcService() {
+        if (ecNcBindingRequested_) {
+            return;
+        }
+
+        if (Log.isDebug()) Log.d(TAG, "Request binding to service " + IEcNcService.class.getName());
+        try {
+            Intent intent = new Intent(IEcNcService.class.getName());
+            ecNcBindingRequested_ = context_.bindService(intent, ecNcServiceConnection_, Context.BIND_AUTO_CREATE);
+            if (!ecNcBindingRequested_) {
+                if (Log.isWarn()) Log.w(TAG, "bindService(IEcNcService) failed");
+            }
+        } catch (RuntimeException e) {
+            ecNcBindingRequested_ = false;
+            Log.e(TAG, "bindService(IEcNcService) exception", e);
+        }
+    }
+
+    private synchronized void unbindFromEcNcService() {
+        if (!ecNcBindingRequested_) {
+            boundToEcNcService_ = false;
+            ecNcServiceIface_ = null;
+            micVrStarted_ = false;
+            return;
+        }
+
+        if (Log.isDebug()) Log.d(TAG, "Request unbinding to service " + IEcNcService.class.getName());
+        try {
+            context_.unbindService(ecNcServiceConnection_);
+        } catch (IllegalArgumentException e) {
+            if (Log.isWarn()) Log.w(TAG, "unbindService(IEcNcService) failed", e);
+        }
+
+        ecNcBindingRequested_ = false;
+        boundToEcNcService_ = false;
+        ecNcServiceIface_ = null;
+        micVrStarted_ = false;
+    }
+
+    private void tryStartMicVrLocked() {
+        if (!micVrPendingStart_ || micVrStarted_ || ecNcServiceIface_ == null) {
+            return;
+        }
+
+        try {
+            int ret = ecNcServiceIface_.startVR(true);
+            if (ret == 0) {
+                micVrStarted_ = true;
+                micVrPendingStart_ = false;
+                if (Log.isInfo()) Log.i(TAG, "startVR success");
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "startVR failed ret=" + ret);
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "startVR exception", e);
+        }
+    }
+
+    private void endMicVrLocked() {
+        if (!micVrStarted_) {
+            return;
+        }
+
+        if (ecNcServiceIface_ == null) {
+            micVrStarted_ = false;
+            return;
+        }
+
+        try {
+            int ret = ecNcServiceIface_.endVr();
+            if (ret == 0) {
+                if (Log.isInfo()) Log.i(TAG, "endVr success");
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "endVr failed ret=" + ret);
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "endVr exception", e);
+        }
+
+        micVrStarted_ = false;
+    }
+
+
+    private void bindToWheelService(){
+        if (!boundToWheelService_) {
+            if (Log.isDebug()) Log.d(TAG, "Request binding to service " + ISteeringMenuService.class.getName());
+            Intent intent = new Intent(ISteeringMenuService.class.getName());
+            context_.bindService(intent, steeringMenuServiceConnection_, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    private void registerModeMgrSWEvent(){
+        if (!boundToWheelService_) {
+            int idx = settings_.advanced.modeMgrAudioIdx();
+            if (Log.isDebug()) Log.d(TAG, "registerModeMgrSWKeyEventCallback idx " + idx);
+            modeMgrServiceSWKeyEventCallBack_ = new ModeMgrServiceSWKeyEventCallBack();
+            int ret = modeMgrManager_.registerModeMgrSWKeyEventCallback(idx, modeMgrServiceSWKeyEventCallBack_);
+            if (Log.isDebug()) Log.d(TAG, "registerModeMgrSWKeyEventCallback ret " + ret);
+            boundToWheelService_ = true;
+        }
+    }
+
+    private void unregisterModeMgrSWEvent(){
+        if (boundToWheelService_) {
+            int idx = settings_.advanced.modeMgrAudioIdx();
+            if (Log.isDebug()) Log.d(TAG, "unregisterModeMgrSWKeyEventCallback idx " + idx);
+            int ret = modeMgrManager_.unregisterModeMgrSWKeyEventCallback(idx);
+            if (Log.isDebug()) Log.d(TAG, "unregisterModeMgrSWKeyEventCallback ret " + ret);
+            modeMgrServiceSWKeyEventCallBack_ = null;
+            boundToWheelService_ = false;
+        }
+    }
+
+    private void unbindToWheelService(){
+        if (boundToWheelService_) {
+            if (Log.isDebug()) Log.d(TAG, "Request unbinding to service " + ISteeringMenuService.class.getName());
+            context_.unbindService(steeringMenuServiceConnection_);
+
+            boundToWheelService_ = false;
+            try {
+                int idx = settings_.advanced.steeringWheelIdx();
+                Log.v(TAG, "idx " + idx);
+                if (idx > 0){
+                    Log.v(TAG, "notifySteeringMenuDispMode 0 addr " + idx);
+                    steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, 0);
+                    Log.v(TAG, "unregisterCallbackEx swaddr " + idx);
+                    steeringMenuServiceIface_.unregisterCallbackEx(steeringMenuServiceCallback_, idx);
+                    steeringMenuServiceCallback_ = null;
+                }
+            } catch (RemoteException e) {
+                Log.e(TAG, "errore", e);
+            }
+            steeringMenuServiceIface_ = null;
+        }
+    }
+
+    private void unbindToModeMgrService() {
+        if (boundToModeMgrService_) {
+            if (Log.isVerbose()) Log.v(TAG, "Request unbinding to service " + IModeMgrManager.class.getName());
+
+            int idx = settings_.advanced.modeMgrAudioIdx();
+            if (Log.isVerbose()) Log.v(TAG, "unregisterModeMgrCallback idx " + idx);
+            int ret = modeMgrManager_.unregisterModeMgrCallback(idx);
+            if (Log.isVerbose()) Log.v(TAG, "unregisterModeMgrCallback ret " + ret);
+
+            modeMgrServiceCallBack_ = null;
+            boundToModeMgrService_ = false;
+        }
+    }
+
+    private void bindToModeMgrService(){
+        if (!boundToModeMgrService_) {
+            if (Log.isDebug()) Log.d(TAG, "Request binding to service " + IModeMgrManager.class.getName());
+            if (modeMgrManager_ != null) {
+                boundToModeMgrService_ = true;
+                int idx = settings_.advanced.modeMgrAudioIdx();
+                if (Log.isVerbose()) Log.v(TAG, "registerModeMgrCallback idx " + idx);
+                modeMgrServiceCallBack_ = new ModeMgrServiceCallBack();
+                int ret = modeMgrManager_.registerModeMgrCallback(idx, modeMgrServiceCallBack_);
+                if (Log.isVerbose()) Log.v(TAG, "registerModeMgrCallback ret " + ret);
+            } else {
+                Log.w(TAG, "modeMgrManager_ null -> do nothing");
+            }
+        }
+    }
+
+//    private boolean waitForCond(int timeout){
+//        boolean res = false;
+//        try {
+//            waitCond_ = new CountDownLatch(1);
+//            res = waitCond_.await(timeout, TimeUnit.MILLISECONDS);
+//            if (!res) {
+//                if (Log.isWarn()) Log.w(TAG, "timeout in waiting condition");
+//            }
+//        } catch (InterruptedException e) {
+//            Log.e(TAG, "error in wait condition", e);
 //        }
 //
-//        public int left(){
-//            return get(KEYMAP_BTN_LEFT, KEYMAP_BTN_LEFT_DEFAULT_VALUE);
-//        }
-//        public void right(int code){
-//            set(KEYMAP_BTN_RIGHT, code);
-//        }
+//        if (Log.isVerbose()) Log.v(TAG, "received conf/notify condition");
+//        waitCond_ = null;
 //
-//        public int right(String key){
-//            return get(KEYMAP_BTN_RIGHT, KEYMAP_BTN_RIGHT_DEFAULT_VALUE);
-//        }
-//
-//        public void source(int code){
-//            set(KEYMAP_BTN_SOURCE, code);
-//        }
-//
-//        public int source(String key){
-//            return get(KEYMAP_BTN_SOURCE, KEYMAP_BTN_SOURCE_DEFAULT_VALUE);
-//        }
-
-//        public void plus(int code){
-//            set(KEYMAP_BTN_PLUS, code);
-//        }
-//
-//        public int plus(){
-//            return get(KEYMAP_BTN_PLUS, KEYMAP_BTN_PLUS_DEFAULT_VALUE);
-//        }
-//
-//        public void minus(int code){
-//            set(KEYMAP_BTN_MINUS, code);
-//        }
-//
-//        public int minus(){
-//            return get(KEYMAP_BTN_MINUS, KEYMAP_BTN_MINUS_DEFAULT_VALUE);
-//        }
-
-        public void key(String key, int code){
-            set(key, code);
-        }
-
-        public int key(String key){
-            return get(key, 0);
-        }
-
-    }
-
-    public class Video extends Base {
-        public final static String VIDEO_RESOLUTION = "video_resolution";
-        public final static String VIDEO_FPS = "video_fps";
-        public final static String VIDEO_DPI = "video_dpi";
-        public final static String VIDEO_MARGIN = "video_margin";
-        public final static String VIDEO_NIGHT_MODE = "video_night_mode";
-        public final static String VIDEO_SHOW_MEDIA_NOTIFICATION = "video_show_media_notification";
-        public final static String VIDEO_SHOW_NAVIGATION_NOTIFICATION = "video_show_navigation_notification";
-        public final static String VIDEO_SHOW_APP_BADGE = "video_show_app_badge";
-
-        public final static int VIDEO_RESOLUTION_DEFAULT_VALUE = 1; // 480p
-        public final static int VIDEO_FPS_DEFAULT_VALUE = 1; // 30 fps
-        public final static int VIDEO_DPI_DEFAULT_VALUE = 140;
-        public final static String VIDEO_MARGIN_DEFAULT_VALUE = "0,0";
-        public final static String VIDEO_NIGHT_MODE_DEFAULT_VALUE = ""; //IDayNightSensor.TIME_GPS;
-        public final static boolean VIDEO_SHOW_MEDIA_NOTIFICATION_DEFAULT_VALUE = true;
-        public final static boolean VIDEO_SHOW_NAVIGATION_NOTIFICATION_DEFAULT_VALUE = true;
-        public final static boolean VIDEO_SHOW_APP_BADGE_DEFAULT_VALUE = true;
-
-        public int resolution(){
-            return SP.getInt(VIDEO_RESOLUTION,VIDEO_RESOLUTION_DEFAULT_VALUE);
-        }
-        public void resolution(int res){
-            SP.edit().putInt(VIDEO_RESOLUTION, res).apply();
-        }
-
-        public int fps(){
-            return SP.getInt(VIDEO_FPS,VIDEO_FPS_DEFAULT_VALUE);
-        }
-        public void fps(int fps){
-            SP.edit().putInt(VIDEO_FPS, fps).apply();
-        }
-
-        public int dpi() {
-            return get(VIDEO_DPI, VIDEO_DPI_DEFAULT_VALUE);
-        }
-        public void dpi(int value){
-            set(VIDEO_DPI, value);
-        }
-
-        public String margin(){
-            return get(VIDEO_MARGIN,VIDEO_MARGIN_DEFAULT_VALUE);
-        }
-        public void margin(String value){
-            set(VIDEO_MARGIN, value);
-        }
-
-        public String nightMode(){
-            return get(VIDEO_NIGHT_MODE,VIDEO_NIGHT_MODE_DEFAULT_VALUE);
-        }
-        public void nightMode(String value){
-            set(VIDEO_NIGHT_MODE, value);
-        }
-
-        public boolean showMediaNotification() {
-            return get(VIDEO_SHOW_MEDIA_NOTIFICATION, VIDEO_SHOW_MEDIA_NOTIFICATION_DEFAULT_VALUE);
-        }
-        public void showMediaNotification(boolean value){
-            set(VIDEO_SHOW_MEDIA_NOTIFICATION, value);
-        }
-
-        public boolean showNavigationNotification() {
-            return get(VIDEO_SHOW_NAVIGATION_NOTIFICATION, VIDEO_SHOW_NAVIGATION_NOTIFICATION_DEFAULT_VALUE);
-        }
-        public void showNavigationNotification(boolean value){
-            set(VIDEO_SHOW_NAVIGATION_NOTIFICATION, value);
-        }
-
-        public boolean showAppBadge() {
-            return get(VIDEO_SHOW_APP_BADGE, VIDEO_SHOW_APP_BADGE_DEFAULT_VALUE);
-        }
-        public void showAppBadge(boolean value){
-            set(VIDEO_SHOW_APP_BADGE, value);
-        }
-    }
-
-    public class Connectivity extends Base {
-        public final static String CONN_ENABLED_AD2P = "audio_enable_ad2p";
-        public final static String CONN_ENABLED_HFP = "audio_enable_hfp";
-
-        public final static boolean CONN_ENABLED_AD2P_DEFAULT_VALUE = false;
-        public final static boolean CONN_ENABLED_HFP_DEFAULT_VALUE = true;
-
-
-        public boolean enableA2dp(){
-            return SP.getBoolean(CONN_ENABLED_AD2P, CONN_ENABLED_AD2P_DEFAULT_VALUE);
-        }
-        public void enableA2dp(boolean value){
-            SP.edit().putBoolean(CONN_ENABLED_AD2P, value).apply();
-        }
-
-        public boolean enableHfp(){
-            return SP.getBoolean(CONN_ENABLED_HFP, CONN_ENABLED_HFP_DEFAULT_VALUE);
-        }
-        public void enableHfp(boolean value){
-            SP.edit().putBoolean(CONN_ENABLED_HFP, value).apply();
-        }
-
-
-    }
-    public class Audio extends Base {
-        public final static String MEDIA_ENABLE_CHANNEL = "media_enable_channel";
-        public final static String MEDIA_SAMPLERATE = "media_samplerate";
-        public final static String MEDIA_SAMPLESIZE = "media_samplesize";
-        public final static String MEDIA_CHANNELCOUNT = "media_channelcount";
-
-        public final static String SPEECH_ENABLE_CHANNEL = "speech_enable_channel";
-        public final static String SPEECH_SAMPLERATE = "speech_samplerate";
-        public final static String SPEECH_SAMPLESIZE = "speech_samplesize";
-        public final static String SPEECH_CHANNELCOUNT = "speech_channelcount";
-
-        public final static String SYSTEM_SAMPLERATE = "system_samplerate";
-        public final static String SYSTEM_SAMPLESIZE = "system_samplesize";
-        public final static String SYSTEM_CHANNELCOUNT = "system_channelcount";
-
-        public final static String MIC_SAMPLERATE = "mic_samplerate";
-        public final static String MIC_SAMPLESIZE = "mic_samplesize";
-        public final static String MIC_CHANNELCOUNT = "mic_channelcount";
-        public final static String MIC_SOURCE = "mic_source";
-
-        public final static boolean MEDIA_ENABLE_CHANNEL_DEFAULT_VALUE = true;
-        public final static int MEDIA_SAMPLERATE_DEFAULT_VALUE = 48000;
-        public final static int MEDIA_SAMPLESIZE_DEFAULT_VALUE = 16; // 16bit
-        public final static int MEDIA_CHANNELCOUNT_DEFAULT_VALUE = 2; //AudioFormat.CHANNEL_OUT_STEREO;
-
-        public final static boolean SPEECH_ENABLE_CHANNEL_DEFAULT_VALUE = true;
-        public final static int SPEECH_SAMPLERATE_DEFAULT_VALUE = 16000;
-        public final static int SPEECH_SAMPLESIZE_DEFAULT_VALUE = 16; // 16bit
-        public final static int SPEECH_CHANNELCOUNT_DEFAULT_VALUE = 1; //AudioFormat.CHANNEL_OUT_MONO;
-
-        public final static int SYSTEM_SAMPLERATE_DEFAULT_VALUE = 16000;
-        public final static int SYSTEM_SAMPLESIZE_DEFAULT_VALUE = 16; // 16bit
-        public final static int SYSTEM_CHANNELCOUNT_DEFAULT_VALUE = 1; //AudioFormat.CHANNEL_OUT_MONO;
-
-        public final static int MIC_SAMPLERATE_DEFAULT_VALUE = 16000;
-        public final static int MIC_SAMPLESIZE_DEFAULT_VALUE = 16; // 16bit
-        public final static int MIC_CHANNELCOUNT_DEFAULT_VALUE = 1; //AudioFormat.CHANNEL_OUT_MONO;
-        public final static int MIC_SOURCE_DEFAULT_VALUE = 1; // 1 = MIC
-
-        public boolean musicChannelEnabled(){
-            return SP.getBoolean(MEDIA_ENABLE_CHANNEL, MEDIA_ENABLE_CHANNEL_DEFAULT_VALUE);
-        }
-
-        public void musicChannelEnabled(boolean value){
-            SP.edit().putBoolean(MEDIA_ENABLE_CHANNEL, value).apply();
-        }
-
-        public int mediaSampleRate(){
-            return SP.getInt(MEDIA_SAMPLERATE, MEDIA_SAMPLERATE_DEFAULT_VALUE);
-        }
-
-        public void mediaSampleRate(int value){
-            SP.edit().putInt(MEDIA_SAMPLERATE, value).apply();
-        }
-
-        public int mediaSampleSize(){
-            return SP.getInt(MEDIA_SAMPLESIZE, MEDIA_SAMPLESIZE_DEFAULT_VALUE);
-        }
-
-        public void mediaSampleSize(int value){
-            SP.edit().putInt(MEDIA_SAMPLESIZE, value).apply();
-        }
-
-        public int mediaChannelCount(){
-            return SP.getInt(MEDIA_CHANNELCOUNT, MEDIA_CHANNELCOUNT_DEFAULT_VALUE);
-        }
-
-        public void mediaChannelCount(int value){
-            SP.edit().putInt(MEDIA_CHANNELCOUNT, value).apply();
-        }
-
-        public boolean speechAudioChannelEnabled(){
-            return SP.getBoolean(SPEECH_ENABLE_CHANNEL, SPEECH_ENABLE_CHANNEL_DEFAULT_VALUE);
-        }
-
-        public void speechAudioChannelEnabled(boolean value){
-            SP.edit().putBoolean(SPEECH_ENABLE_CHANNEL, value).apply();
-        }
-
-        public int speechSampleRate(){
-            return SP.getInt(SPEECH_SAMPLERATE, SPEECH_SAMPLERATE_DEFAULT_VALUE);
-        }
-
-        public void speechSampleRate(int value){
-            SP.edit().putInt(SPEECH_SAMPLERATE, value).apply();
-        }
-
-        public int speechSampleSize(){
-            return SP.getInt(SPEECH_SAMPLESIZE, SPEECH_SAMPLESIZE_DEFAULT_VALUE);
-        }
-
-        public void speechSampleSize(int value){
-            SP.edit().putInt(SPEECH_SAMPLESIZE, value).apply();
-        }
-
-        public int speechChannelCount(){
-            return SP.getInt(SPEECH_CHANNELCOUNT, SPEECH_CHANNELCOUNT_DEFAULT_VALUE);
-        }
-
-        public void speechChannelCount(int value){
-            SP.edit().putInt(SPEECH_CHANNELCOUNT, value).apply();
-        }
-
-        public int systemSampleRate(){
-            return SP.getInt(SYSTEM_SAMPLERATE, SYSTEM_SAMPLERATE_DEFAULT_VALUE);
-        }
-
-        public void systemSampleRate(int value){
-            SP.edit().putInt(SYSTEM_SAMPLERATE, value).apply();
-        }
-
-        public int systemSampleSize(){
-            return SP.getInt(SYSTEM_SAMPLESIZE, SYSTEM_SAMPLESIZE_DEFAULT_VALUE);
-        }
-
-        public void systemSampleSize(int value){
-            SP.edit().putInt(SYSTEM_SAMPLESIZE, value).apply();
-        }
-
-        public int systemChannelCount(){
-            return SP.getInt(SYSTEM_CHANNELCOUNT, SYSTEM_CHANNELCOUNT_DEFAULT_VALUE);
-        }
-
-        public void systemChannelCount(int value){
-            SP.edit().putInt(SYSTEM_CHANNELCOUNT, value).apply();
-        }
-
-        public int micSampleRate(){
-            return SP.getInt(MIC_SAMPLERATE, MIC_SAMPLERATE_DEFAULT_VALUE);
-        }
-
-        public void micSampleRate(int value){
-            SP.edit().putInt(MIC_SAMPLERATE, value).apply();
-        }
-
-        public int micSampleSize(){
-            return SP.getInt(MIC_SAMPLESIZE, MIC_SAMPLESIZE_DEFAULT_VALUE);
-        }
+//        return res;
+//    }
 
-        public void micSampleSize(int value){
-            SP.edit().putInt(MIC_SAMPLESIZE, value).apply();
-        }
-
-        public int micChannelCount(){
-            return SP.getInt(MIC_CHANNELCOUNT, MIC_CHANNELCOUNT_DEFAULT_VALUE);
-        }
-
-        public void micChannelCount(int value){
-            SP.edit().putInt(MIC_CHANNELCOUNT, value).apply();
-        }
-
-        public int micSource(){
-            return SP.getInt(MIC_SOURCE, MIC_SOURCE_DEFAULT_VALUE);
-        }
-
-        public void micSource(int value){
-            SP.edit().putInt(MIC_SOURCE, value).apply();
-        }
-    }
-
-    public class Advanced extends Base{
-
-        public final static String ADVANCED_ENABLED_DEBUG = "enabledebug";
-        public final static String ADVANCED_LOG_DIR = "logDir";
-        public final static String ADVANCED_ENABLE_WIFI = "enableWiFi";
-        public final static String ADVANCED_LOG_LEVEL = "logLevel";
-        public final static String ADVANCED_LOG_PROTOCOL = "logProtocol";
-        public final static String ADVANCED_THREADS_NUM = "threads";
-        public final static String ADVANCED_ENABLE_HONDA_INTEGRATION = "enablehondaintegration";
-        public final static String ADVANCED_ENABLE_HONDA_MIC_VR = "enablehondamicvr";
-        public final static String ADVANCED_SW_MODE = "swmode";
-        public final static String ADVANCED_MODEMGRAUDIO_IDX = "modemgridx";
-        public final static String ADVANCED_SW_IDX = "steeringwheelidx";
-
-        public final static boolean ADVANCED_ENABLED_DEBUG_DEFAULT_VALUE = false;
-        public final static String ADVANCED_LOG_DIR_DEFAULT_VALUE = "/mnt/sdcard/usbdrive2/ODA/";
-        public final static boolean ADVANCED_ENABLE_WIFI_DEFAULT_VALUE = false;
-        public final static int ADVANCED_LOG_LEVEL_DEFAULT_VALUE = ILog.DEFAULT_LOG_LEVEL;
-        public final static boolean ADVANCED_LOG_PROTOCOL_DEFAULT_VALUE = false;
-        public final static int ADVANCED_THREADS_NUM_DEFAULT_VALUE = 4;
-        public final static boolean ADVANCED_ENABLE_HONDA_INTEGRATION_DEFAULT_VALUE = true;
-        public final static boolean ADVANCED_ENABLE_HONDA_MIC_VR_DEFAULT_VALUE = true;
-        public final static String ADVANCED_SW_MODE_DEFAULT_VALUE = "SW SERVICE";
-        public final static int ADVANCED_MODEMGRAUDIO_IDX_DEFAULT_VALUE = 213; // 223 appmode, 220 appmodepic, 213 3rd party, 214 3rd party pic, 197 bt, 92 cam, 98 cd, 196 dab, 216 hdmi, 201 ipod, 222 mirrolink, 221 mirrorlink pic, 255 off, 87 phone, 198 tel rcv, 199 usb audio, 133 voicetag, 136 siri, 96 radio
-        public final static int ADVANCED_SW_IDX_DEFAULT_VALUE = 260; // 258 source, 263 source header, 259 disp, 260 menu, 265 launcher, 266 imid
-
-        public void logDir(String logDir){
-            SP.edit().putString(ADVANCED_LOG_DIR, logDir).apply();
-        }
-
-        public String logDir(){
-            return SP.getString(ADVANCED_LOG_DIR, ADVANCED_LOG_DIR_DEFAULT_VALUE);
-        }
-
-        public void enabledDebug(boolean enabled){
-            SP.edit().putBoolean(ADVANCED_ENABLED_DEBUG, enabled).apply();
-        }
+    private class ModeMgrServiceSWKeyEventCallBack extends IModeMgrServiceSWKeyEventCallBack.Stub {
+        private static final String TAG = "HondaConnectManager-IModeMgrServiceSWKeyEventCallBack";
 
-        public boolean enabledDebug(){
-            return SP.getBoolean(ADVANCED_ENABLED_DEBUG, ADVANCED_ENABLED_DEBUG_DEFAULT_VALUE);
-        }
-
-        public void enableWiFi(boolean enabled){
-            SP.edit().putBoolean(ADVANCED_ENABLE_WIFI, enabled).apply();
-        }
+        @Override
+        public void rcvStrgKeyEvent(int key, int action) throws RemoteException {
+            Log.v(TAG, "rcvStrgKeyEvent " + key + "/" + action);
 
-        public boolean enableWiFi(){
-            return SP.getBoolean(ADVANCED_ENABLE_WIFI, ADVANCED_ENABLE_WIFI_DEFAULT_VALUE);
+            if (Log.isDebug()) {
+                mainHandler_.post(() -> {
+                    Toast.makeText(context_, "rcvStrgKeyEvent key: " + key + " action: " + action, Toast.LENGTH_SHORT).show();
+                });
+            }
         }
+    };
 
-        public int logLevel(){
-            return SP.getInt(ADVANCED_LOG_LEVEL, ADVANCED_LOG_LEVEL_DEFAULT_VALUE);
-        }
+    private class SteeringMenuServiceCallback extends ISteeringMenuServiceCallback.Stub {
+        private static final String TAG = "HondaConnectManager-ISteeringMenuServiceCallback";
 
-        public void logLevel(int logLevel){
-            SP.edit().putInt(ADVANCED_LOG_LEVEL, logLevel).apply();
+        public void onShowView() {
+            if (Log.isVerbose()) Log.v(TAG, "onShowView");
+            unbindToWheelService();
+            bindToWheelService();
         }
 
-        public boolean logProtocol(){
-            return SP.getBoolean(ADVANCED_LOG_PROTOCOL, ADVANCED_LOG_PROTOCOL_DEFAULT_VALUE);
+        public boolean onFinishView(boolean flg, boolean anime) {
+            if (Log.isVerbose()) Log.v(TAG, "onFinishView");
+            return true;
         }
 
-        public void logProtocol(boolean logProtocol){
-            SP.edit().putBoolean(ADVANCED_LOG_PROTOCOL, logProtocol).apply();
+        public boolean onSteeringSWDown(int keytype) {
+            if (Log.isVerbose()) Log.v(TAG, "onSteeringSWDown " + keytype);
+            return true;
         }
+    };
 
-        public int threads(){
-            return SP.getInt(ADVANCED_THREADS_NUM, ADVANCED_THREADS_NUM_DEFAULT_VALUE);
-        }
+    private class ModeMgrServiceCallBack extends IModeMgrServiceCallBack.Stub {
 
-        public void threads(int threads){
-            SP.edit().putInt(ADVANCED_THREADS_NUM, threads).apply();
-        }
+        private static final String TAG = "HondaConnectManager-ModeMgrServiceCallBack";
 
-        public boolean hondaIntegrationEnabled(){
-            return SP.getBoolean(ADVANCED_ENABLE_HONDA_INTEGRATION, ADVANCED_ENABLE_HONDA_INTEGRATION_DEFAULT_VALUE);
-        }
+        public void rcvOnInsCmd(int modestate) throws RemoteException {
+            if (Log.isVerbose()) Log.v(TAG, "rcvOnInsCmd modestate = " + modestate);
+            int idx = settings_.advanced.modeMgrAudioIdx();
 
-        public void hondaIntegrationEnabled(boolean integration){
-            SP.edit().putBoolean(ADVANCED_ENABLE_HONDA_INTEGRATION, integration).apply();
-        }
+            if (Log.isVerbose()) Log.v(TAG, "sendModeMgrOnCnf idx= " + idx + ",state = " + HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
+            int ret = modeMgrManager_.sendModeMgrOnCnf(idx, HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "sendModeMgrOnCnf ret = " + ret);
 
-        public boolean hondaMicVrEnabled() {
-            return SP.getBoolean(ADVANCED_ENABLE_HONDA_MIC_VR, ADVANCED_ENABLE_HONDA_MIC_VR_DEFAULT_VALUE);
-        }
+            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus idx= " + idx + ", state = " + HondaConnectManager.ModeMgrMode.NOTIFY_MODE);
+            ret = modeMgrManager_.notifyModeMgrStatus(idx, HondaConnectManager.ModeMgrMode.NOTIFY_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus ret = " + ret);
 
-        public void hondaMicVrEnabled(boolean enabled) {
-            SP.edit().putBoolean(ADVANCED_ENABLE_HONDA_MIC_VR, enabled).apply();
-        }
+            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iAudioAddr = " + modeMgrManager_.getModeMgrOnAudioAddr());
+            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iVideoAddr = " + modeMgrManager_.getModeMgrOnVideoAddr());
 
-        public String swMode(){
-            return SP.getString(ADVANCED_SW_MODE, ADVANCED_SW_MODE_DEFAULT_VALUE);
-        }
+//            if (waitCond_ != null) {
+//                waitCond_.countDown();
+//            }
 
-        public void swMode(String mode){
-            SP.edit().putString(ADVANCED_SW_MODE, mode).apply();
         }
 
-        public int modeMgrAudioIdx(){
-            return SP.getInt(ADVANCED_MODEMGRAUDIO_IDX, ADVANCED_MODEMGRAUDIO_IDX_DEFAULT_VALUE);
-        }
+        public void rcvOffInsCmd(int modestate) throws RemoteException {
+            if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd modestate = " + modestate);
 
-        public void modeMgrAudioIdx(int idx){
-            SP.edit().putInt(ADVANCED_MODEMGRAUDIO_IDX, idx).apply();
-        }
+            int sound_param = modestate & 1;
+            int image_param = modestate & 2;
+            if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd sound_param= " + sound_param + " image_param= " + image_param);
 
-        public int steeringWheelIdx(){
-            return SP.getInt(ADVANCED_SW_IDX, ADVANCED_SW_IDX_DEFAULT_VALUE);
-        }
+            int idx = settings_.advanced.modeMgrAudioIdx();
+            if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd sendModeMgrOffCnf idx= " + idx + ", state = " + HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
+            int ret = modeMgrManager_.sendModeMgrOffCnf(idx, HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd sendModeMgrOffCnf ret = " + ret);
 
-        public void steeringWheelIdx(int idx){
-            SP.edit().putInt(ADVANCED_SW_IDX, idx).apply();
-        }
-    }
+//            if (waitCond_ != null) {
+//                waitCond_.countDown();
+//            }
 
-    public class Base {
-        private Base(){}
+//            if (sound_param == 1 && image_param == 0) {
+//                int ret = modeMgrManager_.sendModeMgrOffReq(settings_.advanced.modeMgrAudioIdx(), ModeMgrMode.REQUEST_MODE.mode);
+//                if (Log.isVerbose()) Log.v(TAG, "sendModeMgrOffReq ret = " + ret);
+//            } else {
+//                int ret = modeMgrManager_.sendModeMgrOffCnf(settings_.advanced.modeMgrAudioIdx(), ModeMgrMode.CONFIRM_MODE.mode);
+//                if (Log.isVerbose()) Log.v(TAG, "sendModeMgrOffCnf ret = " + ret);
+////                ret = modeMgrManager_.unregisterModeMgrCallback(136);
+////                if (Log.isVerbose()) Log.v(TAG, "unregisterModeMgrCallback ret = " + ret);
+//            }
 
-        public String get(String key, String defaultValue){
-            return SP.getString(key, defaultValue);
         }
 
-        public void set(String key, String value){
-            SP.edit().putString(key, value).apply();
+        public void rcvOnReqCmdFailed(int audioaddr, int videoaddr, int reason) throws RemoteException {
+            if (Log.isVerbose()) Log.v(TAG, "rcvOnReqCmdFailed audioaddr = " + audioaddr + " , videoaddr = " + videoaddr + " , reason = " + reason);
         }
 
-        public boolean get(String key, boolean defaultValue) {
-            return SP.getBoolean(key, defaultValue);
+        public void rcvVideoPwrCmd(int addr) throws RemoteException {
+            if (Log.isVerbose()) Log.v(TAG, "rcvVideoPwrCmd  addr = " + addr);
         }
 
-        public void set(String key, boolean value) {
-            SP.edit().putBoolean(key, value).apply();
+        public void rcvAudioPwrONCmd(int addr) throws RemoteException {
+            if (Log.isVerbose()) Log.v(TAG, "rcvAudioPwrONCmd  addr = " + addr);
         }
 
-        public int get(String key, int defaultValue){
-            return SP.getInt(key, defaultValue);
+        public void rcvAudioPwrOFFCmd() throws RemoteException {
+            if (Log.isVerbose()) Log.v(TAG, "rcvAudioPwrOFFCmd -S");
         }
 
-        public void set(String key, int value){
-            SP.edit().putInt(key, value).apply();
+        public void insDispApl(int disp, int extInfo1, int extInfo2) throws RemoteException {
+            if (Log.isVerbose()) Log.v(TAG, "insDispApl " + disp + "/" + extInfo1 + "/" + extInfo2);
         }
-    }
+    };
 }
