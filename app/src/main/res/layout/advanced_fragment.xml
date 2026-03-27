@@ -98,6 +98,15 @@
         android:text="@string/advanced_settings_enablehondaintegration"
         android:textColor="#000" />
 
+    <CheckBox
+        android:id="@+id/enable_hondamicvr"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:text="@string/advanced_settings_enablehondamicvr"
+        android:textColor="#000" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
