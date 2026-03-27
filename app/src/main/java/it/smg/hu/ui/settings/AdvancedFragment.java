@@ -58,6 +58,9 @@ public class AdvancedFragment extends BaseSettingsFragment {
             return null;
         });
 
+        CheckBox enableHondaMicVr = view.findViewById(R.id.enable_hondamicvr);
+        initCheckBox(enableHondaMicVr, settings.advanced, Settings.Advanced.ADVANCED_ENABLE_HONDA_MIC_VR, Settings.Advanced.ADVANCED_ENABLE_HONDA_MIC_VR_DEFAULT_VALUE);
+
         Spinner swMode = view.findViewById(R.id.sw_mode);
         initSpinner(swMode, R.array.swmode, R.array.swmode, settings.advanced, Settings.Advanced.ADVANCED_SW_MODE, Settings.Advanced.ADVANCED_SW_MODE_DEFAULT_VALUE, () -> {
             EditText swIdx =  view.findViewById(R.id.steeringwheel_idx);
