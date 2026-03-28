@@ -63,9 +63,12 @@ public class HondaConnectManager {
     private final ServiceConnection steeringMenuServiceConnection_;
 
     private ISteeringMenuServiceCallback steeringMenuServiceCallback_;
+    private boolean boundToSteeringMenuService_;
+    private Handler steeringMenuHandler_;
+    private Runnable refreshSteeringMenuService_;
+
     private IModeMgrServiceCallBack modeMgrServiceCallBack_;
     private IModeMgrServiceSWKeyEventCallBack modeMgrServiceSWKeyEventCallBack_;
-    private boolean boundToWheelService_;
 
     // Volume service
 //    private IVolumeService volumeServiceIface_;
@@ -98,6 +101,7 @@ public class HondaConnectManager {
         hasAudioFocus_ = false;
         boundToModeMgrService_ = false;
         mainHandler_ = new Handler(Looper.getMainLooper());
+        steeringMenuHandler_ = new Handler();
 
         modeMgrManager_ = (ModeMgrManager) context.getSystemService(ModeMgrService);
         if (modeMgrManager_ == null){
@@ -110,42 +114,16 @@ public class HondaConnectManager {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 if (Log.isVerbose()) Log.v(TAG, "Honda Wheel Service connected");
-                boundToWheelService_ = true;
+                boundToSteeringMenuService_ = true;
                 steeringMenuServiceIface_ = ISteeringMenuService.Stub.asInterface(service);
-                try {
-                    int idx = settings_.advanced.steeringWheelIdx();
-                    if (idx > 0){
-                        if (Log.isVerbose()) Log.v(TAG, "notifySteeringMenuDispMode 1 addr " + idx);
-                        steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, 1);
-                        if (Log.isVerbose()) Log.v(TAG, "registerCallbackEx swaddr " + idx);
-                        steeringMenuServiceCallback_ = new SteeringMenuServiceCallback();
-                        steeringMenuServiceIface_.registerCallbackEx(steeringMenuServiceCallback_, idx);
-                    }
-
-                } catch (RemoteException e) {
-                    Log.e(TAG, "Error registering", e);
-                    boundToWheelService_ = false;
-                }
+                notifySteeringMenuDispMode(true);
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 if (Log.isVerbose()) Log.v(TAG, "Honda Wheel Service disconnected");
-                try {
-                    if (boundToWheelService_) {
-                        int idx = settings_.advanced.steeringWheelIdx();
-                        if (idx > 0) {
-                            if (Log.isVerbose())  Log.v(TAG, "notifySteeringMenuDispMode 0 addr " + idx);
-                            steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, 0);
-                            if (Log.isVerbose()) Log.v(TAG, "unregisterCallbackEx swaddr " + idx);
-                            steeringMenuServiceIface_.unregisterCallbackEx(steeringMenuServiceCallback_, idx);
-                            steeringMenuServiceCallback_ = null;
-                        }
-                    }
-                } catch (RemoteException e) {
-                    Log.e(TAG, "Error unregistering ", e);
-                }
-                boundToWheelService_ = false;
+                notifySteeringMenuDispMode(false);
+                boundToSteeringMenuService_ = false;
                 steeringMenuServiceIface_ = null;
             }
         };
@@ -285,8 +263,9 @@ public class HondaConnectManager {
             if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffCnf ret = " + ret);
 
             if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.SW_SERVICE)) {
-                if (Log.isDebug()) Log.d(TAG, "releaseAudioFocus -> using authType PREINSTALL and swMode SW_SERVICE -> unbind to sw service");
-                unbindToWheelService();
+                if (Log.isDebug()) Log.d(TAG, "releaseAudioFocus -> using authType PREINSTALL and swMode SW_SERVICE -> notify steering menu");
+                notifySteeringMenuDispMode(false);
+//                unbindToWheelService();
             } else if (settings_.advanced.swMode().equalsIgnoreCase(SWMode.MODEMGR_KEY_CALLBACK)) {
                 if (Log.isDebug()) Log.d(TAG, "releaseAudioFocus -> using authType PREINSTALL and swMode MODEMGR_KEY_CALLBACK -> unregister ModeMgr key event");
                 unregisterModeMgrSWEvent();
@@ -358,6 +337,7 @@ public class HondaConnectManager {
         if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> app with auth " + pControl_.authType);
         if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
             releaseAudioFocus();
+            unbindToWheelService();
             unbindToModeMgrService();
         } else {
             if (Log.isVerbose()) Log.v(TAG, "endAudioBinding -> app auth not preinstall");
@@ -372,56 +352,79 @@ public class HondaConnectManager {
         }
     }
 
+    private void notifySteeringMenuDispMode(boolean onoff){
+        if (boundToSteeringMenuService_) {
+            if (onoff) {
+                try {
+                    int idx = settings_.advanced.steeringWheelIdx();
+                    if (idx > 0) {
+                        if (Log.isVerbose()) Log.v(TAG, "notifySteeringMenuDispMode 1 addr " + idx);
+                        steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, 1);
+                        if (Log.isVerbose()) Log.v(TAG, "registerCallbackEx swaddr " + idx);
+                        steeringMenuServiceCallback_ = new SteeringMenuServiceCallback();
+                        steeringMenuServiceIface_.registerCallbackEx(steeringMenuServiceCallback_, idx);
+                    }
+
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Error registering", e);
+                }
+
+            } else {
+                try {
+                    int idx = settings_.advanced.steeringWheelIdx();
+                    if (idx > 0) {
+                        if (Log.isVerbose()) Log.v(TAG, "notifySteeringMenuDispMode 0 addr " + idx);
+                        steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, 0);
+                        if (Log.isVerbose()) Log.v(TAG, "unregisterCallbackEx swaddr " + idx);
+                        steeringMenuServiceIface_.unregisterCallbackEx(steeringMenuServiceCallback_, idx);
+                    }
+
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Error unregistering", e);
+                }
+            }
+        }
+    }
 
     private void bindToWheelService(){
-        if (!boundToWheelService_) {
+        if (!boundToSteeringMenuService_) {
             if (Log.isDebug()) Log.d(TAG, "Request binding to service " + ISteeringMenuService.class.getName());
             Intent intent = new Intent(ISteeringMenuService.class.getName());
             context_.bindService(intent, steeringMenuServiceConnection_, Context.BIND_AUTO_CREATE);
+        } else {
+            notifySteeringMenuDispMode(true);
         }
     }
 
     private void registerModeMgrSWEvent(){
-        if (!boundToWheelService_) {
+        if (!boundToSteeringMenuService_) {
             int idx = settings_.advanced.modeMgrAudioIdx();
             if (Log.isDebug()) Log.d(TAG, "registerModeMgrSWKeyEventCallback idx " + idx);
             modeMgrServiceSWKeyEventCallBack_ = new ModeMgrServiceSWKeyEventCallBack();
             int ret = modeMgrManager_.registerModeMgrSWKeyEventCallback(idx, modeMgrServiceSWKeyEventCallBack_);
             if (Log.isDebug()) Log.d(TAG, "registerModeMgrSWKeyEventCallback ret " + ret);
-            boundToWheelService_ = true;
+            boundToSteeringMenuService_ = true;
         }
     }
 
     private void unregisterModeMgrSWEvent(){
-        if (boundToWheelService_) {
+        if (boundToSteeringMenuService_) {
             int idx = settings_.advanced.modeMgrAudioIdx();
             if (Log.isDebug()) Log.d(TAG, "unregisterModeMgrSWKeyEventCallback idx " + idx);
             int ret = modeMgrManager_.unregisterModeMgrSWKeyEventCallback(idx);
             if (Log.isDebug()) Log.d(TAG, "unregisterModeMgrSWKeyEventCallback ret " + ret);
             modeMgrServiceSWKeyEventCallBack_ = null;
-            boundToWheelService_ = false;
+            boundToSteeringMenuService_ = false;
         }
     }
 
     private void unbindToWheelService(){
-        if (boundToWheelService_) {
+        if (boundToSteeringMenuService_) {
             if (Log.isDebug()) Log.d(TAG, "Request unbinding to service " + ISteeringMenuService.class.getName());
+            notifySteeringMenuDispMode(false);
             context_.unbindService(steeringMenuServiceConnection_);
 
-            boundToWheelService_ = false;
-            try {
-                int idx = settings_.advanced.steeringWheelIdx();
-                Log.v(TAG, "idx " + idx);
-                if (idx > 0){
-                    Log.v(TAG, "notifySteeringMenuDispMode 0 addr " + idx);
-                    steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, 0);
-                    Log.v(TAG, "unregisterCallbackEx swaddr " + idx);
-                    steeringMenuServiceIface_.unregisterCallbackEx(steeringMenuServiceCallback_, idx);
-                    steeringMenuServiceCallback_ = null;
-                }
-            } catch (RemoteException e) {
-                Log.e(TAG, "errore", e);
-            }
+            boundToSteeringMenuService_ = false;
             steeringMenuServiceIface_ = null;
         }
     }
@@ -474,6 +477,21 @@ public class HondaConnectManager {
 //        return res;
 //    }
 
+    private class RefreshSteeringMenuService implements Runnable{
+        private static final String TAG = "HondaConnectManager-RefreshSteeringMenuService";
+
+        @Override
+        public void run() {
+            if (Log.isVerbose()) Log.v(TAG, "refresh steering menu service connection");
+//            unbindToWheelService();
+//            bindToWheelService();
+            notifySteeringMenuDispMode(false);
+            notifySteeringMenuDispMode(true);
+
+            refreshSteeringMenuService_ = null;
+        }
+    }
+
     private class ModeMgrServiceSWKeyEventCallBack extends IModeMgrServiceSWKeyEventCallBack.Stub {
         private static final String TAG = "HondaConnectManager-IModeMgrServiceSWKeyEventCallBack";
 
@@ -494,8 +512,16 @@ public class HondaConnectManager {
 
         public void onShowView() {
             if (Log.isVerbose()) Log.v(TAG, "onShowView");
-            unbindToWheelService();
-            bindToWheelService();
+
+            if (refreshSteeringMenuService_ == null){
+                refreshSteeringMenuService_ = new RefreshSteeringMenuService();
+
+                steeringMenuHandler_.postDelayed(refreshSteeringMenuService_, 1000);
+            } else {
+                steeringMenuHandler_.removeCallbacks(refreshSteeringMenuService_);
+                steeringMenuHandler_.postDelayed(refreshSteeringMenuService_, 1000);
+            }
+
         }
 
         public boolean onFinishView(boolean flg, boolean anime) {
