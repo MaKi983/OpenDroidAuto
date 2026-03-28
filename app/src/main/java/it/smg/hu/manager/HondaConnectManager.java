@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.widget.Toast;
 
+import com.fujitsu_ten.displayaudio.ecncservice.IEcNcService;
 import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrManager;
 import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrServiceCallBack;
 import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrServiceSWKeyEventCallBack;
@@ -62,6 +63,15 @@ public class HondaConnectManager {
     private ISteeringMenuService steeringMenuServiceIface_;
     private final ServiceConnection steeringMenuServiceConnection_;
 
+    // EcNc service
+    private IEcNcService ecNcServiceIface_;
+    private final ServiceConnection ecNcServiceConnection_;
+    private boolean ecNcBindingRequested_;
+    private boolean boundToEcNcService_;
+    private boolean micVrPendingStart_;
+    private boolean micVrStarted_;
+    private int micSessionCount_;
+
     private ISteeringMenuServiceCallback steeringMenuServiceCallback_;
     private IModeMgrServiceCallBack modeMgrServiceCallBack_;
     private IModeMgrServiceSWKeyEventCallBack modeMgrServiceSWKeyEventCallBack_;
@@ -97,6 +107,11 @@ public class HondaConnectManager {
         settings_ = Settings.instance();
         hasAudioFocus_ = false;
         boundToModeMgrService_ = false;
+        ecNcBindingRequested_ = false;
+        boundToEcNcService_ = false;
+        micVrPendingStart_ = false;
+        micVrStarted_ = false;
+        micSessionCount_ = 0;
         mainHandler_ = new Handler(Looper.getMainLooper());
 
         modeMgrManager_ = (ModeMgrManager) context.getSystemService(ModeMgrService);
@@ -147,6 +162,32 @@ public class HondaConnectManager {
                 }
                 boundToWheelService_ = false;
                 steeringMenuServiceIface_ = null;
+            }
+        };
+
+        ecNcServiceConnection_ = new ServiceConnection() {
+            private static final String TAG = "HondaConnectManager-ecNcServiceConnection";
+
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                if (Log.isVerbose()) Log.v(TAG, "Honda EcNc Service connected");
+
+                synchronized (HondaConnectManager.this) {
+                    ecNcServiceIface_ = IEcNcService.Stub.asInterface(service);
+                    boundToEcNcService_ = ecNcServiceIface_ != null;
+                    tryStartMicVrLocked();
+                }
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                if (Log.isVerbose()) Log.v(TAG, "Honda EcNc Service disconnected");
+
+                synchronized (HondaConnectManager.this) {
+                    boundToEcNcService_ = false;
+                    ecNcServiceIface_ = null;
+                    micVrStarted_ = false;
+                }
             }
         };
 
@@ -356,6 +397,9 @@ public class HondaConnectManager {
 
     public void endAudioBinding(){
         if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> app with auth " + pControl_.authType);
+
+        forceReleaseMicSession();
+
         if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
             releaseAudioFocus();
             unbindToModeMgrService();
@@ -370,6 +414,129 @@ public class HondaConnectManager {
                 if (Log.isWarn()) Log.w(TAG, "endAudioBinding -> wrong steeringwheel mode " + settings_.advanced.swMode());
             }
         }
+    }
+
+    public synchronized void startMicSession() {
+        if (!settings_.advanced.hondaIntegrationEnabled() || !settings_.advanced.hondaMicVrEnabled()) {
+            return;
+        }
+
+        micSessionCount_++;
+        if (Log.isDebug()) Log.d(TAG, "startMicSession count=" + micSessionCount_);
+        if (micSessionCount_ > 1) {
+            return;
+        }
+
+        micVrPendingStart_ = true;
+        bindToEcNcService();
+        tryStartMicVrLocked();
+    }
+
+    public synchronized void stopMicSession() {
+        if (micSessionCount_ <= 0) {
+            micSessionCount_ = 0;
+            micVrPendingStart_ = false;
+            return;
+        }
+
+        micSessionCount_--;
+        if (Log.isDebug()) Log.d(TAG, "stopMicSession count=" + micSessionCount_);
+        if (micSessionCount_ > 0) {
+            return;
+        }
+
+        micVrPendingStart_ = false;
+        endMicVrLocked();
+        unbindFromEcNcService();
+    }
+
+    public synchronized void forceReleaseMicSession() {
+        micSessionCount_ = 0;
+        micVrPendingStart_ = false;
+        endMicVrLocked();
+        unbindFromEcNcService();
+    }
+
+    private synchronized void bindToEcNcService() {
+        if (ecNcBindingRequested_) {
+            return;
+        }
+
+        if (Log.isDebug()) Log.d(TAG, "Request binding to service " + IEcNcService.class.getName());
+        try {
+            Intent intent = new Intent(IEcNcService.class.getName());
+            ecNcBindingRequested_ = context_.bindService(intent, ecNcServiceConnection_, Context.BIND_AUTO_CREATE);
+            if (!ecNcBindingRequested_) {
+                if (Log.isWarn()) Log.w(TAG, "bindService(IEcNcService) failed");
+            }
+        } catch (RuntimeException e) {
+            ecNcBindingRequested_ = false;
+            Log.e(TAG, "bindService(IEcNcService) exception", e);
+        }
+    }
+
+    private synchronized void unbindFromEcNcService() {
+        if (!ecNcBindingRequested_) {
+            boundToEcNcService_ = false;
+            ecNcServiceIface_ = null;
+            micVrStarted_ = false;
+            return;
+        }
+
+        if (Log.isDebug()) Log.d(TAG, "Request unbinding to service " + IEcNcService.class.getName());
+        try {
+            context_.unbindService(ecNcServiceConnection_);
+        } catch (IllegalArgumentException e) {
+            if (Log.isWarn()) Log.w(TAG, "unbindService(IEcNcService) failed", e);
+        }
+
+        ecNcBindingRequested_ = false;
+        boundToEcNcService_ = false;
+        ecNcServiceIface_ = null;
+        micVrStarted_ = false;
+    }
+
+    private void tryStartMicVrLocked() {
+        if (!micVrPendingStart_ || micVrStarted_ || ecNcServiceIface_ == null) {
+            return;
+        }
+
+        try {
+            int ret = ecNcServiceIface_.startVR(true);
+            if (ret == 0) {
+                micVrStarted_ = true;
+                micVrPendingStart_ = false;
+                if (Log.isInfo()) Log.i(TAG, "startVR success");
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "startVR failed ret=" + ret);
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "startVR exception", e);
+        }
+    }
+
+    private void endMicVrLocked() {
+        if (!micVrStarted_) {
+            return;
+        }
+
+        if (ecNcServiceIface_ == null) {
+            micVrStarted_ = false;
+            return;
+        }
+
+        try {
+            int ret = ecNcServiceIface_.endVr();
+            if (ret == 0) {
+                if (Log.isInfo()) Log.i(TAG, "endVr success");
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "endVr failed ret=" + ret);
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "endVr exception", e);
+        }
+
+        micVrStarted_ = false;
     }
 
 
