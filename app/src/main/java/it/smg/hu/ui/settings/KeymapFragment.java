@@ -38,6 +38,7 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
         settings = Settings.instance();
         handler_ = new Handler();
         if (settings.advanced.hondaIntegrationEnabled()){
+            HondaConnectManager.instance().initialize();
             HondaConnectManager.instance().initAudioBinding();
             HondaConnectManager.instance().requestAudioFocus();
             keyHolder_ = (InputDevice.OnKeyHolder) getActivity();

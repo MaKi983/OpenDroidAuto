@@ -66,6 +66,10 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
 
         setContentView(R.layout.activity_player);
 
+        if (Settings.instance().advanced.hondaIntegrationEnabled()){
+            HondaConnectManager.instance().initialize();
+        }
+
         surfaceView_ = findViewById(R.id.surfaceView);
     }
 
