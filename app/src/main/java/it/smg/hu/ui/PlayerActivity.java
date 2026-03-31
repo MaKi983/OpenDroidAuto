@@ -262,6 +262,7 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
             if (Log.isDebug()) Log.d(TAG, "received action " + intent.getAction());
             if (ODAService.STOP_ACTION.equalsIgnoreCase(intent.getAction())){
                 finish();
+
             } else if (ODAService.STOP_VIDEO_INDICATION.equalsIgnoreCase(intent.getAction())){
                 moveTaskToBack(true);
             }

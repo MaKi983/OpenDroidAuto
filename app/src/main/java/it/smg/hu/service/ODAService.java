@@ -13,6 +13,8 @@ import android.widget.Toast;
 import androidx.annotation.Keep;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import it.smg.hu.config.Settings;
+import it.smg.hu.manager.HondaConnectManager;
 import it.smg.hu.manager.USBManager;
 import it.smg.hu.manager.WIFIManager;
 import it.smg.hu.projection.InputDevice;
@@ -91,6 +93,7 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
                 } catch (Exception e){
                     Log.e(TAG, "error", e);
                     onAndroidAutoQuitOnError("USB GENERIC ERROR", -1);
+//                    onAndroidAutoQuit();
                     return;
                 }
             }
@@ -145,6 +148,10 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         isRunning_ = false;
 
         if (Log.isInfo()) Log.i(TAG, "Stop");
+
+        if (Settings.instance().advanced.hondaIntegrationEnabled()){
+            HondaConnectManager.instance().endAudioBinding();
+        }
 
         if (androidAutoEntity_ != null) {
             androidAutoEntity_.stop();
