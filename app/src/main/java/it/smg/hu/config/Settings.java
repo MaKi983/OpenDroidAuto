@@ -305,7 +305,7 @@ public class Settings {
         public final static String CONN_ENABLED_AD2P = "audio_enable_ad2p";
         public final static String CONN_ENABLED_HFP = "audio_enable_hfp";
 
-        public final static boolean CONN_ENABLED_AD2P_DEFAULT_VALUE = false;
+        public final static boolean CONN_ENABLED_AD2P_DEFAULT_VALUE = true;
         public final static boolean CONN_ENABLED_HFP_DEFAULT_VALUE = true;
 
 
