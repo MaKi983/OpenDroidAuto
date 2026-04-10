@@ -2,6 +2,8 @@ package it.smg.hu.config;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.AudioFormat;
+import android.media.MediaRecorder;
 import android.preference.PreferenceManager;
 
 import androidx.annotation.Keep;
@@ -361,7 +363,7 @@ public class Settings {
 
         public final static int MIC_SAMPLERATE_DEFAULT_VALUE = 16000;
         public final static int MIC_SAMPLESIZE_DEFAULT_VALUE = 16; // 16bit
-        public final static int MIC_CHANNELCOUNT_DEFAULT_VALUE = 1; //AudioFormat.CHANNEL_OUT_MONO;
+        public final static int MIC_CHANNELCOUNT_DEFAULT_VALUE = 1; //AudioFormat.CHANNEL_IN_MONO;;
         public final static int MIC_SOURCE_DEFAULT_VALUE = 1; // 1 = MIC
 
         public boolean musicChannelEnabled(){

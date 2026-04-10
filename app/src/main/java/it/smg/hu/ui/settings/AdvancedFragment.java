@@ -68,9 +68,9 @@ public class AdvancedFragment extends BaseSettingsFragment {
                 case HondaConnectManager.SWMode.SW_SERVICE:
                     swIdx.setEnabled(true);
                     break;
-                case HondaConnectManager.SWMode.MODEMGR_KEY_CALLBACK:
-                    swIdx.setEnabled(false);
-                    break;
+//                case HondaConnectManager.SWMode.MODEMGR_KEY_CALLBACK:
+//                    swIdx.setEnabled(false);
+//                    break;
                 default:
                     break;
             }

@@ -212,7 +212,7 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-        if (Log.isDebug()) Log.d(TAG, "onServiceConnected");
+        if (Log.isDebug()) Log.d(TAG, "onServiceConnected ODAService");
         ODAService.ServiceBinder binder = (ODAService.ServiceBinder) service;
         odaService_ = binder.getService();
 
