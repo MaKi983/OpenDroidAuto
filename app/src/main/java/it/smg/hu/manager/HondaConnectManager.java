@@ -116,7 +116,7 @@ public class HondaConnectManager {
                 registerSteeringMenuCallback();
 
                 if (pControl_.authType != Constants.AUTH_TYPE_PREINSTALL){
-                    notifySteeringMenuDispMode();
+                    notifySteeringMenuDispMode(1);
                 }
 
             }
@@ -226,7 +226,7 @@ public class HondaConnectManager {
             if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iVideoAddr = " + modeMgrManager_.getModeMgrOnVideoAddr());
 
             if (Log.isDebug()) Log.d(TAG, "requestAudioFocus notifySteeringMenuDispMode");
-            notifySteeringMenuDispMode();
+            notifySteeringMenuDispMode(1);
 
             hasAudioFocus_ = true;
         }
@@ -292,13 +292,13 @@ public class HondaConnectManager {
 
             if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> hasAudioFocus= " + hasAudioFocus_);
             if (hasAudioFocus_){
-                notifySteeringMenuDispMode();
+                notifySteeringMenuDispMode(1);
             }
         } else {
             // THIRD_PARTY
             if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> using authType not PREINSTALL -> register SW callback and notify");
             registerSteeringMenuCallback();
-            notifySteeringMenuDispMode();
+            notifySteeringMenuDispMode(1);
         }
     }
 
@@ -306,6 +306,7 @@ public class HondaConnectManager {
     public void sendToBackground(){
         if (Log.isDebug()) Log.d(TAG, "sendToBackground -> app with auth " + pControl_.authType + " unregister SW callback");
        unregisterSteeringMenuCallback();
+       notifySteeringMenuDispMode(0);
     }
 
     public void endAudioBinding(){
@@ -324,13 +325,12 @@ public class HondaConnectManager {
         unbindToWheelService();
     }
 
-    private void notifySteeringMenuDispMode(){
+    private void notifySteeringMenuDispMode(int mode){
         if (Log.isDebug()) Log.d(TAG, "notifySteeringMenuDispMode -> boundToSteeringMenuService= " + boundToSteeringMenuService_);
         if (boundToSteeringMenuService_) {
             try {
                 int idx = settings_.advanced.steeringWheelIdx();
                 if (idx > 0) {
-                    int mode = 1; //settings_.advanced.enableWiFi() ? 1 : 0;
                     if (Log.isVerbose()) Log.v(TAG, "notifySteeringMenuDispMode " + mode + " addr " + idx);
                     steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, mode);
                 }
@@ -523,7 +523,7 @@ public class HondaConnectManager {
 
         public void onShowView() {
             if (Log.isVerbose()) Log.v(TAG, "onShowView");
-            notifySteeringMenuDispMode();
+            notifySteeringMenuDispMode(1);
         }
 
         public boolean onFinishView(boolean flg, boolean anime) {
