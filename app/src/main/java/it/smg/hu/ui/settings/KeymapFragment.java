@@ -33,18 +33,26 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if (Log.isVerbose()) Log.v(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.keymap_fragment, container, false);
 
         settings = Settings.instance();
         handler_ = new Handler();
         if (settings.advanced.hondaIntegrationEnabled()){
-            HondaConnectManager.instance().initAudioBinding();
+            if (Log.isVerbose()) Log.v(TAG, "init hondaconnection and keyholder");
+            HondaConnectManager.instance().initialize();
+
+            try {
+                Thread.sleep(500);  // ugly ack to sync steering wheel service connection
+            } catch (InterruptedException ignored) {
+            }
+
             HondaConnectManager.instance().requestAudioFocus();
             keyHolder_ = (InputDevice.OnKeyHolder) getActivity();
         }
 
         unsetKeyListener_ = () -> {
-            Log.v(TAG, "unset keyListener");
+            if (Log.isVerbose()) Log.v(TAG, "unset keyListener");
             if (keyHolder_ != null) {
                 keyHolder_.setOnKeyListener(null);
             }
@@ -122,6 +130,7 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
 
     @Override
     public void onStop() {
+        if (Log.isVerbose()) Log.v(TAG, "onStop");
         if (settings.advanced.hondaIntegrationEnabled()){
             HondaConnectManager.instance().endAudioBinding();
         }

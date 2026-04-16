@@ -2,6 +2,8 @@ package it.smg.hu.config;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.AudioFormat;
+import android.media.MediaRecorder;
 import android.preference.PreferenceManager;
 
 import androidx.annotation.Keep;
@@ -58,14 +60,14 @@ public class Settings {
         public final static String CAR_SETTINGS_HIDE_CLOCK = "hide_clock";
         public final static String CAR_SETTINGS_LEFT_HAND_DRIVE = "left_drive";
 
-        public final static String CAR_SETTINGS_HU_NAME_DEFAULT_VALUE = "Honda";
-        public final static String CAR_SETTINGS_MODEL_DEFAULT_VALUE = "HRV";
-        public final static String CAR_SETTINGS_YEAR_DEFAULT_VALUE = "2017";
-        public final static String CAR_SETTINGS_HU_MAKE_DEFAULT_VALUE = "Honda";
-        public final static String CAR_SETTINGS_HU_MODEL_DEFAULT_VALUE = "Honda Connect";
-        public final static String CAR_SETTINGS_SW_VERSION_DEFAULT_VALUE = "SWB1";
-        public final static String CAR_SETTINGS_SW_BUILD_DEFAULT_VALUE = "SWV1";
-        public final static boolean CAR_SETTINGS_PLAY_MEDIA_DURING_VR_DEFAULT_VALUE = true;
+        public final static String CAR_SETTINGS_HU_NAME_DEFAULT_VALUE = "Google";
+        public final static String CAR_SETTINGS_MODEL_DEFAULT_VALUE = "Desktop Head Unit";
+        public final static String CAR_SETTINGS_YEAR_DEFAULT_VALUE = "2025";
+        public final static String CAR_SETTINGS_HU_MAKE_DEFAULT_VALUE = "Google";
+        public final static String CAR_SETTINGS_HU_MODEL_DEFAULT_VALUE = "Desktop Head Unit";
+        public final static String CAR_SETTINGS_SW_VERSION_DEFAULT_VALUE = "0.1.0";
+        public final static String CAR_SETTINGS_SW_BUILD_DEFAULT_VALUE = "1";
+        public final static boolean CAR_SETTINGS_PLAY_MEDIA_DURING_VR_DEFAULT_VALUE = false;
         public final static boolean CAR_SETTINGS_HIDE_CLOCK_DEFAULT_VALUE = false;
         public final static boolean CAR_SETTINGS_LEFT_HAND_DRIVE_DEFAULT_VALUE = true;
 
@@ -305,7 +307,7 @@ public class Settings {
         public final static String CONN_ENABLED_AD2P = "audio_enable_ad2p";
         public final static String CONN_ENABLED_HFP = "audio_enable_hfp";
 
-        public final static boolean CONN_ENABLED_AD2P_DEFAULT_VALUE = false;
+        public final static boolean CONN_ENABLED_AD2P_DEFAULT_VALUE = true;
         public final static boolean CONN_ENABLED_HFP_DEFAULT_VALUE = true;
 
 
@@ -361,7 +363,7 @@ public class Settings {
 
         public final static int MIC_SAMPLERATE_DEFAULT_VALUE = 16000;
         public final static int MIC_SAMPLESIZE_DEFAULT_VALUE = 16; // 16bit
-        public final static int MIC_CHANNELCOUNT_DEFAULT_VALUE = 1; //AudioFormat.CHANNEL_OUT_MONO;
+        public final static int MIC_CHANNELCOUNT_DEFAULT_VALUE = 1; //AudioFormat.CHANNEL_IN_MONO;;
         public final static int MIC_SOURCE_DEFAULT_VALUE = 1; // 1 = MIC
 
         public boolean musicChannelEnabled(){
@@ -494,6 +496,7 @@ public class Settings {
         public final static String ADVANCED_LOG_PROTOCOL = "logProtocol";
         public final static String ADVANCED_THREADS_NUM = "threads";
         public final static String ADVANCED_ENABLE_HONDA_INTEGRATION = "enablehondaintegration";
+        public final static String ADVANCED_ENABLE_HONDA_MIC_VR = "enablehondamicvr";
         public final static String ADVANCED_SW_MODE = "swmode";
         public final static String ADVANCED_MODEMGRAUDIO_IDX = "modemgridx";
         public final static String ADVANCED_SW_IDX = "steeringwheelidx";
@@ -505,6 +508,7 @@ public class Settings {
         public final static boolean ADVANCED_LOG_PROTOCOL_DEFAULT_VALUE = false;
         public final static int ADVANCED_THREADS_NUM_DEFAULT_VALUE = 4;
         public final static boolean ADVANCED_ENABLE_HONDA_INTEGRATION_DEFAULT_VALUE = true;
+        public final static boolean ADVANCED_ENABLE_HONDA_MIC_VR_DEFAULT_VALUE = true;
         public final static String ADVANCED_SW_MODE_DEFAULT_VALUE = "SW SERVICE";
         public final static int ADVANCED_MODEMGRAUDIO_IDX_DEFAULT_VALUE = 213; // 223 appmode, 220 appmodepic, 213 3rd party, 214 3rd party pic, 197 bt, 92 cam, 98 cd, 196 dab, 216 hdmi, 201 ipod, 222 mirrolink, 221 mirrorlink pic, 255 off, 87 phone, 198 tel rcv, 199 usb audio, 133 voicetag, 136 siri, 96 radio
         public final static int ADVANCED_SW_IDX_DEFAULT_VALUE = 260; // 258 source, 263 source header, 259 disp, 260 menu, 265 launcher, 266 imid
@@ -563,6 +567,14 @@ public class Settings {
 
         public void hondaIntegrationEnabled(boolean integration){
             SP.edit().putBoolean(ADVANCED_ENABLE_HONDA_INTEGRATION, integration).apply();
+        }
+
+        public boolean hondaMicVrEnabled() {
+            return SP.getBoolean(ADVANCED_ENABLE_HONDA_MIC_VR, ADVANCED_ENABLE_HONDA_MIC_VR_DEFAULT_VALUE);
+        }
+
+        public void hondaMicVrEnabled(boolean enabled) {
+            SP.edit().putBoolean(ADVANCED_ENABLE_HONDA_MIC_VR, enabled).apply();
         }
 
         public String swMode(){

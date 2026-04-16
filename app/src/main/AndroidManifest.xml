@@ -38,9 +38,9 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-        </intent-filter>
-        <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
         </activity>
 
         <activity android:name=".ui.SettingsActivity" android:label="Settings" android:screenOrientation="landscape">
@@ -52,6 +52,12 @@
         <service android:enabled="true" android:name=".service.ODAService" android:exported="true">
         </service>
 
+        <receiver android:name=".widget.ExitWidget" android:label="@string/widget_exit_preview_text" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_exit"/>
+        </receiver>
     </application>
 </manifest>
 

@@ -66,6 +66,10 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
 
         setContentView(R.layout.activity_player);
 
+        if (Settings.instance().advanced.hondaIntegrationEnabled()){
+            HondaConnectManager.instance().initialize();
+        }
+
         surfaceView_ = findViewById(R.id.surfaceView);
     }
 
@@ -208,7 +212,7 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-        if (Log.isDebug()) Log.d(TAG, "onServiceConnected");
+        if (Log.isDebug()) Log.d(TAG, "onServiceConnected ODAService");
         ODAService.ServiceBinder binder = (ODAService.ServiceBinder) service;
         odaService_ = binder.getService();
 
@@ -262,6 +266,7 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
             if (Log.isDebug()) Log.d(TAG, "received action " + intent.getAction());
             if (ODAService.STOP_ACTION.equalsIgnoreCase(intent.getAction())){
                 finish();
+
             } else if (ODAService.STOP_VIDEO_INDICATION.equalsIgnoreCase(intent.getAction())){
                 moveTaskToBack(true);
             }

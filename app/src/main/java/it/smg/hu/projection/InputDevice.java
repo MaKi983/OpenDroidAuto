@@ -186,9 +186,13 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
             final int minusKeyCode = Settings.instance().keymap.key(KeymapFragment.KeyMap.MINUS.keyName() + "_code");
 
             if (keyCode == plusKeyCode){
-                HondaConnectManager.instance().increaseVolume();
+                if (event.getAction() == KeyEvent.ACTION_DOWN) { // increase/decrease volume only on action down to prevent double increase/decrease
+                    HondaConnectManager.instance().increaseVolume();
+                }
             } else if (keyCode == minusKeyCode) {
-                HondaConnectManager.instance().decreaseVolume();
+                if (event.getAction() == KeyEvent.ACTION_DOWN) { // increase/decrease volume only on action down to prevent double increase/decrease
+                    HondaConnectManager.instance().decreaseVolume();
+                }
             } else {
                 int action = event.getAction(); // 1 - UP, 0 - DOWN
                 sendButtonEvent(action, button);
