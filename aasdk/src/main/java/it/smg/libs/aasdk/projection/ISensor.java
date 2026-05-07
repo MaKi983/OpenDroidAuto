@@ -6,6 +6,7 @@ public interface ISensor {
     static final String NIGHT = "NIGHT";
     static final String TIME_GPS = "TIME/GPS";
     static final String LIGHT = "LIGHT";
+    static final String HONDA = "HONDA";
 
     static final int IS_DAY = 0;
     static final int IS_NIGHT = 1;

@@ -241,7 +241,7 @@ public class Settings {
         public final static int VIDEO_FPS_DEFAULT_VALUE = 1; // 30 fps
         public final static int VIDEO_DPI_DEFAULT_VALUE = 140;
         public final static String VIDEO_MARGIN_DEFAULT_VALUE = "0,0";
-        public final static String VIDEO_NIGHT_MODE_DEFAULT_VALUE = ""; //IDayNightSensor.TIME_GPS;
+        public final static String VIDEO_NIGHT_MODE_DEFAULT_VALUE = "HONDA"; //Default to Honda integration if available
         public final static boolean VIDEO_SHOW_MEDIA_NOTIFICATION_DEFAULT_VALUE = true;
         public final static boolean VIDEO_SHOW_NAVIGATION_NOTIFICATION_DEFAULT_VALUE = true;
         public final static boolean VIDEO_SHOW_APP_BADGE_DEFAULT_VALUE = true;

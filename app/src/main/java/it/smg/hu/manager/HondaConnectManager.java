@@ -17,17 +17,30 @@ import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrServiceCallBack;
 import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrServiceSWKeyEventCallBack;
 import com.fujitsu_ten.displayaudio.modemanagement.ModeMgrManager;
 import com.fujitsu_ten.displayaudio.oom.OomManager;
+import com.fujitsu_ten.displayaudio.statemanagement.IStateMgrServiceCallBack;
+import com.fujitsu_ten.displayaudio.statemanagement.StateMgrChangeInfo;
+import com.fujitsu_ten.displayaudio.statemanagement.StateMgrInfo;
+import com.fujitsu_ten.displayaudio.statemanagement.StateMgrManager;
+import com.fujitsu_ten.displayaudio.statemanagement.StateMgrServiceConst;
 import com.fujitsu_ten.displayaudio.steeringmenuservice.service.ISteeringMenuService;
 import com.fujitsu_ten.displayaudio.steeringmenuservice.service.ISteeringMenuServiceCallback;
 import com.fujitsu_ten.displayaudio.whitelist.common.Constants;
 import com.fujitsu_ten.displayaudio.whitelist.common.IWhiteList;
 import com.fujitsu_ten.displayaudio.whitelist.common.ProcessControl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import it.smg.hu.config.Settings;
 import it.smg.libs.aasdk.messenger.ChannelId;
 import it.smg.libs.common.Log;
 
 public class HondaConnectManager {
+
+    public interface HondaListener {
+        void onDayNightUpdate(boolean isNight);
+        void onSteeringWheelKey(int keyType);
+    }
 
     public static class SWMode {
         public static final String SW_SERVICE = "SW SERVICE";
@@ -56,9 +69,12 @@ public class HondaConnectManager {
     private static HondaConnectManager instance_;
 
     private final ModeMgrManager modeMgrManager_;
+    private final StateMgrManager stateMgrManager_;
 
     private IModeMgrServiceCallBack modeMgrServiceCallBack_;
     private IModeMgrServiceSWKeyEventCallBack modeMgrServiceSWKeyEventCallBack_;
+
+    private IStateMgrServiceCallBack stateMgrServiceCallBack_;
 
     // SteeringWheel service
     private ISteeringMenuService steeringMenuServiceIface_;
@@ -80,6 +96,7 @@ public class HondaConnectManager {
 //    private CountDownLatch waitCond_;
 
     private final Handler mainHandler_;
+    private final List<HondaListener> listeners_ = new ArrayList<>();
 
     public static void init(Context context){
         instance_ = new HondaConnectManager(context);
@@ -87,6 +104,16 @@ public class HondaConnectManager {
 
     public static HondaConnectManager instance(){
         return instance_;
+    }
+
+    public void addListener(HondaListener listener) {
+        if (!listeners_.contains(listener)) {
+            listeners_.add(listener);
+        }
+    }
+
+    public void removeListener(HondaListener listener) {
+        listeners_.remove(listener);
     }
 
     @SuppressLint("WrongConstant")
@@ -102,6 +129,11 @@ public class HondaConnectManager {
         modeMgrManager_ = (ModeMgrManager) context.getSystemService(ModeMgrService);
         if (modeMgrManager_ == null){
             if (Log.isWarn()) Log.w(TAG, "modeMgrManager null");
+        }
+
+        stateMgrManager_ = (StateMgrManager) context.getSystemService(StateMgrService);
+        if (stateMgrManager_ == null) {
+            if (Log.isWarn()) Log.w(TAG, "stateMgrManager null");
         }
 
         steeringMenuServiceConnection_ = new ServiceConnection() {
@@ -209,24 +241,14 @@ public class HondaConnectManager {
             ret = modeMgrManager_.sendModeMgrOnReq(idx, ModeMgrMode.REQUEST_MODE);
             if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnReq result= " + ret);
 
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException ignored) {
-            }
-
-            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnCnf idx= " + idx + ",state = " + ModeMgrMode.CONFIRM_MODE);
-            ret = modeMgrManager_.sendModeMgrOnCnf(idx, ModeMgrMode.CONFIRM_MODE);
-            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnCnf ret = " + ret);
-
-            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus notifyModeMgrStatus idx= " + idx + ", state = " + ModeMgrMode.NOTIFY_MODE);
-            ret = modeMgrManager_.notifyModeMgrStatus(idx, ModeMgrMode.NOTIFY_MODE);
-            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus notifyModeMgrStatus ret = " + ret);
-
-            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iAudioAddr = " + modeMgrManager_.getModeMgrOnAudioAddr());
-            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iVideoAddr = " + modeMgrManager_.getModeMgrOnVideoAddr());
-
             if (Log.isDebug()) Log.d(TAG, "requestAudioFocus notifySteeringMenuDispMode");
             notifySteeringMenuDispMode(1);
+
+            try {
+                modeMgrManager_.setImidConnectStatus(1);
+            } catch (Exception e) {
+                Log.w(TAG, "Could not set i-MID connect status", e);
+            }
 
             hasAudioFocus_ = true;
         }
@@ -244,18 +266,6 @@ public class HondaConnectManager {
             if (Log.isVerbose())  Log.v(TAG, "releaseAudioFocus sendModeMgrOffReq idx= " + idx + ", state = " + ModeMgrMode.REQUEST_MODE);
             ret = modeMgrManager_.sendModeMgrOffReq(idx, ModeMgrMode.REQUEST_MODE);
             if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffReq ret= " + ret);
-
-//            if (Log.isDebug()) Log.d(TAG, "releaseAudioFocus -> wait for cond");
-//            waitForCond(500);
-
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException ignored) {
-            }
-
-            if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffCnf idx= " + idx + ", state = " + ModeMgrMode.CONFIRM_MODE);
-            ret = modeMgrManager_.sendModeMgrOffCnf(idx, ModeMgrMode.CONFIRM_MODE);
-            if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffCnf ret = " + ret);
 
             hasAudioFocus_ = false;
         }
@@ -289,6 +299,7 @@ public class HondaConnectManager {
 
             registerModeMgrCallback();
             registerSteeringMenuCallback();
+            registerStateMgrCallback();
 
             if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> hasAudioFocus= " + hasAudioFocus_);
             if (hasAudioFocus_){
@@ -298,6 +309,7 @@ public class HondaConnectManager {
             // THIRD_PARTY
             if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> using authType not PREINSTALL -> register SW callback and notify");
             registerSteeringMenuCallback();
+            registerStateMgrCallback();
             notifySteeringMenuDispMode(1);
         }
     }
@@ -306,6 +318,7 @@ public class HondaConnectManager {
     public void sendToBackground(){
         if (Log.isDebug()) Log.d(TAG, "sendToBackground -> app with auth " + pControl_.authType + " unregister SW callback");
        unregisterSteeringMenuCallback();
+       unregisterStateMgrCallback();
        notifySteeringMenuDispMode(0);
     }
 
@@ -322,6 +335,7 @@ public class HondaConnectManager {
         }
 
         unregisterSteeringMenuCallback();
+        unregisterStateMgrCallback();
         unbindToWheelService();
     }
 
@@ -500,6 +514,32 @@ public class HondaConnectManager {
         }
     }
 
+    private void registerStateMgrCallback() {
+        if (Log.isDebug()) Log.d(TAG, "registerStateMgrCallback");
+        if (stateMgrManager_ != null && stateMgrServiceCallBack_ == null) {
+            stateMgrServiceCallBack_ = new StateMgrServiceCallBack();
+            StateMgrChangeInfo info = new StateMgrChangeInfo();
+            info.dayNightStateC = true;
+            int ret = stateMgrManager_.registCallBack(stateMgrServiceCallBack_, info);
+            if (Log.isVerbose()) Log.v(TAG, "registerStateMgrCallback ret " + ret);
+
+            // Initial state check
+            StateMgrInfo currentState = stateMgrManager_.getAllState();
+            if (currentState != null) {
+                boolean isNight = currentState.dayNightState == StateMgrServiceConst.STATE_NIGHT;
+                for (HondaListener l : listeners_) l.onDayNightUpdate(isNight);
+            }
+        }
+    }
+
+    private void unregisterStateMgrCallback() {
+        if (Log.isDebug()) Log.d(TAG, "unregisterStateMgrCallback");
+        if (stateMgrManager_ != null && stateMgrServiceCallBack_ != null) {
+            stateMgrManager_.unRegistCallBack(stateMgrServiceCallBack_);
+            stateMgrServiceCallBack_ = null;
+        }
+    }
+
 //    private boolean waitForCond(int timeout){
 //        boolean res = false;
 //        try {
@@ -533,9 +573,28 @@ public class HondaConnectManager {
 
         public boolean onSteeringSWDown(int keytype) {
             if (Log.isVerbose()) Log.v(TAG, "onSteeringSWDown " + keytype);
+            for (HondaListener l : listeners_) {
+                l.onSteeringWheelKey(keytype);
+            }
             return true;
         }
     };
+
+    private class StateMgrServiceCallBack extends IStateMgrServiceCallBack.Stub {
+        private static final String TAG = "HondaConnectManager-StateMgrServiceCallBack";
+
+        @Override
+        public void onChangeState(StateMgrInfo stateMgrInfo) throws RemoteException {
+            if (Log.isVerbose()) Log.v(TAG, "onChangeState");
+            if (stateMgrInfo.updateState.dayNightStateC) {
+                boolean isNight = stateMgrInfo.dayNightState == StateMgrServiceConst.STATE_NIGHT;
+                if (Log.isDebug()) Log.d(TAG, "DayNight state changed, isNight: " + isNight);
+                for (HondaListener l : listeners_) {
+                    l.onDayNightUpdate(isNight);
+                }
+            }
+        }
+    }
 
     private class ModeMgrServiceCallBack extends IModeMgrServiceCallBack.Stub {
 

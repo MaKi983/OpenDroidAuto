@@ -42,11 +42,6 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
             if (Log.isVerbose()) Log.v(TAG, "init hondaconnection and keyholder");
             HondaConnectManager.instance().initialize();
 
-            try {
-                Thread.sleep(500);  // ugly ack to sync steering wheel service connection
-            } catch (InterruptedException ignored) {
-            }
-
             HondaConnectManager.instance().requestAudioFocus();
             keyHolder_ = (InputDevice.OnKeyHolder) getActivity();
         }
