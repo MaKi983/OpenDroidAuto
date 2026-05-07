@@ -20,7 +20,7 @@ import it.smg.hu.manager.HondaConnectManager;
 import it.smg.hu.ui.settings.KeymapFragment;
 import it.smg.libs.common.Log;
 
-public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implements View.OnTouchListener, View.OnKeyListener {
+public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implements View.OnTouchListener, View.OnKeyListener, HondaConnectManager.HondaListener {
     private static final String TAG = "InputDevice";
 
     private final Rect screenGeometry_;
@@ -83,6 +83,10 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
         }
 
         if (Log.isDebug()) Log.d(TAG, "supported button codes: " + supportedButtonCodes_);
+
+        if (settings.advanced.hondaIntegrationEnabled()) {
+            HondaConnectManager.instance().addListener(this);
+        }
     }
 
     @Keep
@@ -95,6 +99,7 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
     @Override
     public void stop() {
         if (Log.isInfo()) Log.i(TAG, "stop");
+        HondaConnectManager.instance().removeListener(this);
         releaseFocus();
         surfaceView_ = null;
         keyHolder_ = null;
@@ -206,6 +211,43 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
 
     public interface OnKeyHolder {
         void setOnKeyListener(View.OnKeyListener listener);
+    }
+
+    @Override
+    public void onDayNightUpdate(boolean isNight) {
+        // Handled by DayNightSensor
+    }
+
+    @Override
+    public void onSteeringWheelKey(int keyType) {
+        if (Log.isDebug()) Log.d(TAG, "onSteeringWheelKey: " + keyType);
+
+        // Map Honda specific key types to Android Auto button codes
+        // These are keys that might not be captured by onKey
+        int buttonCode = -1;
+        switch (keyType) {
+            case 3: // CH/TRK UP
+                buttonCode = 0x57; // NEXT
+                break;
+            case 4: // CH/TRK DOWN
+                buttonCode = 0x58; // PREV
+                break;
+            case 8: // Pick up
+                buttonCode = 0x05; // PHONE
+                break;
+            case 9: // Hang up
+                buttonCode = 0x06; // CALL_END
+                break;
+            case 10: // Talk
+                buttonCode = 0x54; // MICROPHONE_1
+                break;
+        }
+
+        if (buttonCode != -1) {
+            if (Log.isVerbose()) Log.v(TAG, "Sending button event for Honda key " + keyType + " -> " + buttonCode);
+            sendButtonEvent(0, buttonCode); // DOWN
+            sendButtonEvent(1, buttonCode); // UP
+        }
     }
 
 }
