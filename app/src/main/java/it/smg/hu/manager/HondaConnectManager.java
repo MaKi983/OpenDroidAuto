@@ -17,13 +17,25 @@ import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrServiceCallBack;
 import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrServiceSWKeyEventCallBack;
 import com.fujitsu_ten.displayaudio.modemanagement.ModeMgrManager;
 import com.fujitsu_ten.displayaudio.oom.OomManager;
+import com.fujitsu_ten.displayaudio.statemanagement.IStateMgrServiceCallBack;
+import com.fujitsu_ten.displayaudio.statemanagement.StateMgrChangeInfo;
+import com.fujitsu_ten.displayaudio.statemanagement.StateMgrInfo;
+import com.fujitsu_ten.displayaudio.statemanagement.StateMgrManager;
+import com.fujitsu_ten.displayaudio.statemanagement.StateMgrServiceConst;
 import com.fujitsu_ten.displayaudio.steeringmenuservice.service.ISteeringMenuService;
 import com.fujitsu_ten.displayaudio.steeringmenuservice.service.ISteeringMenuServiceCallback;
 import com.fujitsu_ten.displayaudio.whitelist.common.Constants;
 import com.fujitsu_ten.displayaudio.whitelist.common.IWhiteList;
 import com.fujitsu_ten.displayaudio.whitelist.common.ProcessControl;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import it.smg.hu.config.Settings;
+import it.smg.hu.ui.PlayerActivity;
 import it.smg.libs.aasdk.messenger.ChannelId;
 import it.smg.libs.common.Log;
 
@@ -43,23 +55,30 @@ public class HondaConnectManager {
     }
 
     static class ModeMgrMode {
-        public static final int REQUEST_MODE = Integer.parseInt("011111", 2); //31
-        public static final int CONFIRM_MODE = Integer.parseInt("111", 2); //7
-        public static final int NOTIFY_MODE = Integer.parseInt("11", 2); //3
-        public static final int AUDIO_MODE = Integer.parseInt("01", 2); //1
+        public static final int AUDIO_MODE = 1;
+        public static final int VIDEO_MODE = 2;
+        public static final int AUDIO_VIDEO_MODE = 3;
+//        public static final int REQUEST_MODE = Integer.parseInt("011111", 2); //31
+//        public static final int CONFIRM_MODE = Integer.parseInt("111", 2); //7
+//        public static final int NOTIFY_MODE = Integer.parseInt("11", 2); //3
+//        public static final int AUDIO_MODE = Integer.parseInt("01", 2); //1
     }
 
     private static final String TAG = "HondaConnectManager";
     private static final String ModeMgrService = "ModeMgrService";
     private static final String StateMgrService = "StateMgrService";
 
+    private static final long HEARTBEAT_INTERVAL_MS = 4000;
+    private static final int BT_MODEMGR_ADDR = 197;
+
     private static HondaConnectManager instance_;
 
     private final ModeMgrManager modeMgrManager_;
+    private final StateMgrManager stateMgrService_;
 
     private IModeMgrServiceCallBack modeMgrServiceCallBack_;
     private IModeMgrServiceSWKeyEventCallBack modeMgrServiceSWKeyEventCallBack_;
-
+    private IStateMgrServiceCallBack stateMgrServiceCallBack_;
     // SteeringWheel service
     private ISteeringMenuService steeringMenuServiceIface_;
     private final ServiceConnection steeringMenuServiceConnection_;
@@ -77,7 +96,11 @@ public class HondaConnectManager {
 
     private boolean hasAudioFocus_;
     private ProcessControl pControl_;
-//    private CountDownLatch waitCond_;
+    private CountDownLatch waitCond_;
+
+    private ScheduledExecutorService heartbeatExecutor_;
+    private ScheduledFuture<?> heartbeatFuture_;
+    private volatile int currentModeState_;
 
     private final Handler mainHandler_;
 
@@ -98,10 +121,16 @@ public class HondaConnectManager {
         boundToEcNcService_ = false;
         micVrStarted_ = false;
         mainHandler_ = new Handler(Looper.getMainLooper());
+        currentModeState_ = 0;
 
         modeMgrManager_ = (ModeMgrManager) context.getSystemService(ModeMgrService);
         if (modeMgrManager_ == null){
             if (Log.isWarn()) Log.w(TAG, "modeMgrManager null");
+        }
+
+        stateMgrService_ = (StateMgrManager) context.getSystemService(StateMgrService);
+        if (stateMgrService_ == null){
+            Log.w(TAG, "stateMgrService null");
         }
 
         steeringMenuServiceConnection_ = new ServiceConnection() {
@@ -205,22 +234,25 @@ public class HondaConnectManager {
             int idx = settings_.advanced.modeMgrAudioIdx();
             int ret;
 
-            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnReq idx= " + idx + ", mode= " + ModeMgrMode.REQUEST_MODE);
-            ret = modeMgrManager_.sendModeMgrOnReq(idx, ModeMgrMode.REQUEST_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnReq idx= " + idx + ", mode= " + ModeMgrMode.AUDIO_MODE);
+            ret = modeMgrManager_.sendModeMgrOnReq(idx, ModeMgrMode.AUDIO_MODE);
             if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnReq result= " + ret);
 
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException ignored) {
-            }
+//            try {
+//                Thread.sleep(200);
+//            } catch (InterruptedException ignored) {
+//            }
 
-            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnCnf idx= " + idx + ",state = " + ModeMgrMode.CONFIRM_MODE);
-            ret = modeMgrManager_.sendModeMgrOnCnf(idx, ModeMgrMode.CONFIRM_MODE);
-            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnCnf ret = " + ret);
+            if (Log.isDebug()) Log.d(TAG, "requestAudioFocus -> wait for cond");
+            waitForCond(500);
 
-            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus notifyModeMgrStatus idx= " + idx + ", state = " + ModeMgrMode.NOTIFY_MODE);
-            ret = modeMgrManager_.notifyModeMgrStatus(idx, ModeMgrMode.NOTIFY_MODE);
-            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus notifyModeMgrStatus ret = " + ret);
+//            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnCnf idx= " + idx + ",state = " + ModeMgrMode.CONFIRM_MODE);
+//            ret = modeMgrManager_.sendModeMgrOnCnf(idx, ModeMgrMode.CONFIRM_MODE);
+//            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus sendModeMgrOnCnf ret = " + ret);
+//
+//            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus notifyModeMgrStatus idx= " + idx + ", state = " + ModeMgrMode.NOTIFY_MODE);
+//            ret = modeMgrManager_.notifyModeMgrStatus(idx, ModeMgrMode.NOTIFY_MODE);
+//            if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus notifyModeMgrStatus ret = " + ret);
 
             if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iAudioAddr = " + modeMgrManager_.getModeMgrOnAudioAddr());
             if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iVideoAddr = " + modeMgrManager_.getModeMgrOnVideoAddr());
@@ -241,21 +273,21 @@ public class HondaConnectManager {
             int idx = settings_.advanced.modeMgrAudioIdx();
             int ret;
 
-            if (Log.isVerbose())  Log.v(TAG, "releaseAudioFocus sendModeMgrOffReq idx= " + idx + ", state = " + ModeMgrMode.REQUEST_MODE);
-            ret = modeMgrManager_.sendModeMgrOffReq(idx, ModeMgrMode.REQUEST_MODE);
+            if (Log.isVerbose())  Log.v(TAG, "releaseAudioFocus sendModeMgrOffReq idx= " + idx + ", state = " + ModeMgrMode.AUDIO_MODE);
+            ret = modeMgrManager_.sendModeMgrOffReq(idx, ModeMgrMode.AUDIO_MODE);
             if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffReq ret= " + ret);
 
-//            if (Log.isDebug()) Log.d(TAG, "releaseAudioFocus -> wait for cond");
-//            waitForCond(500);
+            if (Log.isDebug()) Log.d(TAG, "releaseAudioFocus -> wait for cond");
+            waitForCond(500);
 
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException ignored) {
-            }
+//            try {
+//                Thread.sleep(200);
+//            } catch (InterruptedException ignored) {
+//            }
 
-            if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffCnf idx= " + idx + ", state = " + ModeMgrMode.CONFIRM_MODE);
-            ret = modeMgrManager_.sendModeMgrOffCnf(idx, ModeMgrMode.CONFIRM_MODE);
-            if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffCnf ret = " + ret);
+//            if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffCnf idx= " + idx + ", state = " + ModeMgrMode.CONFIRM_MODE);
+//            ret = modeMgrManager_.sendModeMgrOffCnf(idx, ModeMgrMode.CONFIRM_MODE);
+//            if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffCnf ret = " + ret);
 
             hasAudioFocus_ = false;
         }
@@ -326,6 +358,11 @@ public class HondaConnectManager {
     }
 
     private void notifySteeringMenuDispMode(int mode){
+        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL && settings_.advanced.modeMgrAudioIdx() != BT_MODEMGR_ADDR) {
+            if (Log.isDebug()) Log.d(TAG, "notifySteeringMenuDispMode -> modeMgrAudioIdx ( " + settings_.advanced.modeMgrAudioIdx() + " ) == BT_MODEMGR_ADDR => return");
+            return;
+        }
+
         if (Log.isDebug()) Log.d(TAG, "notifySteeringMenuDispMode -> boundToSteeringMenuService= " + boundToSteeringMenuService_);
         if (boundToSteeringMenuService_) {
             try {
@@ -479,12 +516,19 @@ public class HondaConnectManager {
     private void unregisterModeMgrCallback() {
         if (Log.isVerbose()) Log.v(TAG, "unregisterModeMgrCallback");
 
-        int idx = settings_.advanced.modeMgrAudioIdx();
-        if (Log.isVerbose()) Log.v(TAG, "unregisterModeMgrCallback idx " + idx);
-        int ret = modeMgrManager_.unregisterModeMgrCallback(idx);
-        if (Log.isVerbose()) Log.v(TAG, "unregisterModeMgrCallback ret " + ret);
+        if (modeMgrManager_ != null) {
+            int idx = settings_.advanced.modeMgrAudioIdx();
+            if (Log.isVerbose()) Log.v(TAG, "unregisterModeMgrCallback idx " + idx);
+            int ret = modeMgrManager_.unregisterModeMgrCallback(idx);
+            if (Log.isVerbose()) Log.v(TAG, "unregisterModeMgrCallback ret " + ret);
+            modeMgrServiceCallBack_ = null;
 
-        modeMgrServiceCallBack_ = null;
+            if (stateMgrService_ != null){
+                if (Log.isVerbose()) Log.v(TAG, "stateMgrService_ unRegistCallBack");
+                stateMgrService_.unRegistCallBack(stateMgrServiceCallBack_);
+                stateMgrServiceCallBack_ = null;
+            }
+        }
     }
 
     private void registerModeMgrCallback(){
@@ -495,28 +539,177 @@ public class HondaConnectManager {
             modeMgrServiceCallBack_ = new ModeMgrServiceCallBack();
             int ret = modeMgrManager_.registerModeMgrCallback(idx, modeMgrServiceCallBack_);
             if (Log.isVerbose()) Log.v(TAG, "registerModeMgrCallback ret " + ret);
+
+            if (stateMgrService_ != null){
+                StateMgrChangeInfo changeInfo = createStateMgrChangeInfo();
+                stateMgrServiceCallBack_ = new StateMgrServiceCallBack();
+                stateMgrService_.registCallBack(stateMgrServiceCallBack_, changeInfo);
+            }
         } else {
             Log.w(TAG, "modeMgrManager_ null -> do nothing");
         }
     }
 
-//    private boolean waitForCond(int timeout){
-//        boolean res = false;
-//        try {
-//            waitCond_ = new CountDownLatch(1);
-//            res = waitCond_.await(timeout, TimeUnit.MILLISECONDS);
-//            if (!res) {
-//                if (Log.isWarn()) Log.w(TAG, "timeout in waiting condition");
-//            }
-//        } catch (InterruptedException e) {
-//            Log.e(TAG, "error in wait condition", e);
-//        }
-//
-//        if (Log.isVerbose()) Log.v(TAG, "received conf/notify condition");
-//        waitCond_ = null;
-//
-//        return res;
-//    }
+    private StateMgrChangeInfo createStateMgrChangeInfo(){
+        StateMgrChangeInfo changeInfo = new StateMgrChangeInfo();
+        changeInfo.audioAddressC = true;
+        changeInfo.rdsInterruptC = false;
+        changeInfo.rdsAlarmInterruptC = false;
+        changeInfo.videoAddressC = true;
+        changeInfo.functionInfoC = false;
+        changeInfo.openingScreenC = false;
+        changeInfo.disclaimerC = false;
+        changeInfo.languageC = false;
+        changeInfo.antitheftC = false;
+        changeInfo.inlineDiagC = false;
+        changeInfo.volumePanelC = false;
+        changeInfo.brightnessBarC = false;
+        changeInfo.sourceFlowC = false;
+        changeInfo.steeringMenuC = false;
+        changeInfo.steeringPopUpC = false;
+        changeInfo.audioLauncherC = false;
+        changeInfo.iMidC = false;
+        changeInfo.hftPopupC = false;
+        changeInfo.screenOffC = true;
+        changeInfo.usbPopupC = false;
+        changeInfo.parkingSensorC = false;
+        changeInfo.highTemperatureDetectionC = false;
+        changeInfo.usbOvercurrentC = false;
+        changeInfo.keyOffTimerAdvanceC = false;
+        changeInfo.keyOffTimerExpirationC = false;
+        changeInfo.lastVideoAddressC = true;
+        changeInfo.videoResumeCompletedC = true;
+        changeInfo.lastAudioAddressC = false;
+        changeInfo.audioResumeCompletedC = false;
+        changeInfo.hftStateC = false;
+        changeInfo.steeringDispKeyC = false;
+        changeInfo.headerInterruptC = false;
+
+        return changeInfo;
+    }
+
+    private boolean waitForCond(int timeout){
+        boolean res = false;
+        try {
+            waitCond_ = new CountDownLatch(1);
+            res = waitCond_.await(timeout, TimeUnit.MILLISECONDS);
+            if (!res) {
+                if (Log.isWarn()) Log.w(TAG, "timeout in waiting condition");
+            }
+        } catch (InterruptedException e) {
+            Log.e(TAG, "error in wait condition", e);
+        }
+
+        if (Log.isVerbose()) Log.v(TAG, "received conf/notify condition");
+        waitCond_ = null;
+
+        return res;
+    }
+
+    private void startHeartbeat() {
+        stopHeartbeat();
+
+        heartbeatExecutor_ = Executors.newSingleThreadScheduledExecutor();
+
+        heartbeatFuture_ = heartbeatExecutor_.scheduleWithFixedDelay(() -> {
+            if (modeMgrManager_ != null && currentModeState_ != 0) {
+                int idx = settings_.advanced.modeMgrAudioIdx();
+                if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus idx= " + idx + ", state = " + currentModeState_);
+                int ret = modeMgrManager_.notifyModeMgrStatus(idx, currentModeState_);
+                if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus ret = " + ret);
+            }
+        }, HEARTBEAT_INTERVAL_MS, HEARTBEAT_INTERVAL_MS, TimeUnit.MILLISECONDS);
+    }
+
+    private void stopHeartbeat() {
+        if (heartbeatExecutor_ != null) {
+            heartbeatFuture_.cancel(false);
+            heartbeatFuture_ = null;
+        }
+        if (heartbeatExecutor_ != null) {
+            heartbeatExecutor_.shutdownNow();
+            heartbeatExecutor_ = null;
+        }
+    }
+
+    private void dumpStateMgr(StateMgrInfo info){
+        if (info != null){
+            if (info.updateState != null){
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.antitheftC " + info.updateState.antitheftC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.audioAddressC " + info.updateState.audioAddressC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.audioLauncherC " + info.updateState.audioLauncherC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.audioResumeCompletedC " + info.updateState.audioResumeCompletedC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.brightnessBarC " + info.updateState.brightnessBarC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.dayNightStateC " + info.updateState.dayNightStateC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.disclaimerC " + info.updateState.disclaimerC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.functionInfoC " + info.updateState.functionInfoC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.headerInterruptC " + info.updateState.headerInterruptC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.hftPopupC " + info.updateState.hftPopupC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.hftStateC " + info.updateState.hftStateC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.highTemperatureDetectionC " + info.updateState.highTemperatureDetectionC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.iMidC " + info.updateState.iMidC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.inlineDiagC " + info.updateState.inlineDiagC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.keyOffTimerAdvanceC " + info.updateState.keyOffTimerAdvanceC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.keyOffTimerExpirationC " + info.updateState.keyOffTimerExpirationC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.languageC " + info.updateState.languageC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.lastAudioAddressC " + info.updateState.lastAudioAddressC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.lastVideoAddressC " + info.updateState.lastVideoAddressC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.lcdAdjustStateC " + info.updateState.lcdAdjustStateC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.openingScreenC " + info.updateState.openingScreenC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.parkingSensorC " + info.updateState.parkingSensorC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.rdsAlarmInterruptC " + info.updateState.rdsAlarmInterruptC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.rdsInterruptC " + info.updateState.rdsInterruptC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.screenOffC " + info.updateState.screenOffC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.siriStateC " + info.updateState.siriStateC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.sourceFlowC " + info.updateState.sourceFlowC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.steeringDispKeyC " + info.updateState.steeringDispKeyC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.steeringMenuC " + info.updateState.steeringMenuC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.steeringPopUpC " + info.updateState.steeringPopUpC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.usbOvercurrentC " + info.updateState.usbOvercurrentC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.usbPopupC " + info.updateState.usbPopupC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.videoAddressC " + info.updateState.videoAddressC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.videoResumeCompletedC " + info.updateState.videoResumeCompletedC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.voiceTagStateC " + info.updateState.voiceTagStateC);
+                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.volumePanelC " + info.updateState.volumePanelC);
+            }
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.antitheft " + info.antitheft);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.audioAddress " + info.audioAddress);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.audioLauncher " + info.audioLauncher);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.functionInfo " + info.functionInfo);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.brightnessBar " + info.brightnessBar);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.audioResumeCompleted " + info.audioResumeCompleted);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.dayNightState " + info.dayNightState);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.disclaimer " + info.disclaimer);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.headerInterrupt " + info.headerInterrupt);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.hftPopup " + info.hftPopup);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.hftState " + info.hftState);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.highTemperatureDetection " + info.highTemperatureDetection);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.iMid " + info.iMid);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.inlineDiag " + info.inlineDiag);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.keyOffTimerAdvance " + info.keyOffTimerAdvance);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.keyOffTimerExpiration " + info.keyOffTimerExpiration);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.language " + info.language);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.lastAudioAddress " + info.lastAudioAddress);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.lastVideoAddress " + info.lastVideoAddress);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.lcdAdjustState " + info.lcdAdjustState);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.openingScreen " + info.openingScreen);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.parkingSensor " + info.parkingSensor);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.rdsAlarmInterrupt " + info.rdsAlarmInterrupt);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.rdsInterrupt " + info.rdsInterrupt);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.screenOff " + info.screenOff);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.siriState " + info.siriState);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.sourceFlow " + info.sourceFlow);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.steeringDispKey " + info.steeringDispKey);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.steeringMenu " + info.steeringMenu);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.steeringPopUp " + info.steeringPopUp);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.usbOvercurrent " + info.usbOvercurrent);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.usbPopup " + info.usbPopup);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.videoAddress " + info.videoAddress);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.videoResumeCompleted " + info.videoResumeCompleted);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.voiceTagState " + info.voiceTagState);
+            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.volumePanel " + info.volumePanel);
+        }
+    }
 
     private class SteeringMenuServiceCallback extends ISteeringMenuServiceCallback.Stub {
         private static final String TAG = "HondaConnectManager-ISteeringMenuServiceCallback";
@@ -537,6 +730,33 @@ public class HondaConnectManager {
         }
     };
 
+    private class StateMgrServiceCallBack extends IStateMgrServiceCallBack.Stub {
+        private static final String TAG = "HondaConnectManager-IStateMgrServiceCallBack";
+
+        public void onChangeState(StateMgrInfo info) {
+            Log.v(TAG, "onChangeState");
+
+            StateMgrChangeInfo changed = info.updateState;
+            if (changed == null) return;
+
+            dumpStateMgr(info);
+
+            if (changed.videoResumeCompletedC) {
+                Log.v(TAG, "videoResumeCompleted=" + info.videoResumeCompleted);
+
+                if (info.videoResumeCompleted == StateMgrServiceConst.STATE_COMPLETED) {
+                    Log.v(TAG, "videoResumeCompleted state completed");
+                    if (info.lastVideoAddress == 92) {
+                        Log.v(TAG, "videoResumeCompleted restore activity");
+                        Intent i = new Intent(context_, PlayerActivity.class);
+                        i.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        context_.startActivity(i);
+                    }
+                }
+            }
+        }
+    };
+
     private class ModeMgrServiceCallBack extends IModeMgrServiceCallBack.Stub {
 
         private static final String TAG = "HondaConnectManager-ModeMgrServiceCallBack";
@@ -545,20 +765,24 @@ public class HondaConnectManager {
             if (Log.isVerbose()) Log.v(TAG, "rcvOnInsCmd modestate = " + modestate);
             int idx = settings_.advanced.modeMgrAudioIdx();
 
-            if (Log.isVerbose()) Log.v(TAG, "sendModeMgrOnCnf idx= " + idx + ",state = " + HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
-            int ret = modeMgrManager_.sendModeMgrOnCnf(idx, HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "sendModeMgrOnCnf idx= " + idx + ",state = " + modestate);
+            int ret = modeMgrManager_.sendModeMgrOnCnf(idx, modestate);
             if (Log.isVerbose()) Log.v(TAG, "sendModeMgrOnCnf ret = " + ret);
 
-            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus idx= " + idx + ", state = " + HondaConnectManager.ModeMgrMode.NOTIFY_MODE);
-            ret = modeMgrManager_.notifyModeMgrStatus(idx, HondaConnectManager.ModeMgrMode.NOTIFY_MODE);
-            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus ret = " + ret);
+//            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus idx= " + idx + ", state = " + HondaConnectManager.ModeMgrMode.NOTIFY_MODE);
+//            ret = modeMgrManager_.notifyModeMgrStatus(idx, HondaConnectManager.ModeMgrMode.NOTIFY_MODE);
+//            if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus ret = " + ret);
 
             if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iAudioAddr = " + modeMgrManager_.getModeMgrOnAudioAddr());
             if (Log.isVerbose()) Log.v(TAG, "notifyModeMgrStatus iVideoAddr = " + modeMgrManager_.getModeMgrOnVideoAddr());
 
-//            if (waitCond_ != null) {
-//                waitCond_.countDown();
-//            }
+            // Aggiorna il modestate e avvia/aggiorna il heartbeat
+            currentModeState_ |= modestate;
+            startHeartbeat();
+
+            if (waitCond_ != null) {
+                waitCond_.countDown();
+            }
 
         }
 
@@ -570,13 +794,22 @@ public class HondaConnectManager {
             if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd sound_param= " + sound_param + " image_param= " + image_param);
 
             int idx = settings_.advanced.modeMgrAudioIdx();
-            if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd sendModeMgrOffCnf idx= " + idx + ", state = " + HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
-            int ret = modeMgrManager_.sendModeMgrOffCnf(idx, HondaConnectManager.ModeMgrMode.CONFIRM_MODE);
+            if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd sendModeMgrOffCnf idx= " + idx + ", state = " + modestate);
+            int ret = modeMgrManager_.sendModeMgrOffCnf(idx, modestate);
             if (Log.isVerbose()) Log.v(TAG, "rcvOffInsCmd sendModeMgrOffCnf ret = " + ret);
 
-//            if (waitCond_ != null) {
-//                waitCond_.countDown();
-//            }
+            // Rimuovi i bit revocati dallo stato corrente
+            currentModeState_ &= ~modestate;
+
+            if (currentModeState_ == 0) {
+                stopHeartbeat();
+            } else {
+                startHeartbeat();
+            }
+
+            if (waitCond_ != null) {
+                waitCond_.countDown();
+            }
 
 //            if (sound_param == 1 && image_param == 0) {
 //                int ret = modeMgrManager_.sendModeMgrOffReq(settings_.advanced.modeMgrAudioIdx(), ModeMgrMode.REQUEST_MODE.mode);
