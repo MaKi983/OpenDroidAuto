@@ -358,7 +358,7 @@ public class HondaConnectManager {
     }
 
     private void notifySteeringMenuDispMode(int mode){
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL && settings_.advanced.modeMgrAudioIdx() != BT_MODEMGR_ADDR) {
+        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL && settings_.advanced.modeMgrAudioIdx() == BT_MODEMGR_ADDR) {
             if (Log.isDebug()) Log.d(TAG, "notifySteeringMenuDispMode -> modeMgrAudioIdx ( " + settings_.advanced.modeMgrAudioIdx() + " ) == BT_MODEMGR_ADDR => return");
             return;
         }
