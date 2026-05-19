@@ -759,7 +759,7 @@ public class HondaConnectManager {
                         Log.v(TAG, "coming from reverse camera -> restore activity");
                         mainHandler_.post(() -> {
                             Toast.makeText(context_, "lastVideoAddress " + info.lastVideoAddress, Toast.LENGTH_SHORT).show();
-                        })
+                        });
                         Intent i = new Intent(context_, PlayerActivity.class);
                         i.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         context_.startActivity(i);
