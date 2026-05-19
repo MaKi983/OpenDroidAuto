@@ -94,6 +94,7 @@ public class HondaConnectManager {
     private final Context context_;
     private final Settings settings_;
 
+    private boolean isRunning_;
     private boolean hasAudioFocus_;
     private ProcessControl pControl_;
     private CountDownLatch waitCond_;
@@ -120,6 +121,7 @@ public class HondaConnectManager {
         hasAudioFocus_ = false;
         boundToEcNcService_ = false;
         micVrStarted_ = false;
+        isRunning_ = false;
         mainHandler_ = new Handler(Looper.getMainLooper());
         currentModeState_ = 0;
 
@@ -319,6 +321,8 @@ public class HondaConnectManager {
         if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
             if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> app auth = preinstall -> register ModeMgr and SW callback");
 
+            isRunning_ = true;
+
             registerModeMgrCallback();
             registerSteeringMenuCallback();
 
@@ -349,6 +353,9 @@ public class HondaConnectManager {
 
         if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
             if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> auth PREINSTALL -> release audio and unregister modemgr callback");
+
+            isRunning_ = false;
+
             releaseAudioFocus();
             unregisterModeMgrCallback();
         }
@@ -578,7 +585,7 @@ public class HondaConnectManager {
         changeInfo.keyOffTimerAdvanceC = false;
         changeInfo.keyOffTimerExpirationC = false;
         changeInfo.lastVideoAddressC = true;
-        changeInfo.videoResumeCompletedC = true;
+        changeInfo.videoResumeCompletedC = false;
         changeInfo.lastAudioAddressC = false;
         changeInfo.audioResumeCompletedC = false;
         changeInfo.hftStateC = false;
@@ -633,81 +640,83 @@ public class HondaConnectManager {
     }
 
     private void dumpStateMgr(StateMgrInfo info){
-        if (info != null){
-            if (info.updateState != null){
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.antitheftC " + info.updateState.antitheftC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.audioAddressC " + info.updateState.audioAddressC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.audioLauncherC " + info.updateState.audioLauncherC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.audioResumeCompletedC " + info.updateState.audioResumeCompletedC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.brightnessBarC " + info.updateState.brightnessBarC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.dayNightStateC " + info.updateState.dayNightStateC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.disclaimerC " + info.updateState.disclaimerC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.functionInfoC " + info.updateState.functionInfoC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.headerInterruptC " + info.updateState.headerInterruptC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.hftPopupC " + info.updateState.hftPopupC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.hftStateC " + info.updateState.hftStateC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.highTemperatureDetectionC " + info.updateState.highTemperatureDetectionC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.iMidC " + info.updateState.iMidC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.inlineDiagC " + info.updateState.inlineDiagC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.keyOffTimerAdvanceC " + info.updateState.keyOffTimerAdvanceC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.keyOffTimerExpirationC " + info.updateState.keyOffTimerExpirationC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.languageC " + info.updateState.languageC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.lastAudioAddressC " + info.updateState.lastAudioAddressC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.lastVideoAddressC " + info.updateState.lastVideoAddressC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.lcdAdjustStateC " + info.updateState.lcdAdjustStateC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.openingScreenC " + info.updateState.openingScreenC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.parkingSensorC " + info.updateState.parkingSensorC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.rdsAlarmInterruptC " + info.updateState.rdsAlarmInterruptC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.rdsInterruptC " + info.updateState.rdsInterruptC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.screenOffC " + info.updateState.screenOffC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.siriStateC " + info.updateState.siriStateC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.sourceFlowC " + info.updateState.sourceFlowC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.steeringDispKeyC " + info.updateState.steeringDispKeyC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.steeringMenuC " + info.updateState.steeringMenuC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.steeringPopUpC " + info.updateState.steeringPopUpC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.usbOvercurrentC " + info.updateState.usbOvercurrentC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.usbPopupC " + info.updateState.usbPopupC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.videoAddressC " + info.updateState.videoAddressC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.videoResumeCompletedC " + info.updateState.videoResumeCompletedC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.voiceTagStateC " + info.updateState.voiceTagStateC);
-                if (Log.isVerbose()) Log.v(TAG, "StateMgrChangeInfo updateState.volumePanelC " + info.updateState.volumePanelC);
+        if (Log.isVerbose()) {
+            if (info != null) {
+                if (info.updateState != null) {
+                    Log.v(TAG, "StateMgrChangeInfo updateState.antitheftC " + info.updateState.antitheftC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.audioAddressC " + info.updateState.audioAddressC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.audioLauncherC " + info.updateState.audioLauncherC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.audioResumeCompletedC " + info.updateState.audioResumeCompletedC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.brightnessBarC " + info.updateState.brightnessBarC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.dayNightStateC " + info.updateState.dayNightStateC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.disclaimerC " + info.updateState.disclaimerC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.functionInfoC " + info.updateState.functionInfoC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.headerInterruptC " + info.updateState.headerInterruptC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.hftPopupC " + info.updateState.hftPopupC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.hftStateC " + info.updateState.hftStateC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.highTemperatureDetectionC " + info.updateState.highTemperatureDetectionC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.iMidC " + info.updateState.iMidC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.inlineDiagC " + info.updateState.inlineDiagC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.keyOffTimerAdvanceC " + info.updateState.keyOffTimerAdvanceC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.keyOffTimerExpirationC " + info.updateState.keyOffTimerExpirationC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.languageC " + info.updateState.languageC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.lastAudioAddressC " + info.updateState.lastAudioAddressC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.lastVideoAddressC " + info.updateState.lastVideoAddressC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.lcdAdjustStateC " + info.updateState.lcdAdjustStateC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.openingScreenC " + info.updateState.openingScreenC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.parkingSensorC " + info.updateState.parkingSensorC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.rdsAlarmInterruptC " + info.updateState.rdsAlarmInterruptC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.rdsInterruptC " + info.updateState.rdsInterruptC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.screenOffC " + info.updateState.screenOffC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.siriStateC " + info.updateState.siriStateC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.sourceFlowC " + info.updateState.sourceFlowC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.steeringDispKeyC " + info.updateState.steeringDispKeyC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.steeringMenuC " + info.updateState.steeringMenuC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.steeringPopUpC " + info.updateState.steeringPopUpC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.usbOvercurrentC " + info.updateState.usbOvercurrentC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.usbPopupC " + info.updateState.usbPopupC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.videoAddressC " + info.updateState.videoAddressC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.videoResumeCompletedC " + info.updateState.videoResumeCompletedC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.voiceTagStateC " + info.updateState.voiceTagStateC);
+                    Log.v(TAG, "StateMgrChangeInfo updateState.volumePanelC " + info.updateState.volumePanelC);
+                }
+                Log.v(TAG, "StateMgrInfo info.antitheft " + info.antitheft);
+                Log.v(TAG, "StateMgrInfo info.audioAddress " + info.audioAddress);
+                Log.v(TAG, "StateMgrInfo info.audioLauncher " + info.audioLauncher);
+                Log.v(TAG, "StateMgrInfo info.functionInfo " + info.functionInfo);
+                Log.v(TAG, "StateMgrInfo info.brightnessBar " + info.brightnessBar);
+                Log.v(TAG, "StateMgrInfo info.audioResumeCompleted " + info.audioResumeCompleted);
+                Log.v(TAG, "StateMgrInfo info.dayNightState " + info.dayNightState);
+                Log.v(TAG, "StateMgrInfo info.disclaimer " + info.disclaimer);
+                Log.v(TAG, "StateMgrInfo info.headerInterrupt " + info.headerInterrupt);
+                Log.v(TAG, "StateMgrInfo info.hftPopup " + info.hftPopup);
+                Log.v(TAG, "StateMgrInfo info.hftState " + info.hftState);
+                Log.v(TAG, "StateMgrInfo info.highTemperatureDetection " + info.highTemperatureDetection);
+                Log.v(TAG, "StateMgrInfo info.iMid " + info.iMid);
+                Log.v(TAG, "StateMgrInfo info.inlineDiag " + info.inlineDiag);
+                Log.v(TAG, "StateMgrInfo info.keyOffTimerAdvance " + info.keyOffTimerAdvance);
+                Log.v(TAG, "StateMgrInfo info.keyOffTimerExpiration " + info.keyOffTimerExpiration);
+                Log.v(TAG, "StateMgrInfo info.language " + info.language);
+                Log.v(TAG, "StateMgrInfo info.lastAudioAddress " + info.lastAudioAddress);
+                Log.v(TAG, "StateMgrInfo info.lastVideoAddress " + info.lastVideoAddress);
+                Log.v(TAG, "StateMgrInfo info.lcdAdjustState " + info.lcdAdjustState);
+                Log.v(TAG, "StateMgrInfo info.openingScreen " + info.openingScreen);
+                Log.v(TAG, "StateMgrInfo info.parkingSensor " + info.parkingSensor);
+                Log.v(TAG, "StateMgrInfo info.rdsAlarmInterrupt " + info.rdsAlarmInterrupt);
+                Log.v(TAG, "StateMgrInfo info.rdsInterrupt " + info.rdsInterrupt);
+                Log.v(TAG, "StateMgrInfo info.screenOff " + info.screenOff);
+                Log.v(TAG, "StateMgrInfo info.siriState " + info.siriState);
+                Log.v(TAG, "StateMgrInfo info.sourceFlow " + info.sourceFlow);
+                Log.v(TAG, "StateMgrInfo info.steeringDispKey " + info.steeringDispKey);
+                Log.v(TAG, "StateMgrInfo info.steeringMenu " + info.steeringMenu);
+                Log.v(TAG, "StateMgrInfo info.steeringPopUp " + info.steeringPopUp);
+                Log.v(TAG, "StateMgrInfo info.usbOvercurrent " + info.usbOvercurrent);
+                Log.v(TAG, "StateMgrInfo info.usbPopup " + info.usbPopup);
+                Log.v(TAG, "StateMgrInfo info.videoAddress " + info.videoAddress);
+                Log.v(TAG, "StateMgrInfo info.videoResumeCompleted " + info.videoResumeCompleted);
+                Log.v(TAG, "StateMgrInfo info.voiceTagState " + info.voiceTagState);
+                Log.v(TAG, "StateMgrInfo info.volumePanel " + info.volumePanel);
             }
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.antitheft " + info.antitheft);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.audioAddress " + info.audioAddress);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.audioLauncher " + info.audioLauncher);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.functionInfo " + info.functionInfo);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.brightnessBar " + info.brightnessBar);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.audioResumeCompleted " + info.audioResumeCompleted);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.dayNightState " + info.dayNightState);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.disclaimer " + info.disclaimer);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.headerInterrupt " + info.headerInterrupt);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.hftPopup " + info.hftPopup);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.hftState " + info.hftState);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.highTemperatureDetection " + info.highTemperatureDetection);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.iMid " + info.iMid);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.inlineDiag " + info.inlineDiag);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.keyOffTimerAdvance " + info.keyOffTimerAdvance);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.keyOffTimerExpiration " + info.keyOffTimerExpiration);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.language " + info.language);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.lastAudioAddress " + info.lastAudioAddress);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.lastVideoAddress " + info.lastVideoAddress);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.lcdAdjustState " + info.lcdAdjustState);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.openingScreen " + info.openingScreen);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.parkingSensor " + info.parkingSensor);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.rdsAlarmInterrupt " + info.rdsAlarmInterrupt);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.rdsInterrupt " + info.rdsInterrupt);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.screenOff " + info.screenOff);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.siriState " + info.siriState);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.sourceFlow " + info.sourceFlow);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.steeringDispKey " + info.steeringDispKey);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.steeringMenu " + info.steeringMenu);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.steeringPopUp " + info.steeringPopUp);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.usbOvercurrent " + info.usbOvercurrent);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.usbPopup " + info.usbPopup);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.videoAddress " + info.videoAddress);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.videoResumeCompleted " + info.videoResumeCompleted);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.voiceTagState " + info.voiceTagState);
-            if (Log.isVerbose()) Log.v(TAG, "StateMgrInfo info.volumePanel " + info.volumePanel);
         }
     }
 
@@ -734,26 +743,42 @@ public class HondaConnectManager {
         private static final String TAG = "HondaConnectManager-IStateMgrServiceCallBack";
 
         public void onChangeState(StateMgrInfo info) {
-            Log.v(TAG, "onChangeState");
+            if (Log.isVerbose()) Log.v(TAG, "onChangeState");
 
             StateMgrChangeInfo changed = info.updateState;
             if (changed == null) return;
 
             dumpStateMgr(info);
 
-            if (changed.videoResumeCompletedC) {
-                Log.v(TAG, "videoResumeCompleted=" + info.videoResumeCompleted);
+            if (changed.lastAudioAddressC){
+                if (Log.isVerbose()) Log.v(TAG, "videoAddress=" + info.videoAddress);
+                if (Log.isVerbose()) Log.v(TAG, "lastVideoAddress=" + info.lastVideoAddress);
 
-                if (info.videoResumeCompleted == StateMgrServiceConst.STATE_COMPLETED) {
-                    Log.v(TAG, "videoResumeCompleted state completed");
-                    if (info.lastVideoAddress == 92) {
-                        Log.v(TAG, "videoResumeCompleted restore activity");
+                if (info.lastVideoAddress == 92 && isRunning_){
+                    if (Log.isVerbose()){
+                        Log.v(TAG, "coming from reverse camera -> restore activity");
+                        mainHandler_.post(() -> {
+                            Toast.makeText(context_, "lastVideoAddress " + info.lastVideoAddress, Toast.LENGTH_SHORT).show();
+                        })
                         Intent i = new Intent(context_, PlayerActivity.class);
                         i.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         context_.startActivity(i);
                     }
                 }
             }
+//            if (changed.videoResumeCompletedC) {
+//                Log.v(TAG, "videoResumeCompleted=" + info.videoResumeCompleted);
+//
+//                if (info.videoResumeCompleted == StateMgrServiceConst.STATE_COMPLETED) {
+//                    Log.v(TAG, "videoResumeCompleted state completed");
+//                    if (info.lastVideoAddress == 92) {
+//                        Log.v(TAG, "videoResumeCompleted restore activity");
+//                        Intent i = new Intent(context_, PlayerActivity.class);
+//                        i.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//                        context_.startActivity(i);
+//                    }
+//                }
+//            }
         }
     };
 
