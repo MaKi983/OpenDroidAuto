@@ -511,7 +511,7 @@ public class Settings {
         public final static boolean ADVANCED_ENABLE_HONDA_MIC_VR_DEFAULT_VALUE = true;
         public final static String ADVANCED_SW_MODE_DEFAULT_VALUE = "SW SERVICE";
         public final static int ADVANCED_MODEMGRAUDIO_IDX_DEFAULT_VALUE = 213; // 223 appmode, 220 appmodepic, 213 3rd party, 214 3rd party pic, 197 bt, 92 cam, 98 cd, 196 dab, 216 hdmi, 201 ipod, 222 mirrolink, 221 mirrorlink pic, 255 off, 87 phone, 198 tel rcv, 199 usb audio, 133 voicetag, 136 siri, 96 radio
-        public final static int ADVANCED_SW_IDX_DEFAULT_VALUE = 160; // 258 source, 263 source header, 259 disp, 260 menu, 265 launcher, 266 imid, 160 verified for HR-V 2016
+        public final static int ADVANCED_SW_IDX_DEFAULT_VALUE = 260; // 258 source, 263 source header, 259 disp, 260 menu, 265 launcher, 266 imid, 260 verified for HR-V 2016
 
         public void logDir(String logDir){
             SP.edit().putString(ADVANCED_LOG_DIR, logDir).apply();
