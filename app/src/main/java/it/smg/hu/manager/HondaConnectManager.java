@@ -160,12 +160,31 @@ public class HondaConnectManager {
         steeringMenuServiceConnection_ = new ServiceConnection() {
             private static final String TAG = "HondaConnectManager-steeringServiceConnection";
 
+            private IBinder.DeathRecipient deathRecipient = new IBinder.DeathRecipient() {
+                @Override
+                public void binderDied() {
+                    Log.e(TAG, "SteeringMenuService DIED! Unbinding and attempting recovery.");
+                    boundToSteeringMenuService_ = false;
+                    steeringMenuServiceIface_ = null;
+                    steeringMenuServiceCallback_ = null;
+                    try {
+                        context_.unbindService(steeringMenuServiceConnection_);
+                    } catch (Exception e) {}
+                }
+            };
+
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 try {
                     if (Log.isVerbose()) Log.v(TAG, "Honda Wheel Service connected");
                     boundToSteeringMenuService_ = true;
                     steeringMenuServiceIface_ = ISteeringMenuService.Stub.asInterface(service);
+
+                    try {
+                        service.linkToDeath(deathRecipient, 0);
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "Failed to link to death for Wheel Service", e);
+                    }
 
                     int idx = settings_.advanced.steeringWheelIdx();
                     mainHandler_.post(() -> {
@@ -201,12 +220,31 @@ public class HondaConnectManager {
         ecNcServiceConnection_ = new ServiceConnection() {
             private static final String TAG = "HondaConnectManager-ecNcServiceConnection";
 
+            private IBinder.DeathRecipient deathRecipient = new IBinder.DeathRecipient() {
+                @Override
+                public void binderDied() {
+                    Log.e(TAG, "EcNcService DIED! Unbinding and attempting recovery.");
+                    boundToEcNcService_ = false;
+                    ecNcServiceIface_ = null;
+                    micVrStarted_ = false;
+                    try {
+                        context_.unbindService(ecNcServiceConnection_);
+                    } catch (Exception e) {}
+                }
+            };
+
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 try {
                     if (Log.isVerbose()) Log.v(TAG, "Honda EcNc Service connected");
                     boundToEcNcService_ = true;
                     ecNcServiceIface_ = IEcNcService.Stub.asInterface(service);
+                    
+                    try {
+                        service.linkToDeath(deathRecipient, 0);
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "Failed to link to death for EcNc Service", e);
+                    }
                 } catch (Throwable t) {
                     Log.e(TAG, "Error in onServiceConnected EcNc", t);
                 }
@@ -283,10 +321,8 @@ public class HondaConnectManager {
             return;
         }
         if (Log.isDebug()) Log.d(TAG, "requestAudioFocus -> app with auth " + pControl_.authType);
-        if (Log.isVerbose()) Log.v(TAG, "requestAudioFocus modeMgr audio hasAudioFocus= " + hasAudioFocus_);
-
-        // If AUTH_TYPE <> preinstall the app has already audio focus
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL && !hasAudioFocus_) {
+        
+        if (!hasAudioFocus_) {
             int idx = settings_.advanced.modeMgrAudioIdx();
             int ret;
 
@@ -317,10 +353,8 @@ public class HondaConnectManager {
             return;
         }
         if (Log.isDebug()) Log.d(TAG, "releaseAudioFocus -> app with auth " + pControl_.authType);
-        if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus modeMgr audio hasAudioFocus= " + hasAudioFocus_);
 
-        // If AUTH_TYPE <> preinstall the app has already audio focus
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL && hasAudioFocus_) {
+        if (hasAudioFocus_) {
             int idx = settings_.advanced.modeMgrAudioIdx();
             int ret;
 
@@ -335,6 +369,11 @@ public class HondaConnectManager {
             if (Log.isVerbose())  Log.v(TAG, "releaseAudioFocus sendModeMgrOffReq idx= " + idx + ", state = " + ModeMgrMode.REQUEST_MODE);
             ret = modeMgrManager_.sendModeMgrOffReq(idx, ModeMgrMode.REQUEST_MODE);
             if (Log.isVerbose()) Log.v(TAG, "releaseAudioFocus sendModeMgrOffReq ret= " + ret);
+
+            try {
+                // Notify ModeMgr that we are truly OFF to release native radio
+                modeMgrManager_.notifyModeMgrStatus(idx, 0); 
+            } catch (Throwable t) {}
 
             hasAudioFocus_ = false;
         }
@@ -374,23 +413,22 @@ public class HondaConnectManager {
             return;
         }
         if (Log.isDebug()) Log.d(TAG, "initAudioBinding -> app with auth " + pControl_.authType);
-        // if app has THIRD_PARTY auth will have exclusive audio focus, only bind wheel service
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
-            if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> app auth = preinstall -> register ModeMgr and SW callback");
+        
+        // Deep Sleep Recovery: Attempt to rebind services if they died
+        if (!boundToSteeringMenuService_) {
+            Log.w(TAG, "Wheel service is not bound during initAudioBinding. Attempting to recover...");
+            bindToWheelService();
+        }
+        if (!boundToEcNcService_) {
+            bindToEcNcService();
+        }
 
-            registerModeMgrCallback();
-            registerSteeringMenuCallback();
-            registerStateMgrCallback();
+        // register all regardless of authType to be safe
+        registerModeMgrCallback();
+        registerSteeringMenuCallback();
+        registerStateMgrCallback();
 
-            if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> hasAudioFocus= " + hasAudioFocus_);
-            if (hasAudioFocus_){
-                notifySteeringMenuDispMode(1);
-            }
-        } else {
-            // THIRD_PARTY
-            if (Log.isVerbose()) Log.v(TAG, "initAudioBinding -> using authType not PREINSTALL -> register SW callback and notify");
-            registerSteeringMenuCallback();
-            registerStateMgrCallback();
+        if (hasAudioFocus_){
             notifySteeringMenuDispMode(1);
         }
     }
@@ -413,11 +451,9 @@ public class HondaConnectManager {
         stopMicSession();
         unbindFromEcNcService();
 
-        if (pControl_ != null && pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
-            if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> auth PREINSTALL -> release audio and unregister modemgr callback");
-            releaseAudioFocus();
-            unregisterModeMgrCallback();
-        }
+        if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> release audio and unregister callbacks");
+        releaseAudioFocus();
+        unregisterModeMgrCallback();
 
         unregisterSteeringMenuCallback();
         unregisterStateMgrCallback();
@@ -447,6 +483,7 @@ public class HondaConnectManager {
             if (boundToSteeringMenuService_ && steeringMenuServiceCallback_ == null) {
                 int idx = settings_.advanced.steeringWheelIdx();
                 if (Log.isVerbose()) Log.v(TAG, "registerCallbackEx swaddr " + idx);
+                
                 steeringMenuServiceCallback_ = new SteeringMenuServiceCallback();
                 steeringMenuServiceIface_.registerCallbackEx(steeringMenuServiceCallback_, idx);
             }
