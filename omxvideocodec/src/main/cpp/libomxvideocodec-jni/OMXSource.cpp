@@ -14,6 +14,8 @@ namespace {
 
 constexpr std::size_t kMaxQueuedBuffers = 8;
 constexpr int64_t kMaxQueuedDurationUs = 250000;
+constexpr std::size_t kMaxSyncWaitBuffers = 8;
+constexpr auto kMaxSyncWait = std::chrono::milliseconds(250);
 
 } // namespace
 
@@ -21,7 +23,8 @@ constexpr int64_t kMaxQueuedDurationUs = 250000;
 // https://vec.io/posts/use-android-hardware-decoder-with-omxcodec-in-ndk
 // https://stackoverflow.com/questions/9832503/android-include-native-stagefright-features-in-my-own-project
 OMXSource::OMXSource(int width, int height, int fps):
-        format_(nullptr), quitFlag_(false), waitingForSync_(false), droppedBuffers_(0)
+        format_(nullptr), quitFlag_(false), waitingForSync_(false), droppedBuffers_(0),
+        syncWaitDroppedBuffers_(0)
 {
 
     int32_t bufferSize = (width * height * 3) / 2;
@@ -68,27 +71,48 @@ void OMXSource::queueBuffer(MediaBuffer* buffer){
         durationExceeded = timestampUs - oldestTimestampUs > kMaxQueuedDurationUs;
     }
 
-    if (pbuffers_.size() >= kMaxQueuedBuffers || durationExceeded) {
+    if (!waitingForSync_ &&
+        (pbuffers_.size() >= kMaxQueuedBuffers || durationExceeded)) {
         droppedBuffers_ += pbuffers_.size();
         clearQueuedBuffers();
         waitingForSync_ = true;
+        syncWaitDroppedBuffers_ = 0;
+        syncWaitStarted_ = std::chrono::steady_clock::now();
         if (Log::isWarn()) {
-            Log_w("video decoder backlog exceeded %lld us; dropping until the next IDR frame",
+            Log_w("video decoder backlog exceeded %lld us; briefly waiting for an IDR frame",
                   static_cast<long long>(kMaxQueuedDurationUs));
         }
     }
 
     if (waitingForSync_ && !nalInfo.hasCodecConfig && !nalInfo.hasIdr) {
-        ++droppedBuffers_;
-        buffer->release();
-        return;
+        const bool waitExpired = syncWaitDroppedBuffers_ >= kMaxSyncWaitBuffers ||
+            std::chrono::steady_clock::now() - syncWaitStarted_ >= kMaxSyncWait;
+        if (!waitExpired) {
+            ++droppedBuffers_;
+            ++syncWaitDroppedBuffers_;
+            buffer->release();
+            return;
+        }
+
+        // Some transitions do not emit an IDR promptly. The decoder still owns its
+        // previous reference frames, so resume feeding instead of freezing forever.
+        waitingForSync_ = false;
+        syncWaitDroppedBuffers_ = 0;
+        if (Log::isWarn()) {
+            Log_w("video decoder IDR wait expired after dropping %d buffers; resuming stream",
+                  static_cast<int>(droppedBuffers_));
+        }
+        droppedBuffers_ = 0;
+        buffer->meta_data()->setInt32(kKeyIsSyncFrame, 1);
+    } else {
+        buffer->meta_data()->setInt32(kKeyIsSyncFrame, nalInfo.hasIdr ? 1 : 0);
     }
 
-    buffer->meta_data()->setInt32(kKeyIsSyncFrame, nalInfo.hasIdr ? 1 : 0);
     pbuffers_.push(buffer);
 
     if (nalInfo.hasIdr && waitingForSync_) {
         waitingForSync_ = false;
+        syncWaitDroppedBuffers_ = 0;
         if (Log::isWarn()) {
             Log_w("video decoder resynchronized after dropping %d buffers",
                   static_cast<int>(droppedBuffers_));
