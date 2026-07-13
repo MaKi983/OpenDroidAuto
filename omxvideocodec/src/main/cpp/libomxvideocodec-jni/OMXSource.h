@@ -4,6 +4,7 @@
 #include <media/stagefright/MetaData.h>
 #include <utils/RefBase.h>
 #include <media/stagefright/MediaBufferGroup.h>
+#include <cstddef>
 #include <queue>
 #include <thread>
 #include <Data.hpp>
@@ -44,6 +45,9 @@ private:
     std::condition_variable cond_;
 
     bool quitFlag_;
+    bool waitingForSync_;
+    std::size_t droppedBuffers_;
 
     MediaBuffer* nextBuffer();
+    void clearQueuedBuffers();
 };

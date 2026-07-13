@@ -1,4 +1,5 @@
 #include "OMXSource.h"
+#include "H264NalParser.h"
 #include "Log.h"
 
 #include <media/stagefright/MediaDefs.h>
@@ -9,11 +10,18 @@
 
 using namespace android;
 
+namespace {
+
+constexpr std::size_t kMaxQueuedBuffers = 8;
+constexpr int64_t kMaxQueuedDurationUs = 250000;
+
+} // namespace
+
 // https://www.programmersought.com/article/87712558400/
 // https://vec.io/posts/use-android-hardware-decoder-with-omxcodec-in-ndk
 // https://stackoverflow.com/questions/9832503/android-include-native-stagefright-features-in-my-own-project
 OMXSource::OMXSource(int width, int height, int fps):
-        format_(nullptr), quitFlag_(false)
+        format_(nullptr), quitFlag_(false), waitingForSync_(false), droppedBuffers_(0)
 {
 
     int32_t bufferSize = (width * height * 3) / 2;
@@ -41,11 +49,55 @@ void OMXSource::queueBuffer(MediaBuffer* buffer){
     if (Log::isVerbose()) Log_v("add buffer to queue");
     std::unique_lock<std::mutex> l(mutex_);
 
-    if (!quitFlag_) {
-        pbuffers_.push(buffer);
-        if (Log::isVerbose()) Log_v("queueBuffer new size %d", pbuffers_.size());
-        cond_.notify_one();
+    if (quitFlag_) {
+        buffer->release();
+        return;
     }
+
+    const auto* bufferData = static_cast<const uint8_t*>(buffer->data());
+    const auto* data = bufferData == nullptr ? nullptr : bufferData + buffer->range_offset();
+    const h264::NalInfo nalInfo = h264::inspectNalUnits(data, buffer->range_length());
+    int64_t timestampUs = 0;
+    int64_t oldestTimestampUs = 0;
+    buffer->meta_data()->findInt64(kKeyTime, &timestampUs);
+
+    bool durationExceeded = false;
+    if (!pbuffers_.empty() && timestampUs > 0 &&
+        pbuffers_.front()->meta_data()->findInt64(kKeyTime, &oldestTimestampUs) &&
+        oldestTimestampUs > 0 && timestampUs > oldestTimestampUs) {
+        durationExceeded = timestampUs - oldestTimestampUs > kMaxQueuedDurationUs;
+    }
+
+    if (pbuffers_.size() >= kMaxQueuedBuffers || durationExceeded) {
+        droppedBuffers_ += pbuffers_.size();
+        clearQueuedBuffers();
+        waitingForSync_ = true;
+        if (Log::isWarn()) {
+            Log_w("video decoder backlog exceeded %lld us; dropping until the next IDR frame",
+                  static_cast<long long>(kMaxQueuedDurationUs));
+        }
+    }
+
+    if (waitingForSync_ && !nalInfo.hasCodecConfig && !nalInfo.hasIdr) {
+        ++droppedBuffers_;
+        buffer->release();
+        return;
+    }
+
+    buffer->meta_data()->setInt32(kKeyIsSyncFrame, nalInfo.hasIdr ? 1 : 0);
+    pbuffers_.push(buffer);
+
+    if (nalInfo.hasIdr && waitingForSync_) {
+        waitingForSync_ = false;
+        if (Log::isWarn()) {
+            Log_w("video decoder resynchronized after dropping %d buffers",
+                  static_cast<int>(droppedBuffers_));
+        }
+        droppedBuffers_ = 0;
+    }
+
+    if (Log::isVerbose()) Log_v("queueBuffer new size %d", pbuffers_.size());
+    cond_.notify_one();
 }
 
 sp<MetaData>  OMXSource::getFormat(){
@@ -82,7 +134,6 @@ status_t OMXSource::read(MediaBuffer **buffer, const MediaSource::ReadOptions *o
 
     mBuffer->setObserver(this);
     mBuffer->add_ref();
-    mBuffer->meta_data()->setInt32(kKeyIsSyncFrame, 1);
     (*buffer) = mBuffer;
 
     return OK;
@@ -109,15 +160,17 @@ status_t OMXSource::stop() {
         quitFlag_ = true;
         if (Log::isVerbose()) Log_v("quit flag to true");
         if (Log::isDebug()) Log_d("delete pbuffer: %d", pbuffers_.size());
-        while (!pbuffers_.empty()) {
-            MediaBuffer* buffer = pbuffers_.front();
-            pbuffers_.pop();
-            buffer->release();
-        }
+        clearQueuedBuffers();
         cond_.notify_one();
     }
     if (Log::isDebug()) Log_d("stopped");
     return OK;
 }
 
-
+void OMXSource::clearQueuedBuffers() {
+    while (!pbuffers_.empty()) {
+        MediaBuffer* buffer = pbuffers_.front();
+        pbuffers_.pop();
+        buffer->release();
+    }
+}
