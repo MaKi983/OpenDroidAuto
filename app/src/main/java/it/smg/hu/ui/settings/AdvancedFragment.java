@@ -61,6 +61,9 @@ public class AdvancedFragment extends BaseSettingsFragment {
         CheckBox enableHondaMicVr = view.findViewById(R.id.enable_hondamicvr);
         initCheckBox(enableHondaMicVr, settings.advanced, Settings.Advanced.ADVANCED_ENABLE_HONDA_MIC_VR, Settings.Advanced.ADVANCED_ENABLE_HONDA_MIC_VR_DEFAULT_VALUE);
 
+        CheckBox enableHondaiMid = view.findViewById(R.id.enable_hondaimid);
+        initCheckBox(enableHondaiMid, settings.advanced, Settings.Advanced.ADVANCED_ENABLE_HONDA_IMID, Settings.Advanced.ADVANCED_ENABLE_HONDA_IMID_DEFAULT_VALUE);
+
         Spinner swMode = view.findViewById(R.id.sw_mode);
         initSpinner(swMode, R.array.swmode, R.array.swmode, settings.advanced, Settings.Advanced.ADVANCED_SW_MODE, Settings.Advanced.ADVANCED_SW_MODE_DEFAULT_VALUE, () -> {
             EditText swIdx =  view.findViewById(R.id.steeringwheel_idx);
@@ -78,8 +81,8 @@ public class AdvancedFragment extends BaseSettingsFragment {
             return null;
         });
 
-        EditText modeMgrAudioIdx = view.findViewById(R.id.modemgraudio_idx);
-        initEditText(modeMgrAudioIdx, settings.advanced, Settings.Advanced.ADVANCED_MODEMGRAUDIO_IDX, Settings.Advanced.ADVANCED_MODEMGRAUDIO_IDX_DEFAULT_VALUE);
+        EditText modeMgrAudioVideoIdx = view.findViewById(R.id.modemgraudiovideo_idx);
+        initEditText(modeMgrAudioVideoIdx, settings.advanced, Settings.Advanced.ADVANCED_MODEMGRAUDIOVIDEO_IDX, Settings.Advanced.ADVANCED_MODEMGRAUDIOVIDEO_IDX_DEFAULT_VALUE);
 
         EditText steeringWheelIdx = view.findViewById(R.id.steeringwheel_idx);
         initEditText(steeringWheelIdx, settings.advanced, Settings.Advanced.ADVANCED_SW_IDX, Settings.Advanced.ADVANCED_SW_IDX_DEFAULT_VALUE);

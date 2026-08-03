@@ -107,17 +107,26 @@
         android:text="@string/advanced_settings_enablehondamicvr"
         android:textColor="#000" />
 
+    <CheckBox
+        android:id="@+id/enable_hondaimid"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:text="@string/advanced_settings_enablehondaimid"
+        android:textColor="#000" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:gravity="center"
-        android:labelFor="@id/modemgraudio_idx"
+        android:labelFor="@id/modemgraudiovideo_idx"
         android:textColor="#000"
-        android:text="@string/advanced_settings_modeMgrAudioIdx"/>
+        android:text="@string/advanced_settings_modeMgrAudioVideoIdx"/>
 
     <EditText
-        android:id="@+id/modemgraudio_idx"
+        android:id="@+id/modemgraudiovideo_idx"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:inputType="number"

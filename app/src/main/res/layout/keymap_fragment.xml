@@ -57,6 +57,17 @@
             android:textColor="#FFF" />
 
         <Button
+            android:id="@+id/keycode_talk"
+            android:layout_width="56dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="55dp"
+            android:layout_marginTop="360dp"
+            android:background="#039BE5"
+            android:text=""
+            android:textSize="12sp"
+            android:textColor="#FFF" />
+
+        <Button
             android:id="@+id/keycode_source"
             android:layout_width="56dp"
             android:layout_height="40dp"
@@ -182,6 +193,24 @@
 
         <Spinner
             android:id="@+id/btn_minus"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:textColor="#000"
+            android:gravity="center_horizontal"
+            android:textAlignment="center"
+            android:clickable="false"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textColor="#000"
+            android:labelFor="@id/btn_talk"
+            android:text="@string/keymap_settings_btnminus"/>
+
+        <Spinner
+            android:id="@+id/btn_talk"
             android:layout_width="match_parent"
             android:layout_height="64dp"
             android:textColor="#000"

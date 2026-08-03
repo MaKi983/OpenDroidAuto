@@ -167,8 +167,11 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         Intent stopIntent = new Intent(ODAService.STOP_ACTION);
         localBroadcastManager_.sendBroadcast(stopIntent);
 
-        Intent service = new Intent(this, ODAService.class);
-        stopService(service);
+//        Intent service = new Intent(this, ODAService.class);
+//        stopService(service);
+        stopForeground(true);
+
+        stopSelf();
     }
 
     @Override

@@ -169,12 +169,14 @@ public class Settings {
         public final static String KEYMAP_BTN_SOURCE = "keymap_btn_source";
         public final static String KEYMAP_BTN_PLUS = "keymap_btn_plus";
         public final static String KEYMAP_BTN_MINUS = "keymap_btn_minus";
+        public final static String KEYMAP_BTN_TALK = "keymap_btn_talk";
 
         public final static int KEYMAP_BTN_LEFT_DEFAULT_VALUE = 88; // PREV
         public final static int KEYMAP_BTN_RIGHT_DEFAULT_VALUE = 87; // NEXT
         public final static int KEYMAP_BTN_SOURCE_DEFAULT_VALUE = 127; // PAUSE
         public final static int KEYMAP_BTN_PLUS_DEFAULT_VALUE = 19; // UP
         public final static int KEYMAP_BTN_MINUS_DEFAULT_VALUE = 20; // DOWN
+        public final static int KEYMAP_BTN_TALK_DEFAULT_VALUE = 84; // MICROPHONE_1
 
         private Keymap(){}
 
@@ -241,7 +243,7 @@ public class Settings {
         public final static int VIDEO_FPS_DEFAULT_VALUE = 1; // 30 fps
         public final static int VIDEO_DPI_DEFAULT_VALUE = 140;
         public final static String VIDEO_MARGIN_DEFAULT_VALUE = "0,0";
-        public final static String VIDEO_NIGHT_MODE_DEFAULT_VALUE = ""; //IDayNightSensor.TIME_GPS;
+        public final static String VIDEO_NIGHT_MODE_DEFAULT_VALUE = "HONDA"; //Default to Honda integration if available
         public final static boolean VIDEO_SHOW_MEDIA_NOTIFICATION_DEFAULT_VALUE = true;
         public final static boolean VIDEO_SHOW_NAVIGATION_NOTIFICATION_DEFAULT_VALUE = true;
         public final static boolean VIDEO_SHOW_APP_BADGE_DEFAULT_VALUE = true;
@@ -497,8 +499,9 @@ public class Settings {
         public final static String ADVANCED_THREADS_NUM = "threads";
         public final static String ADVANCED_ENABLE_HONDA_INTEGRATION = "enablehondaintegration";
         public final static String ADVANCED_ENABLE_HONDA_MIC_VR = "enablehondamicvr";
+        public final static String ADVANCED_ENABLE_HONDA_IMID = "enablehondaimid";
         public final static String ADVANCED_SW_MODE = "swmode";
-        public final static String ADVANCED_MODEMGRAUDIO_IDX = "modemgridx";
+        public final static String ADVANCED_MODEMGRAUDIOVIDEO_IDX = "modemgraudiovideoidx";
         public final static String ADVANCED_SW_IDX = "steeringwheelidx";
 
         public final static boolean ADVANCED_ENABLED_DEBUG_DEFAULT_VALUE = false;
@@ -509,8 +512,9 @@ public class Settings {
         public final static int ADVANCED_THREADS_NUM_DEFAULT_VALUE = 4;
         public final static boolean ADVANCED_ENABLE_HONDA_INTEGRATION_DEFAULT_VALUE = true;
         public final static boolean ADVANCED_ENABLE_HONDA_MIC_VR_DEFAULT_VALUE = true;
+        public final static boolean ADVANCED_ENABLE_HONDA_IMID_DEFAULT_VALUE = false;
         public final static String ADVANCED_SW_MODE_DEFAULT_VALUE = "SW SERVICE";
-        public final static int ADVANCED_MODEMGRAUDIO_IDX_DEFAULT_VALUE = 213; // 223 appmode, 220 appmodepic, 213 3rd party, 214 3rd party pic, 197 bt, 92 cam, 98 cd, 196 dab, 216 hdmi, 201 ipod, 222 mirrolink, 221 mirrorlink pic, 255 off, 87 phone, 198 tel rcv, 199 usb audio, 133 voicetag, 136 siri, 96 radio
+        public final static int ADVANCED_MODEMGRAUDIOVIDEO_IDX_DEFAULT_VALUE = 197; // 223 appmode, 220 appmodepic, 213 3rd party, 214 3rd party pic, 197 bt, 92 cam, 98 cd, 196 dab, 216 hdmi, 201 ipod, 222 mirrolink, 221 mirrorlink pic, 255 off, 87 phone, 198 tel rcv, 199 usb audio, 133 voicetag, 136 siri, 96 radio
         public final static int ADVANCED_SW_IDX_DEFAULT_VALUE = 260; // 258 source, 263 source header, 259 disp, 260 menu, 265 launcher, 266 imid
 
         public void logDir(String logDir){
@@ -577,6 +581,15 @@ public class Settings {
             SP.edit().putBoolean(ADVANCED_ENABLE_HONDA_MIC_VR, enabled).apply();
         }
 
+        public boolean hondaImidEnabled() {
+            return SP.getBoolean(ADVANCED_ENABLE_HONDA_IMID, ADVANCED_ENABLE_HONDA_IMID_DEFAULT_VALUE);
+        }
+
+        public void hondaImidEnabled(boolean enabled) {
+            SP.edit().putBoolean(ADVANCED_ENABLE_HONDA_IMID, enabled).apply();
+        }
+
+
         public String swMode(){
             return SP.getString(ADVANCED_SW_MODE, ADVANCED_SW_MODE_DEFAULT_VALUE);
         }
@@ -585,12 +598,12 @@ public class Settings {
             SP.edit().putString(ADVANCED_SW_MODE, mode).apply();
         }
 
-        public int modeMgrAudioIdx(){
-            return SP.getInt(ADVANCED_MODEMGRAUDIO_IDX, ADVANCED_MODEMGRAUDIO_IDX_DEFAULT_VALUE);
+        public int modeMgrAudioVideoIdx(){
+            return SP.getInt(ADVANCED_MODEMGRAUDIOVIDEO_IDX, ADVANCED_MODEMGRAUDIOVIDEO_IDX_DEFAULT_VALUE);
         }
 
-        public void modeMgrAudioIdx(int idx){
-            SP.edit().putInt(ADVANCED_MODEMGRAUDIO_IDX, idx).apply();
+        public void modeMgrAudioVideoIdx(int idx){
+            SP.edit().putInt(ADVANCED_MODEMGRAUDIOVIDEO_IDX, idx).apply();
         }
 
         public int steeringWheelIdx(){

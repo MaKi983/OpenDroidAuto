@@ -93,10 +93,6 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
     public void onBackPressed() {
         if (Log.isDebug()) Log.d(TAG, "onBackPressed");
 
-        if (Settings.instance().advanced.hondaIntegrationEnabled()){
-            HondaConnectManager.instance().endAudioBinding();
-        }
-
         odaService_.stop();
     }
 
@@ -104,10 +100,6 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
     public boolean onKeyLongPress(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (Log.isInfo()) Log.i(TAG, "Back button long pressed");
-
-            if (Settings.instance().advanced.hondaIntegrationEnabled()){
-                HondaConnectManager.instance().endAudioBinding();
-            }
 
             odaService_.stop();
             return true;
@@ -206,7 +198,7 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.d(TAG, "surfaceDestroyed");
+        if (Log.isDebug()) Log.d(TAG, "surfaceDestroyed");
         odaService_.releaseFocus();
     }
 

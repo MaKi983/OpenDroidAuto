@@ -5,6 +5,7 @@ import static it.smg.hu.config.Settings.Keymap.KEYMAP_BTN_MINUS;
 import static it.smg.hu.config.Settings.Keymap.KEYMAP_BTN_PLUS;
 import static it.smg.hu.config.Settings.Keymap.KEYMAP_BTN_RIGHT;
 import static it.smg.hu.config.Settings.Keymap.KEYMAP_BTN_SOURCE;
+import static it.smg.hu.config.Settings.Keymap.KEYMAP_BTN_TALK;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -41,12 +42,7 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
         if (settings.advanced.hondaIntegrationEnabled()){
             if (Log.isVerbose()) Log.v(TAG, "init hondaconnection and keyholder");
             HondaConnectManager.instance().initialize();
-
-            try {
-                Thread.sleep(500);  // ugly ack to sync steering wheel service connection
-            } catch (InterruptedException ignored) {
-            }
-
+            HondaConnectManager.instance().initAudioBinding();
             HondaConnectManager.instance().requestAudioFocus();
             keyHolder_ = (InputDevice.OnKeyHolder) getActivity();
         }
@@ -107,8 +103,16 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
         if (settings.keymap.key(Settings.Keymap.KEYMAP_BTN_MINUS) == 0){
             settings.keymap.key(Settings.Keymap.KEYMAP_BTN_MINUS, Settings.Keymap.KEYMAP_BTN_MINUS_DEFAULT_VALUE);
         }
+
         Spinner btnMinus = view.findViewById(R.id.btn_minus);
         initSpinner(btnMinus, R.array.keymap_btn_labels, R.array.keymap_btn_values, settings.keymap, Settings.Keymap.KEYMAP_BTN_MINUS, Settings.Keymap.KEYMAP_BTN_MINUS_DEFAULT_VALUE);
+
+        if (settings.keymap.key(KEYMAP_BTN_TALK) == 0){
+            settings.keymap.key(KEYMAP_BTN_TALK, Settings.Keymap.KEYMAP_BTN_TALK_DEFAULT_VALUE);
+        }
+
+        Spinner btnTalk = view.findViewById(R.id.btn_talk);
+        initSpinner(btnTalk, R.array.keymap_btn_labels, R.array.keymap_btn_values, settings.keymap, KEYMAP_BTN_TALK, Settings.Keymap.KEYMAP_BTN_TALK_DEFAULT_VALUE);
 
         return view;
     }
@@ -175,7 +179,8 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
         RIGHT(KEYMAP_BTN_RIGHT, R.id.keycode_right, -65533, Settings.Keymap.KEYMAP_BTN_RIGHT_DEFAULT_VALUE),
         SOURCE(KEYMAP_BTN_SOURCE, R.id.keycode_source, -65531, Settings.Keymap.KEYMAP_BTN_SOURCE_DEFAULT_VALUE),
         PLUS(KEYMAP_BTN_PLUS, R.id.keycode_plus, -65535, Settings.Keymap.KEYMAP_BTN_PLUS_DEFAULT_VALUE),
-        MINUS(KEYMAP_BTN_MINUS, R.id.keycode_min, -65534, Settings.Keymap.KEYMAP_BTN_MINUS_DEFAULT_VALUE);
+        MINUS(KEYMAP_BTN_MINUS, R.id.keycode_min, -65534, Settings.Keymap.KEYMAP_BTN_MINUS_DEFAULT_VALUE),
+        TALK(KEYMAP_BTN_TALK, R.id.keycode_talk, -65526, Settings.Keymap.KEYMAP_BTN_TALK_DEFAULT_VALUE);
 
         private final String keyName_;
         private final int id_;;
