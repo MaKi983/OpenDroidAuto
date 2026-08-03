@@ -220,33 +220,38 @@ public class InputDevice extends it.smg.libs.aasdk.projection.InputDevice implem
 
     @Override
     public void onSteeringWheelKey(int keyType) {
-        if (Log.isDebug()) Log.d(TAG, "onSteeringWheelKey: " + keyType);
+        try {
+            if (Log.isDebug()) Log.d(TAG, "onSteeringWheelKey: " + keyType);
 
-        // Map Honda specific key types to Android Auto button codes
-        // These are keys that might not be captured by onKey
-        int buttonCode = -1;
-        switch (keyType) {
-            case 3: // CH/TRK UP
-                buttonCode = 0x57; // NEXT
-                break;
-            case 4: // CH/TRK DOWN
-                buttonCode = 0x58; // PREV
-                break;
-            case 8: // Pick up
-                buttonCode = 0x05; // PHONE
-                break;
-            case 9: // Hang up
-                buttonCode = 0x06; // CALL_END
-                break;
-            case 10: // Talk
-                buttonCode = 0x54; // MICROPHONE_1
-                break;
-        }
+            // Map Honda specific key types to Android Auto button codes
+            int buttonCode = -1;
+            switch (keyType) {
+                case 1: // Some units use 1/2 for track
+                case 3: // CH/TRK UP
+                    buttonCode = 87; // KEYCODE_MEDIA_NEXT
+                    break;
+                case 2:
+                case 4: // CH/TRK DOWN
+                    buttonCode = 88; // KEYCODE_MEDIA_PREVIOUS
+                    break;
+                case 8: // Pick up
+                    buttonCode = 5; // KEYCODE_CALL
+                    break;
+                case 9: // Hang up
+                    buttonCode = 6; // KEYCODE_ENDCALL
+                    break;
+                case 10: // Talk
+                    buttonCode = 84; // KEYCODE_SEARCH (often used for VR)
+                    break;
+            }
 
-        if (buttonCode != -1) {
-            if (Log.isVerbose()) Log.v(TAG, "Sending button event for Honda key " + keyType + " -> " + buttonCode);
-            sendButtonEvent(0, buttonCode); // DOWN
-            sendButtonEvent(1, buttonCode); // UP
+            if (buttonCode != -1) {
+                if (Log.isVerbose()) Log.v(TAG, "Sending button event for Honda key " + keyType + " -> " + buttonCode);
+                sendButtonEvent(0, buttonCode); // DOWN
+                sendButtonEvent(1, buttonCode); // UP
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "Error handling steering wheel key", t);
         }
     }
 
