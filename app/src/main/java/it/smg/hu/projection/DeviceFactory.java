@@ -4,14 +4,8 @@ import android.content.Context;
 import android.os.Build;
 import android.view.SurfaceView;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import it.smg.hu.config.Settings;
-import it.smg.hu.service.ODAService;
 import it.smg.hu.util.DeviceUtils;
-import it.smg.libs.aasdk.messenger.ChannelId;
-import it.smg.libs.aasdk.messenger.Messenger;
 import it.smg.libs.aasdk.projection.IAudioInput;
 import it.smg.libs.aasdk.projection.IAudioOutput;
 import it.smg.libs.aasdk.projection.IBluetoothDevice;
@@ -20,18 +14,6 @@ import it.smg.libs.aasdk.projection.IMediaStatusEvent;
 import it.smg.libs.aasdk.projection.INavigationStatusEvent;
 import it.smg.libs.aasdk.projection.ISensor;
 import it.smg.libs.aasdk.projection.IVideoOutput;
-import it.smg.libs.aasdk.service.AudioInputService;
-import it.smg.libs.aasdk.service.BluetoothService;
-import it.smg.libs.aasdk.service.IAndroidAutoEntityEventHandler;
-import it.smg.libs.aasdk.service.IService;
-import it.smg.libs.aasdk.service.InputService;
-import it.smg.libs.aasdk.service.MediaAudioService;
-import it.smg.libs.aasdk.service.MediaStatusService;
-import it.smg.libs.aasdk.service.NavigationStatusService;
-import it.smg.libs.aasdk.service.SensorService;
-import it.smg.libs.aasdk.service.SpeechAudioService;
-import it.smg.libs.aasdk.service.SystemAudioService;
-import it.smg.libs.aasdk.service.VideoService;
 import it.smg.libs.common.Log;
 
 public class DeviceFactory {
@@ -85,8 +67,8 @@ public class DeviceFactory {
 
         ISensor sensor;
         switch (settings.video.nightMode()){
-            case ISensor.LIGHT:
-                sensor = new LightSensor(ctx);
+            case ISensor.DEVICE:
+                sensor = new DeviceLightSensor(ctx);
                 break;
             case ISensor.DAY:
             case ISensor.NIGHT:

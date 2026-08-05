@@ -65,22 +65,24 @@ public class VideoFragment extends BaseSettingsFragment {
             @Override
             public Void call() {
                 String value = settings.video.nightMode();
-                if (value.equalsIgnoreCase(ISensor.LIGHT)) {
-                    SensorManager sensorManager = (SensorManager)getContext().getSystemService(Context.SENSOR_SERVICE);
-                    Sensor lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-                    if (lightSensor == null){
-                        Toast.makeText(getContext(), "Light sensor not available, switch to default TIME/GPS", Toast.LENGTH_LONG).show();
-                        settings.video.nightMode(Settings.Video.VIDEO_NIGHT_MODE_DEFAULT_VALUE);
+                if (value.equalsIgnoreCase(ISensor.DEVICE)) {
+                    if (!settings.advanced.hondaIntegrationEnabled()) {
+                        SensorManager sensorManager = (SensorManager) getContext().getSystemService(Context.SENSOR_SERVICE);
+                        Sensor lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+                        if (lightSensor == null) {
+                            Toast.makeText(getContext(), "Light sensor not available, switch to default TIME/GPS", Toast.LENGTH_LONG).show();
+                            settings.video.nightMode(ISensor.TIME_GPS);
 
-                        String[] elements = getContext().getResources().getStringArray(R.array.video_nightmode);
-                        for (int i = 0; i < elements.length; i++){
-                            String e = elements[i];
-                            if (Settings.Video.VIDEO_NIGHT_MODE_DEFAULT_VALUE.equalsIgnoreCase(e)){
-                                nightMode.setSelection(i);
-                                break;
+                            String[] elements = getContext().getResources().getStringArray(R.array.video_nightmode);
+                            for (int i = 0; i < elements.length; i++) {
+                                String e = elements[i];
+                                if (ISensor.TIME_GPS.equalsIgnoreCase(e)) {
+                                    nightMode.setSelection(i);
+                                    break;
+                                }
                             }
-                        }
 
+                        }
                     }
                 }
                 return null;

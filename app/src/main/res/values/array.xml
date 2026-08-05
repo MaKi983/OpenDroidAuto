@@ -25,15 +25,14 @@
     </integer-array>
 
     <string-array name="video_nightmode">
+        <item>DEVICE</item>
         <item>TIME/GPS</item>
-        <item>LIGHT</item>
         <item>DAY</item>
         <item>NIGHT</item>
     </string-array>
 
     <string-array name="audio_codec_labels">
         <item>Android AudioTrack</item>
-        <item>SLES Custom Codec (experimental)</item>
     </string-array>
 
     <integer-array name="audio_codec_values">

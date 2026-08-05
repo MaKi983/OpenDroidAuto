@@ -17,7 +17,7 @@ import it.smg.hu.manager.HondaConnectManager;
 import it.smg.libs.common.Log;
 import it.smg.libs.aasdk.projection.ISensor;
 
-public class DayNightSensor implements ISensor, LocationListener, ISensor.Listener {
+public class DayNightSensor implements ISensor, LocationListener {
 
     private static final String TAG = "DayNightSensor";
 
@@ -44,38 +44,12 @@ public class DayNightSensor implements ISensor, LocationListener, ISensor.Listen
             case ISensor.DAY:
                 currentState_ = IS_DAY;
                 break;
-            case ISensor.HONDA:
-                if (Settings.instance().advanced.hondaIntegrationEnabled()) {
-                    initHondaIntegration();
-                } else {
-                    initTwilightCalculator();
-                }
-                break;
             default:
                 if (Log.isWarn()) Log.w(TAG, "unknown night mode, use DAY");
                 currentState_ = IS_DAY;
         }
     }
 
-    private void initHondaIntegration() {
-        if (Log.isDebug()) Log.d(TAG, "initHondaIntegration");
-        HondaConnectManager.instance().setDayNightListener(this);
-
-        boolean isNight = HondaConnectManager.instance().isNight();
-        currentState_ = isNight ? IS_NIGHT : IS_DAY;
-    }
-
-    @Override
-    public void onDayNightUpdate(boolean isNight) {
-        int newState = isNight ? IS_NIGHT : IS_DAY;
-        if (newState != currentState_) {
-            if (Log.isInfo()) Log.i(TAG, "Honda DayNight state changed, isNight: " + isNight);
-            currentState_ = newState;
-            if (listener_ != null) {
-                listener_.onDayNightUpdate(isNight());
-            }
-        }
-    }
 
 //    @Override
 //    public void onSteeringWheelKey(int keyType) {
