@@ -55,7 +55,7 @@ int JNIBase::javaDetachThread(void)
     if (result != JNI_OK) {
         if (Log::isError()) Log_e("thread detach failed");
     } else {
-        if(Log::isInfo()) Log_i("detached thread");
+        if(Log::isDebug()) Log_d("detached thread");
     }
 
     return result;

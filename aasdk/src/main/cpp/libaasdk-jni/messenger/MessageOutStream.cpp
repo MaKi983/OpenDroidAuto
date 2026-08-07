@@ -28,18 +28,18 @@ void MessageOutStream::stream(Message::Pointer message, SendPromise::Pointer pro
     }
 
     strand_->dispatch([this, self = this->shared_from_this(), message = std::move(message), promise = std::move(promise)]() mutable {
-        if (Log::isDebug()) Log_d("%s / sending message %s", channelIdToString(message->getChannelId()).c_str(), message->toString().c_str());
+        if (Log::isVerbose()) Log_v("%s / sending message %s", channelIdToString(message->getChannelId()).c_str(), message->toString().c_str());
 
         if(message->getPayload().size() >= cMaxFramePayloadSize)
         {
-            if (Log::isDebug()) Log_d("%s / split message", channelIdToString(message->getChannelId()).c_str());
+            if (Log::isVerbose()) Log_v("%s / split message", channelIdToString(message->getChannelId()).c_str());
             this->streamSplittedMessage(std::move(message), 0, message->getPayload().size(), std::move(promise));
         }
         else
         {
             try
             {
-                if (Log::isDebug()) Log_d("%s / send full BULK message", channelIdToString(message->getChannelId()).c_str());
+                if (Log::isVerbose()) Log_v"%s / send full BULK message", channelIdToString(message->getChannelId()).c_str());
                 auto data(this->compoundFrame(message, FrameType::BULK, common::DataConstBuffer(message->getPayload())));
 
                 auto transportPromise = transport::ITransport::SendPromise::defer(strand_, "MessageOutStream_sendTransport");
@@ -60,7 +60,7 @@ void MessageOutStream::stream(Message::Pointer message, SendPromise::Pointer pro
 }
 
 void MessageOutStream::streamSplittedMessage(Message::Pointer message, int offset, int remainingSize, SendPromise::Pointer promise) {
-    if(Log::isDebug()) Log_d("%s / message too big, split it: offset= %d, remainingSize= %d", channelIdToString(message->getChannelId()).c_str(), offset, remainingSize);
+    if(Log::isVerbose()) Log_v("%s / message too big, split it: offset= %d, remainingSize= %d", channelIdToString(message->getChannelId()).c_str(), offset, remainingSize);
     try
     {
         const auto& payload = message->getPayload();
@@ -68,7 +68,7 @@ void MessageOutStream::streamSplittedMessage(Message::Pointer message, int offse
         auto size = remainingSize < cMaxFramePayloadSize ? remainingSize : cMaxFramePayloadSize;
 
         FrameType frameType = offset == 0 ? FrameType::FIRST : (remainingSize - size > 0 ? FrameType::MIDDLE : FrameType::LAST);
-        if (Log::isDebug()) Log_d("%s / frameType: %s", channelIdToString(message->getChannelId()).c_str(), frameTypeToString(frameType).c_str());
+        if (Log::isVerbose()) Log_v("%s / frameType: %s", channelIdToString(message->getChannelId()).c_str(), frameTypeToString(frameType).c_str());
         auto data(this->compoundFrame(message, frameType, common::DataConstBuffer(ptr, size)));
 
         auto transportPromise = transport::ITransport::SendPromise::defer(strand_, "MessageOutStream_sendTransport1");
