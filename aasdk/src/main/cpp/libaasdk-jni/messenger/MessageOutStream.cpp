@@ -39,7 +39,7 @@ void MessageOutStream::stream(Message::Pointer message, SendPromise::Pointer pro
         {
             try
             {
-                if (Log::isVerbose()) Log_v"%s / send full BULK message", channelIdToString(message->getChannelId()).c_str());
+                if (Log::isVerbose()) Log_v("%s / send full BULK message", channelIdToString(message->getChannelId()).c_str());
                 auto data(this->compoundFrame(message, FrameType::BULK, common::DataConstBuffer(message->getPayload())));
 
                 auto transportPromise = transport::ITransport::SendPromise::defer(strand_, "MessageOutStream_sendTransport");
