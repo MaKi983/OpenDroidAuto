@@ -73,7 +73,7 @@ void LibUsbEndpoint::transfer(libusb_transfer *transfer, Promise::Pointer promis
         if (Log::isVerbose()) Log_v("libusb_submit_transfer %d", submitResult);
 
         if(submitResult == LIBUSB_SUCCESS) {
-            transfers_.insert(std::make_pair(transfer, std::move(promise)));
+            transfers_.insert(std::make_pair(transfer, PendingTransfer{std::move(promise), 0}));
         } else {
             promise->reject(error::Error(error::ErrorCode::USB_TRANSFER, submitResult));
             libusb_free_transfer(transfer);
@@ -99,22 +99,53 @@ void LibUsbEndpoint::transferHandler(libusb_transfer *transfer) {
     auto self = reinterpret_cast<LibUsbEndpoint*>(transfer->user_data);
 
     self->strand_->dispatch([self, transfer]() mutable {
-        if(self->transfers_.count(transfer) == 0) {
+        auto pendingIt = self->transfers_.find(transfer);
+        if(pendingIt == self->transfers_.end()) {
             if (Log::isWarn()) Log_w("transfer not found in list");
             return;
         }
 
-        auto promise(std::move(self->transfers_.at(transfer)));
-
         if(transfer->status == LIBUSB_TRANSFER_COMPLETED) {
-            promise->resolve(transfer->actual_length);
-        } else {
-            auto error = transfer->status == LIBUSB_TRANSFER_CANCELLED ? error::Error(error::ErrorCode::OPERATION_ABORTED) : error::Error(error::ErrorCode::USB_TRANSFER, transfer->status);
-            promise->reject(error);
+            auto promise(std::move(pendingIt->second.promise));
+            self->transfers_.erase(pendingIt);
+            auto actualLength = transfer->actual_length;
+            libusb_free_transfer(transfer);
+            promise->resolve(actualLength);
+            return;
         }
 
+        const bool isTransientTimeout = transfer->status == LIBUSB_TRANSFER_TIMED_OUT;
+        const bool isTransientError = transfer->status == LIBUSB_TRANSFER_ERROR;
+        const uint32_t maxRetriesForStatus = isTransientTimeout ? cMaxTransferRetries
+                                            : isTransientError   ? cMaxErrorRetries
+                                                                  : 0;
+
+        if((isTransientTimeout || isTransientError) &&
+           pendingIt->second.retryCount < maxRetriesForStatus) {
+            ++pendingIt->second.retryCount;
+            if (Log::isWarn()) {
+                Log_w("USB transfer %s, retry %u/%u",
+                      isTransientTimeout ? "timeout" : "error",
+                      pendingIt->second.retryCount, maxRetriesForStatus);
+            }
+
+            auto submitResult = libusb_submit_transfer(transfer);
+            if(submitResult != LIBUSB_SUCCESS) {
+                auto promise(std::move(pendingIt->second.promise));
+                self->transfers_.erase(pendingIt);
+                libusb_free_transfer(transfer);
+                promise->reject(error::Error(error::ErrorCode::USB_TRANSFER, submitResult));
+            }
+            return;
+        }
+
+        auto promise(std::move(pendingIt->second.promise));
+        self->transfers_.erase(pendingIt);
+        auto error = transfer->status == LIBUSB_TRANSFER_CANCELLED
+                      ? error::Error(error::ErrorCode::OPERATION_ABORTED)
+                      : error::Error(error::ErrorCode::USB_TRANSFER, transfer->status);
         libusb_free_transfer(transfer);
-        self->transfers_.erase(transfer);
+        promise->reject(error);
     });
 }
 
