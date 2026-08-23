@@ -21,3 +21,5 @@
 #-renamesourcefileattribute SourceFile
 
 -keep public class com.fujitsu_ten.displayaudio.**
+
+-dontwarn android.bluetooth.IBluetooth
