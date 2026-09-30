@@ -67,16 +67,35 @@ void LibUsbEndpoint::bulkTransfer(common::DataBuffer buffer, uint32_t timeout, P
 }
 
 void LibUsbEndpoint::transfer(libusb_transfer *transfer, Promise::Pointer promise) {
-    strand_->dispatch([this, transfer, promise = std::move(promise)]() mutable {
+    strand_->dispatch([this, self = shared_from_this(), transfer, promise = std::move(promise)]() mutable {
+        // A completion callback can run on libusb's event thread as soon as the
+        // transfer is submitted. Register it first: otherwise an immediately
+        // completed transfer is discarded by transferHandler(), leaving the
+        // protocol stream one frame behind (which later surfaces as SSL_READ).
+        {
+            std::lock_guard<std::mutex> lock(transfersMutex_);
+            transfers_.insert(std::make_pair(transfer, PendingTransfer{std::move(promise), std::move(self)}));
+        }
+
         if (Log::isVerbose()) Log_v("libusb_submit_transfer");
         auto submitResult = libusb_submit_transfer(transfer);
         if (Log::isVerbose()) Log_v("libusb_submit_transfer %d", submitResult);
 
-        if(submitResult == LIBUSB_SUCCESS) {
-            transfers_.insert(std::make_pair(transfer, std::move(promise)));
-        } else {
-            promise->reject(error::Error(error::ErrorCode::USB_TRANSFER, submitResult));
+        if(submitResult != LIBUSB_SUCCESS) {
+            Promise::Pointer pendingPromise;
+            {
+                std::lock_guard<std::mutex> lock(transfersMutex_);
+                auto pendingIt = transfers_.find(transfer);
+                if (pendingIt != transfers_.end()) {
+                    pendingPromise = std::move(pendingIt->second.promise);
+                    transfers_.erase(pendingIt);
+                }
+            }
+
             libusb_free_transfer(transfer);
+            if (pendingPromise) {
+                pendingPromise->reject(error::Error(error::ErrorCode::USB_TRANSFER, submitResult));
+            }
         }
     });
 }
@@ -89,6 +108,21 @@ uint8_t LibUsbEndpoint::getAddress()
 void LibUsbEndpoint::cancelTransfers()
 {
     if (Log::isDebug()) Log_d("cancel transfers");
+
+    // Synchronous, and deliberately not routed through strand_.
+    //
+    // The caller is the session teardown, which releases the interface and closes
+    // the device handle immediately afterwards, and which also stops the
+    // io_service moments later. Posting the cancels onto the strand meant they
+    // raced with that stop and were frequently never issued at all, leaving
+    // transfers submitted against a handle that was then closed - a use-after-free
+    // inside libusb's own event thread. Waiting for the strand instead would
+    // deadlock, since teardown is itself reached from io_service threads.
+    //
+    // libusb_cancel_transfer only flags the transfer; the completion callback
+    // still arrives later on libusb's thread, so holding the mutex here cannot
+    // deadlock against transferHandler().
+    std::lock_guard<std::mutex> lock(transfersMutex_);
     for(const auto& transfer : transfers_) {
         libusb_cancel_transfer(transfer.first);
     }
@@ -96,26 +130,47 @@ void LibUsbEndpoint::cancelTransfers()
 
 void LibUsbEndpoint::transferHandler(libusb_transfer *transfer) {
     if (Log::isVerbose()) Log_v("transferHandler %p", transfer);
-    auto self = reinterpret_cast<LibUsbEndpoint*>(transfer->user_data);
+    auto* endpoint = reinterpret_cast<LibUsbEndpoint*>(transfer->user_data);
 
-    self->strand_->dispatch([self, transfer]() mutable {
-        if(self->transfers_.count(transfer) == 0) {
+    Promise::Pointer promise;
+    // Holds the endpoint alive for the rest of this function even if the entry we
+    // just removed was the last thing referencing it.
+    std::shared_ptr<LibUsbEndpoint> self;
+
+    {
+        std::lock_guard<std::mutex> lock(endpoint->transfersMutex_);
+        auto pendingIt = endpoint->transfers_.find(transfer);
+        if(pendingIt == endpoint->transfers_.end()) {
             if (Log::isWarn()) Log_w("transfer not found in list");
             return;
         }
 
-        auto promise(std::move(self->transfers_.at(transfer)));
+        promise = std::move(pendingIt->second.promise);
+        self = std::move(pendingIt->second.self);
+        endpoint->transfers_.erase(pendingIt);
+    }
 
-        if(transfer->status == LIBUSB_TRANSFER_COMPLETED) {
-            promise->resolve(transfer->actual_length);
-        } else {
-            auto error = transfer->status == LIBUSB_TRANSFER_CANCELLED ? error::Error(error::ErrorCode::OPERATION_ABORTED) : error::Error(error::ErrorCode::USB_TRANSFER, transfer->status);
-            promise->reject(error);
-        }
+    const auto status = transfer->status;
+    const auto actualLength = transfer->actual_length;
+    libusb_free_transfer(transfer);
 
-        libusb_free_transfer(transfer);
-        self->transfers_.erase(transfer);
-    });
+    // resolve()/reject() post onto the strand the promise was deferred on, so
+    // this is safe to call straight from libusb's event thread. Nothing here
+    // needs the io_service to still be running, which is what guarantees the
+    // bookkeeping above always happens and the self-reference is always released.
+    if(status == LIBUSB_TRANSFER_COMPLETED) {
+        promise->resolve(actualLength);
+    } else {
+        // Deliberately no resubmit-on-error here. Re-submitting a bulk transfer
+        // that already moved part of its buffer duplicates those bytes on the
+        // wire, which desynchronises the framing the AA protocol (and its SSL
+        // layer) depends on. Errors are propagated so the session can be torn
+        // down and started cleanly instead.
+        auto error = status == LIBUSB_TRANSFER_CANCELLED
+                      ? error::Error(error::ErrorCode::OPERATION_ABORTED)
+                      : error::Error(error::ErrorCode::USB_TRANSFER, status);
+        promise->reject(error);
+    }
 }
 
 }

@@ -8,4 +8,25 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00000000</color>
+    <color name="oda_surface">#10151D</color>
+    <color name="oda_surface_elevated">#1A2330</color>
+    <color name="oda_surface_pressed">#273444</color>
+    <color name="oda_outline">#3C4B5D</color>
+    <color name="oda_text_primary">#F4F8FC</color>
+    <color name="oda_text_secondary">#B5C4D4</color>
+    <color name="oda_accent">#1AA7E8</color>
+    <color name="oda_accent_pressed">#0D83BE</color>
+    <color name="oda_on_accent">#06131D</color>
+    <color name="oda_success">#147A61</color>
+    <color name="oda_error">#A84242</color>
+    <color name="settings_surface">#F4F7FA</color>
+    <color name="settings_input">#FFFFFF</color>
+    <color name="settings_outline">#A9B6C5</color>
+    <color name="settings_text_primary">#17212B</color>
+    <color name="settings_text_secondary">#526476</color>
+    <color name="home_light_surface">#E9EFF5</color>
+    <color name="home_light_surface_elevated">#FFFFFF</color>
+    <color name="home_light_outline">#B4C0CD</color>
+    <color name="home_light_text_primary">#17212B</color>
+    <color name="home_light_text_secondary">#526476</color>
 </resources>

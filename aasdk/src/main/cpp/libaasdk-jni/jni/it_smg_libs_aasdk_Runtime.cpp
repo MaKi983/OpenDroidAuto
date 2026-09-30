@@ -37,14 +37,29 @@ void JRuntime::stopIOServiceWorkers() {
     }
 
     if(Log::isDebug()) Log_d("stop all threads");
-    auto iter = threadPool_.begin();
-    while (iter != threadPool_.end()){
-        iter->detach();
-        if (iter->joinable()){
-            if(Log::isDebug()) Log_d("join thread");
-            iter->join();
+    // detach() used to run first, which makes joinable() false and meant the
+    // join below never executed: stopIOServiceWorkers() returned while workers
+    // were still inside ioService_.run(). The caller then went straight on to
+    // destroy the messenger, cryptor and transport those threads were using,
+    // which is exactly the use-after-free that surfaced as a SEGV inside
+    // boost::asio's strand_service. ioService_.stop() above has already been
+    // requested, so run() unwinds promptly and these joins are short.
+    // Teardown can be reached from a native quit callback, which runs on one of
+    // these very worker threads. Joining ourselves would throw
+    // resource_deadlock_would_occur (or hang), so that one thread is detached and
+    // every other is genuinely awaited.
+    const auto currentThreadId = std::this_thread::get_id();
+    for (auto& thread : threadPool_){
+        if (!thread.joinable()){
+            continue;
         }
-        threadPool_.erase(iter);
+        if (thread.get_id() == currentThreadId){
+            if(Log::isWarn()) Log_w("skipping join of the calling worker thread");
+            thread.detach();
+            continue;
+        }
+        if(Log::isDebug()) Log_d("join thread");
+        thread.join();
     }
 
     if(Log::isDebug()) Log_d("clear threadpool");

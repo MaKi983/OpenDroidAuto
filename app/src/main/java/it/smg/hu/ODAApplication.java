@@ -1,14 +1,18 @@
 package it.smg.hu;
 
 import android.content.Context;
+import android.content.Intent;
 
 import androidx.multidex.MultiDexApplication;
 
 import it.smg.hu.config.ODALog;
 import it.smg.hu.config.Settings;
 import it.smg.hu.manager.HondaConnectManager;
+import it.smg.hu.manager.HondaPlatform;
+import it.smg.hu.manager.ConnectionManager;
 import it.smg.hu.manager.USBManager;
 import it.smg.hu.manager.WIFIManager;
+import it.smg.hu.service.ODAService;
 
 import it.smg.hu.ui.notification.AppBadge;
 import it.smg.libs.aasdk.Runtime;
@@ -30,19 +34,35 @@ public class ODAApplication extends MultiDexApplication {
         super.attachBaseContext(base);
 
         Settings.build(base);
-//        Runtime.setExceptionHandler((thread, t) -> {
-//            Log.e(TAG, "uncaughtException in " + thread.getName(), t);
-//
-//            Log.shutdown();
-//            Runtime.delete();
-//
-//            Intent service = new Intent(this, ODAService.class);
-//            stopService(service);
-//
-//            android.os.Process.killProcess(android.os.Process.myPid());
-//        });
 
-//        Runtime.init(getApplicationContext());
+        final Thread.UncaughtExceptionHandler previousHandler = Thread.getDefaultUncaughtExceptionHandler();
+        Runtime.setExceptionHandler((thread, t) -> {
+            // android.util.Log is used directly (not the ODA file-log pipe) so this
+            // line always reaches logcat, even if ODALog/Settings aren't in a state
+            // where the custom logger can write.
+            android.util.Log.e(TAG, "uncaughtException in " + thread.getName(), t);
+
+            try {
+                Log.e(TAG, "uncaughtException in " + thread.getName(), t);
+                Log.shutdown();
+
+                Intent service = new Intent(this, ODAService.class);
+                stopService(service);
+            } catch (Throwable inner) {
+                android.util.Log.e(TAG, "error while handling uncaughtException", inner);
+            }
+
+            // Hand off to Android's default handler so the crash still gets a
+            // tombstone/"App has stopped" dialog and a FATAL EXCEPTION logcat entry,
+            // instead of the process just disappearing with no trace.
+            if (previousHandler != null) {
+                previousHandler.uncaughtException(thread, t);
+            } else {
+                android.os.Process.killProcess(android.os.Process.myPid());
+            }
+        });
+
+        Runtime.init(getApplicationContext());
         Runtime.initLog(new ODALog());
     }
 
@@ -51,6 +71,8 @@ public class ODAApplication extends MultiDexApplication {
 
 //        if (Log.isDebug()) Log.d(TAG, "Initialized jni: " + Runtime.handle());
 
+        HondaPlatform.init(getApplicationContext());
+        ConnectionManager.init(getApplicationContext());
         USBManager.init(getApplicationContext());
         WIFIManager.init(getApplicationContext());
         AppBadge.init(getApplicationContext());

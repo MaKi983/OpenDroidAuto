@@ -1,6 +1,8 @@
 package it.smg.hu.ui.settings;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -8,9 +10,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
+import androidx.core.widget.CompoundButtonCompat;
 
 import java.util.concurrent.Callable;
 
@@ -22,6 +28,70 @@ public abstract class BaseSettingsFragment extends Fragment {
     protected Settings settings;
 
     protected abstract String tag();
+
+    @Override
+    public void onViewCreated(View view, android.os.Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        boolean dark = Settings.instance().appearance.darkTheme();
+        view.setBackgroundColor(getResources().getColor(dark ? R.color.oda_surface : R.color.settings_surface));
+        styleControls(view, dark);
+    }
+
+    private void styleControls(View view, boolean dark) {
+        if (view instanceof ViewGroup && !(view instanceof Spinner)) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                styleControls(group.getChildAt(i), dark);
+            }
+            return;
+        }
+        int primaryColor = dark ? R.color.oda_text_primary : R.color.settings_text_primary;
+        int secondaryColor = dark ? R.color.oda_text_secondary : R.color.settings_text_secondary;
+        if (view instanceof EditText) {
+            EditText field = (EditText) view;
+            field.setTextColor(getResources().getColor(primaryColor));
+            field.setHintTextColor(getResources().getColor(secondaryColor));
+            field.setBackgroundResource(dark ? R.drawable.settings_input_dark : R.drawable.settings_input_light);
+            field.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
+            field.setMinHeight(dp(48));
+        } else if (view instanceof CheckBox) {
+            CheckBox checkBox = (CheckBox) view;
+            checkBox.setTextColor(getResources().getColor(primaryColor));
+            checkBox.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
+            int[][] states = new int[][]{
+                    new int[]{android.R.attr.state_checked}, new int[]{}
+            };
+            int[] colors = new int[]{
+                    getResources().getColor(R.color.oda_accent),
+                    getResources().getColor(dark ? R.color.oda_text_primary : R.color.settings_text_secondary)
+            };
+            CompoundButtonCompat.setButtonTintList(checkBox, new ColorStateList(states, colors));
+            alignToStart(checkBox, true);
+            view.setMinimumHeight(dp(48));
+        } else if (view instanceof Spinner) {
+            view.setBackgroundResource(dark ? R.drawable.settings_spinner_dark : R.drawable.settings_spinner_light);
+            view.setMinimumHeight(dp(48));
+        } else if (view instanceof TextView) {
+            TextView text = (TextView) view;
+            text.setTextColor(getResources().getColor(primaryColor));
+            text.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
+        }
+    }
+
+    private void alignToStart(View view, boolean fillWidth) {
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        if (fillWidth) {
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+        }
+        if (params instanceof LinearLayout.LayoutParams) {
+            ((LinearLayout.LayoutParams) params).gravity = Gravity.LEFT;
+        }
+        view.setLayoutParams(params);
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
 
     protected void initEditText(EditText editText, Settings.Base base, String settingsKey, String defaultValue){
         initEditText(editText, base, settingsKey, defaultValue, null);
@@ -36,7 +106,14 @@ public abstract class BaseSettingsFragment extends Fragment {
 
         editText.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE){
-                base.set(settingsKey, Integer.parseInt(v.getText().toString()));
+                String rawValue = v.getText().toString().trim();
+                try {
+                    base.set(settingsKey, Integer.parseInt(rawValue));
+                    v.setError(null);
+                } catch (NumberFormatException error) {
+                    v.setError(getString(R.string.settings_invalid_number));
+                    return true;
+                }
 
                 InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
@@ -103,8 +180,7 @@ public abstract class BaseSettingsFragment extends Fragment {
     }
 
     protected void initSpinner(Spinner spinner, int data, int dataValue, Settings.Base base, String settingsKey, int defaultValue, Callable<Void> custonCheck){
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(), data, R.layout.spinner_item);
-        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        ArrayAdapter<CharSequence> adapter = createSpinnerAdapter(data);
         spinner.setAdapter(adapter);
 
         int value = base.get(settingsKey, defaultValue);
@@ -146,8 +222,7 @@ public abstract class BaseSettingsFragment extends Fragment {
     }
 
     protected void initSpinner(Spinner spinner, int data, int dataValue, Settings.Base base, String settingsKey, String defaultValue, Callable<Void> custonCheck){
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(), data, R.layout.spinner_item);
-        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        ArrayAdapter<CharSequence> adapter = createSpinnerAdapter(data);
         spinner.setAdapter(adapter);
 
         String value = base.get(settingsKey, defaultValue);
@@ -186,5 +261,14 @@ public abstract class BaseSettingsFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private ArrayAdapter<CharSequence> createSpinnerAdapter(int data) {
+        boolean dark = Settings.instance().appearance.darkTheme();
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(), data,
+                dark ? R.layout.spinner_item_dark : R.layout.spinner_item);
+        adapter.setDropDownViewResource(dark
+                ? R.layout.spinner_dropdown_item_dark : R.layout.spinner_dropdown_item);
+        return adapter;
     }
 }

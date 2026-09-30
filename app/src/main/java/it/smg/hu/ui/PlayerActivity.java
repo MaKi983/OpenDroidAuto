@@ -21,6 +21,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import it.smg.hu.R;
 import it.smg.hu.config.Settings;
 import it.smg.hu.manager.HondaConnectManager;
+import it.smg.hu.manager.ConnectionManager;
 import it.smg.hu.projection.InputDevice;
 import it.smg.hu.service.ODAService;
 import it.smg.hu.ui.notification.AppBadge;
@@ -56,7 +57,7 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
             isRunning_ = savedInstanceState.getBoolean("isRunning");
         } else {
             Bundle b = getIntent().getExtras();
-            startMode_ = b.getString("mode");
+            startMode_ = b == null ? null : b.getString("mode");
         }
 
         if (Log.isDebug()) Log.d(TAG, "start mode: " + startMode_);
@@ -66,8 +67,9 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
 
         setContentView(R.layout.activity_player);
 
-        if (Settings.instance().advanced.hondaIntegrationEnabled()){
-            HondaConnectManager.instance().initialize();
+        HondaConnectManager hondaManager = hondaManager();
+        if (hondaManager != null){
+            hondaManager.initialize();
         }
 
         surfaceView_ = findViewById(R.id.surfaceView);
@@ -92,8 +94,7 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
     @Override
     public void onBackPressed() {
         if (Log.isDebug()) Log.d(TAG, "onBackPressed");
-
-        odaService_.stop();
+        exitSession();
     }
 
     @Override
@@ -101,7 +102,7 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (Log.isInfo()) Log.i(TAG, "Back button long pressed");
 
-            odaService_.stop();
+            exitSession();
             return true;
         }
         return super.onKeyLongPress(keyCode, event);
@@ -114,14 +115,25 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
 
         Intent odaServiceIntent = new Intent(this, ODAService.class);
         startService(odaServiceIntent);
-        bindService(odaServiceIntent, this, BIND_AUTO_CREATE | BIND_ABOVE_CLIENT | BIND_IMPORTANT);
-
-        if (Settings.instance().advanced.hondaIntegrationEnabled()){
-            HondaConnectManager.instance().initAudioBinding();
+        // Track the binding from the moment it is accepted, not from
+        // onServiceConnected: an onPause arriving before the connection lands
+        // would otherwise skip unbindService and leak this ServiceConnection,
+        // and the next onResume would bind the same object a second time.
+        if (bindService(odaServiceIntent, this, BIND_AUTO_CREATE | BIND_ABOVE_CLIENT | BIND_IMPORTANT)) {
+            isServiceBound_ = true;
         }
 
-        NotificationFactory.instance().dismissAll();
-        AppBadge.instance().dismiss();
+        HondaConnectManager hondaManager = hondaManager();
+        if (hondaManager != null){
+            hondaManager.initAudioBinding();
+        }
+
+        if (NotificationFactory.instance() != null) {
+            NotificationFactory.instance().dismissAll();
+        }
+        if (AppBadge.instance() != null) {
+            AppBadge.instance().dismiss();
+        }
 
         initReceivers();
         isActive_ = true;
@@ -131,19 +143,35 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
     protected void onPause() {
         if (Log.isDebug()) Log.d(TAG, "onPause");
         super.onPause();
-        odaService_.releaseFocus();
+        if (odaService_ != null) {
+            odaService_.releaseFocus();
+        }
 
         if (isServiceBound_) {
-            unbindService(this);
+            isServiceBound_ = false;
+            try {
+                unbindService(this);
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "service was not bound", e);
+            }
         }
 
-        if (Settings.instance().advanced.hondaIntegrationEnabled()){
-            HondaConnectManager.instance().sendToBackground();
+        HondaConnectManager hondaManager = hondaManager();
+        if (hondaManager != null){
+            hondaManager.sendToBackground();
         }
 
-        AppBadge.instance().show();
+        // The projection exit must always return to the dashboard cleanly.  A
+        // floating badge here can reopen a half-torn-down PlayerActivity and
+        // create a second Android Auto session.
+        if (AppBadge.instance() != null) {
+            AppBadge.instance().dismiss();
+        }
 
-        localBroadcastManager_.unregisterReceiver(localReceiver_);
+        if (localReceiver_ != null) {
+            localBroadcastManager_.unregisterReceiver(localReceiver_);
+            localReceiver_ = null;
+        }
         isActive_ = false;
     }
 
@@ -199,7 +227,9 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         if (Log.isDebug()) Log.d(TAG, "surfaceDestroyed");
-        odaService_.releaseFocus();
+        if (odaService_ != null) {
+            odaService_.releaseFocus();
+        }
     }
 
     @Override
@@ -217,10 +247,29 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
         }
     }
 
+    /**
+     * The Honda glue, or null when it is switched off or was never initialised.
+     * HondaConnectManager.init() only runs at boot when the setting was already
+     * enabled, so turning it on later leaves instance() null.
+     */
+    private HondaConnectManager hondaManager(){
+        if (!Settings.instance().advanced.hondaIntegrationEnabled()){
+            return null;
+        }
+        return HondaConnectManager.instance();
+    }
+
     private void start(){
 
-        if (Settings.instance().advanced.hondaIntegrationEnabled()){
-            HondaConnectManager.instance().adjustPermission();
+        HondaConnectManager hondaManager = hondaManager();
+        if (hondaManager != null){
+            hondaManager.adjustPermission();
+        }
+
+        if (startMode_ == null) {
+            ConnectionManager.instance().failed(getString(R.string.connection_mode_missing));
+            finish();
+            return;
         }
 
         switch (startMode_){
@@ -242,7 +291,9 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
     public void onServiceDisconnected(ComponentName name) {
         if (Log.isDebug()) Log.d(TAG, "onServiceDisconnected");
         odaService_ = null;
-        isServiceBound_ = false;
+        // isServiceBound_ stays true on purpose: the service process died but the
+        // binding is still registered, so onPause must still unbind it. Clearing
+        // the flag here leaked the ServiceConnection on every service crash.
     }
 
     @Override
@@ -267,5 +318,19 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
 
     public static boolean isActive(){
         return isActive_;
+    }
+
+    private void exitSession() {
+        if (AppBadge.instance() != null) {
+            AppBadge.instance().dismiss();
+        }
+        if (odaService_ != null) {
+            ConnectionManager.instance().disconnecting(getString(R.string.connection_user_stopping));
+            odaService_.shutdown();
+            finish();
+        } else {
+            ConnectionManager.instance().userExited(getString(R.string.connection_user_stopped));
+            finish();
+        }
     }
 }

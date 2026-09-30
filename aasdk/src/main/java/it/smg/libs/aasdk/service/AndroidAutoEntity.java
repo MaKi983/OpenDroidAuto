@@ -63,8 +63,7 @@ public class AndroidAutoEntity implements IAndroidAutoEntity {
     }
 
     public void shutdown(){
-//        nativeRequestShutdown();
-        stop();
+        nativeRequestShutdown();
     }
 
     @Override

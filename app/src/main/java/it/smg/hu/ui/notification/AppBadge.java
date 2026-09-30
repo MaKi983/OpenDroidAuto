@@ -119,19 +119,15 @@ public class AppBadge extends Notification{
 
     @Override
     public void show() {
-        if (Settings.instance().video.showAppBadge()) {
-
-            Intent odaServiceIntent = new Intent(ctx_, AppBadge.class);
-            ctx_.startService(odaServiceIntent);
-            super.show();
-        }
+        // The badge is not part of the Android Auto lifecycle.  Showing it after
+        // projection stops permits reopening PlayerActivity before teardown is
+        // complete, which corrupts the next USB/TLS session.
+        super.dismiss();
     }
 
     @Override
     public void dismiss() {
-        if (Settings.instance().video.showAppBadge()) {
-            super.dismiss();
-        }
+        super.dismiss();
     }
 
     @Override

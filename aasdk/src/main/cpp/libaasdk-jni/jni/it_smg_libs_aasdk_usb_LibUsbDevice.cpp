@@ -24,6 +24,10 @@ void JLibUsbDevice::close() {
     libUsbDevice_->close();
 }
 
+int JLibUsbDevice::resetDevice() {
+    return libUsbDevice_->resetDevice();
+}
+
 int JLibUsbDevice::deviceDescriptor(libusb_device_descriptor &descriptor) {
     return libUsbDevice_->deviceDescriptor(descriptor);
 }
@@ -119,4 +123,11 @@ Java_it_smg_libs_aasdk_usb_LibUsbDevice_nativeSerial(JNIEnv *env, jobject thiz) 
     jbyteArray data = env->NewByteArray(size);
     env->SetByteArrayRegion (data, 0, size, reinterpret_cast<const jbyte *>(jlibUsbDevice->serial()));
     return data;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_it_smg_libs_aasdk_usb_LibUsbDevice_nativeResetDevice(JNIEnv *env, jobject thiz) {
+    JLibUsbDevice::Pointer jlibUsbDevice = JLibUsbDevice::getJLibUsbDevice(env, thiz);
+    return jlibUsbDevice->resetDevice();
 }

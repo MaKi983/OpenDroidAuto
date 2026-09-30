@@ -3,7 +3,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-feature android:name="android.hardware.usb.host" android:required="false"/>
-    <uses-feature android:name="android.hardware.usb.accessory" android:required="true" />
+    <uses-feature android:name="android.hardware.usb.accessory" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
 
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
@@ -24,33 +24,40 @@
 
     <uses-permission android:name="android.permission.ADA_SERVICE_ACCESS" android:required="false" />
 
+    <!-- Required by the media/navigation TYPE_SYSTEM_ALERT notifications. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application android:label="OpenDroidAuto"
         android:name=".ODAApplication"
+        android:allowBackup="false"
         android:icon="@drawable/logo"
         android:hardwareAccelerated="true"
         android:theme="@style/Theme.AppCompat">
 
-        <activity android:name=".ui.MainActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.Popup" android:launchMode="singleTask">
+        <activity android:name=".ui.MainActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme" android:launchMode="singleTask" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
-            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
         </activity>
 
-        <activity android:name=".ui.SettingsActivity" android:label="Settings" android:screenOrientation="landscape">
+        <activity android:name=".ui.SettingsActivity" android:label="Settings" android:screenOrientation="landscape" android:exported="false">
         </activity>
 
-        <activity android:name=".ui.PlayerActivity"  android:screenOrientation="landscape" android:launchMode="singleTask"> <!--android:excludeFromRecents="true" android:noHistory="true"-->
+        <activity android:name=".ui.PlayerActivity"  android:screenOrientation="landscape" android:launchMode="singleTask" android:exported="false"> <!--android:excludeFromRecents="true" android:noHistory="true"-->
         </activity>
 
-        <service android:enabled="true" android:name=".service.ODAService" android:exported="true">
+        <service android:enabled="true" android:name=".service.ODAService" android:exported="false">
         </service>
+
+        <receiver android:name=".manager.UsbPermissionReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="it.smg.hu.USB_PERMISSION" />
+                <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED" />
+            </intent-filter>
+        </receiver>
 
         <receiver android:name=".widget.ExitWidget" android:label="@string/widget_exit_preview_text" android:exported="true">
             <intent-filter>

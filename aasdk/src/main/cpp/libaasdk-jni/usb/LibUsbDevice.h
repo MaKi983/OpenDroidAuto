@@ -24,7 +24,7 @@ public:
 
     int open(int fd);
     void close();
-    void resetDevice();
+    int resetDevice();
     DeviceHandle handle();
 
     int claimInterface(uint8_t bInterfaceNumber);

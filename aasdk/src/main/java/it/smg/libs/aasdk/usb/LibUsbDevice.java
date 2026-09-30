@@ -27,6 +27,7 @@ public final class LibUsbDevice {
     private native int nativeDeviceDescriptor();
     private native int nativeOpen(int fd);
     private native void nativeClose();
+    private native int nativeResetDevice();
     private native byte[] nativeManufacter();
     private native byte[] nativeProduct();
     private native byte[] nativeSerial();
@@ -91,6 +92,17 @@ public final class LibUsbDevice {
             usbConnection_ = null;
             if (Log.isVerbose()) Log.v(TAG, "closed android connection");
         }
+    }
+
+    /** Resets the USB device after all endpoint transfers have been stopped. */
+    public boolean reset(){
+        if (usbConnection_ == null) {
+            if (Log.isWarn()) Log.w(TAG, "cannot reset a closed USB connection");
+            return false;
+        }
+        int code = nativeResetDevice();
+        if (Log.isInfo()) Log.i(TAG, "device reset completed with code " + code);
+        return code == LibUsb.SUCCESS;
     }
 
     public UsbDevice originalDevice(){

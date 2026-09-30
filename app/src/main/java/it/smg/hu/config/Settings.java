@@ -10,6 +10,7 @@ import androidx.annotation.Keep;
 
 import it.smg.libs.common.ILog;
 import it.smg.libs.aasdk.configuration.ICarConfiguration;
+import it.smg.hu.manager.HondaPlatform;
 
 //import it.smg.hu.oda.service.input.KeyCode;
 //import it.smg.hu.oda.service.sensor.IDayNightSensor;
@@ -26,6 +27,7 @@ public class Settings {
     public Video video;
     public Audio audio;
     public Connectivity connectivity;
+    public Appearance appearance;
 
     private static Settings settings = null;
 
@@ -43,6 +45,7 @@ public class Settings {
         car = new Car();
         keymap = new Keymap();
         connectivity = new Connectivity();
+        appearance = new Appearance();
         advanced = new Advanced();
         video = new Video();
         audio = new Audio();
@@ -545,6 +548,7 @@ public class Settings {
             return SP.getBoolean(ADVANCED_ENABLE_WIFI, ADVANCED_ENABLE_WIFI_DEFAULT_VALUE);
         }
 
+
         public int logLevel(){
             return SP.getInt(ADVANCED_LOG_LEVEL, ADVANCED_LOG_LEVEL_DEFAULT_VALUE);
         }
@@ -570,7 +574,8 @@ public class Settings {
         }
 
         public boolean hondaIntegrationEnabled(){
-            return SP.getBoolean(ADVANCED_ENABLE_HONDA_INTEGRATION, ADVANCED_ENABLE_HONDA_INTEGRATION_DEFAULT_VALUE);
+            return SP.getBoolean(ADVANCED_ENABLE_HONDA_INTEGRATION, ADVANCED_ENABLE_HONDA_INTEGRATION_DEFAULT_VALUE)
+                    && HondaPlatform.isAvailable();
         }
 
         public void hondaIntegrationEnabled(boolean integration){
@@ -632,6 +637,19 @@ public class Settings {
 
         public void steeringWheelIdx(int idx){
             SP.edit().putInt(ADVANCED_SW_IDX, idx).apply();
+        }
+    }
+
+    public class Appearance extends Base {
+        public static final String DARK_THEME = "darkTheme";
+        public static final boolean DARK_THEME_DEFAULT_VALUE = false;
+
+        public boolean darkTheme() {
+            return get(DARK_THEME, DARK_THEME_DEFAULT_VALUE);
+        }
+
+        public void darkTheme(boolean enabled) {
+            set(DARK_THEME, enabled);
         }
     }
 

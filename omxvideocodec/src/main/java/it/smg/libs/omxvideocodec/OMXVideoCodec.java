@@ -23,6 +23,9 @@ public class OMXVideoCodec {
     @Keep
     private long handle_ = 0;
 
+    /** Guards handle_ against decode racing with teardown. */
+    private final Object codecLock_ = new Object();
+
     private Surface surfaceView_;
     private int width_;
     private int height_;
@@ -53,21 +56,39 @@ public class OMXVideoCodec {
     }
 
     public void shutdown() {
-        nativeDelete();
-        if (Log.isVerbose()) Log.v(TAG, "Native deleted");
-        handle_ = 0;
+        // Serialised against mediaDecode: frames keep arriving on a native
+        // io_service thread while the session is being torn down, and feeding one
+        // into a decoder whose native side has just been freed is a use-after-free.
+        synchronized (codecLock_) {
+            if (handle_ == 0) {
+                return;
+            }
+            nativeDelete();
+            if (Log.isVerbose()) Log.v(TAG, "Native deleted");
+            handle_ = 0;
+        }
     }
 
     public void mediaDecode(long timestamp, ByteBuffer buf, int len) {
         if (Log.isVerbose()) Log.v(TAG, "mediaDecode");
-        if (isSps(buf)) {
-            nativeSetSps(buf, len);
+        synchronized (codecLock_) {
+            if (handle_ == 0) {
+                return;
+            }
+            if (isSps(buf)) {
+                nativeSetSps(buf, len);
+            }
+            nativeConsume(buf, len, timestamp);
         }
-        nativeConsume(buf, len, timestamp);
     }
 
     private boolean isSps(ByteBuffer buf) {
-        boolean sps = (buf.get(4) & 0x1f ) == 7;
-        return sps;
+        // 4-byte Annex B start code plus the NAL header byte. A runt frame used to
+        // throw IndexOutOfBounds straight into the native caller, killing the
+        // io_service thread that delivered it.
+        if (buf.limit() < 5) {
+            return false;
+        }
+        return (buf.get(4) & 0x1f) == 7;
     }
 }

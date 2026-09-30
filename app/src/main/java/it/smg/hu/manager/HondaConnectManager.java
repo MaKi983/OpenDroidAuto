@@ -195,7 +195,7 @@ public class HondaConnectManager {
 
                 registerSteeringMenuCallback();
 
-                if (pControl_.authType != Constants.AUTH_TYPE_PREINSTALL){
+                if (!isPreinstall()){
                     notifySteeringMenuDispMode(1);
                 }
 
@@ -272,7 +272,7 @@ public class HondaConnectManager {
     }
 
     public int mediaAudioStream(ChannelId audioChannel){
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
+        if (isPreinstall()){
             switch (audioChannel) {
                 case SPEECH_AUDIO:
                 case SYSTEM_AUDIO:
@@ -298,7 +298,8 @@ public class HondaConnectManager {
     }
 
     public void requestAudioFocus(){
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL && !hasAudioFocus_) {
+        // If AUTH_TYPE <> preinstall the app has already audio focus
+        if (isPreinstall() && modeMgrManager_ != null && !hasAudioFocus_) {
             requestFocus(settings_.advanced.modeMgrAudioVideoIdx(), ModeMgrMode.REQUEST_BOTH);
 
             if (Log.isDebug()) Log.d(TAG, "requestAudioFocus statusBarExManager_ audioSourceStartUp");
@@ -320,7 +321,8 @@ public class HondaConnectManager {
     }
 
     public void releaseAudioFocus(){
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL && hasAudioFocus_) {
+        // If AUTH_TYPE <> preinstall the app has already audio focus
+        if (isPreinstall() && modeMgrManager_ != null && hasAudioFocus_) {
             releaseFocus(settings_.advanced.modeMgrAudioVideoIdx(), ModeMgrMode.REQUEST_AUDIO);
             requestFocus(settings_.advanced.modeMgrVideoIdx(), ModeMgrMode.REQUEST_VIDEO);
 
@@ -393,7 +395,7 @@ public class HondaConnectManager {
 
     // Used in onCreate
     public void initialize(){
-        if (Log.isDebug()) Log.d(TAG, "initialize -> app with auth " + pControl_.authType);
+        if (Log.isDebug()) Log.d(TAG, "initialize -> app with auth " + authType());
 
         bindToEcNcService();
         bindToWheelService();
@@ -416,9 +418,9 @@ public class HondaConnectManager {
 
     // Used in onResume
     public void initAudioBinding(){
-        if (Log.isDebug()) Log.d(TAG, "initAudioBinding -> app with auth " + pControl_.authType);
+        if (Log.isDebug()) Log.d(TAG, "initAudioBinding -> app with auth " + authType());
         // if app has THIRD_PARTY auth will have exclusive audio focus, only bind wheel service
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
+        if (isPreinstall()){
             if (Log.isDebug()) Log.d(TAG, "initAudioBinding -> app auth = preinstall -> register ModeMgr and SW callback");
 
             isRunning_ = true;
@@ -444,19 +446,19 @@ public class HondaConnectManager {
 
     // Used in onPause (app in background)
     public void sendToBackground(){
-        if (Log.isDebug()) Log.d(TAG, "sendToBackground -> app with auth " + pControl_.authType + " unregister SW callback");
+        if (Log.isDebug()) Log.d(TAG, "sendToBackground -> app with auth " + authType() + " unregister SW callback");
         unregisterSteeringMenuCallback();
         unregisterModeMgrSWCallbacks();
         notifySteeringMenuDispMode(0);
     }
 
     public void endAudioBinding(){
-        if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> app with auth " + pControl_.authType);
+        if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> app with auth " + authType());
 
         stopMicSession();
         unbindFromEcNcService();
 
-        if (!settings_.advanced.enableWiFi()) {
+        if (settings_.advanced.useBtMicVr()) {
             if (bluetoothVR_ != null) {
                 if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> releaseVoiceControlRights");
                 int ret = bluetoothVR_.releaseVoiceControlRights(bluetoothVrListener_);
@@ -465,7 +467,7 @@ public class HondaConnectManager {
             }
         }
 
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL){
+        if (isPreinstall()){
             if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> auth PREINSTALL -> release audio and unregister modemgr callback");
 
             isRunning_ = false;
@@ -498,7 +500,7 @@ public class HondaConnectManager {
 
     private void notifySteeringMenuDispMode(int mode){
         if (Log.isDebug()) Log.d(TAG, "notifySteeringMenuDispMode -> boundToSteeringMenuService= " + boundToSteeringMenuService_);
-        if (boundToSteeringMenuService_) {
+        if (boundToSteeringMenuService_ && steeringMenuServiceIface_ != null) {
             try {
                 int idx = settings_.advanced.steeringWheelIdx();
                 if (idx > 0) {
@@ -507,6 +509,8 @@ public class HondaConnectManager {
                 }
             } catch (RemoteException e) {
                 Log.e(TAG, "Error registering", e);
+            } catch (RuntimeException e) {
+                Log.e(TAG, "Unexpected error notifySteeringMenuDispMode", e);
             }
         }
     }
@@ -522,6 +526,10 @@ public class HondaConnectManager {
             }
         } catch (RemoteException e) {
             Log.e(TAG, "Error registerCallbackEx", e);
+            steeringMenuServiceCallback_ = null;
+        } catch (RuntimeException e) {
+            Log.e(TAG, "Unexpected error registerCallbackEx", e);
+            steeringMenuServiceCallback_ = null;
         }
     }
 
@@ -582,6 +590,10 @@ public class HondaConnectManager {
             }
         } catch (RemoteException e) {
             Log.e(TAG, "Error unregisterCallbackEx", e);
+            steeringMenuServiceCallback_ = null;
+        } catch (RuntimeException e) {
+            Log.e(TAG, "Unexpected error unregisterCallbackEx", e);
+            steeringMenuServiceCallback_ = null;
         }
     }
 
@@ -807,6 +819,14 @@ public class HondaConnectManager {
         }
     }
 
+    private boolean isPreinstall() {
+        return pControl_ != null && pControl_.authType == Constants.AUTH_TYPE_PREINSTALL;
+    }
+
+    private String authType() {
+        return pControl_ == null ? "unavailable" : String.valueOf(pControl_.authType);
+    }
+  
     private void registerStateMgrCallback() {
         if (Log.isDebug()) Log.d(TAG, "registerStateMgrCallback");
         if (stateMgrManager_ != null){
