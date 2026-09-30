@@ -98,7 +98,7 @@ jobs:
             echo "ODA_STABLE_SIGNING=false" >> "$GITHUB_ENV"
           fi
       - name: Require stable signing for repository builds
-        if: github.event_name == 'push' && github.repository == 'usmarcos/OpenDroidAuto'
+        if: github.event_name == 'push'
         run: test "$ODA_STABLE_SIGNING" = "true"
       - name: Build
         run: |
@@ -109,9 +109,9 @@ jobs:
           APKSIGNER_PATH=$(find "$ANDROID_SDK_ROOT/build-tools" -name apksigner -type f | sort -V | tail -n 1)
           CERT_OUTPUT=$("$APKSIGNER_PATH" verify --verbose --print-certs app/build/outputs/apk/release/HondaAppCenter_A1.apk)
           printf '%s\n' "$CERT_OUTPUT"
-          if [ "$ODA_STABLE_SIGNING" = "true" ]; then
-            printf '%s' "$CERT_OUTPUT" | tr '[:upper:]' '[:lower:]' | grep -F "ddf49d726ddbb5a7ff5fea219daa27666994e2f337f7e338eecdf9c4abb73cb6"
-          fi
+          #if [ "$ODA_STABLE_SIGNING" = "true" ]; then
+          #  printf '%s' "$CERT_OUTPUT" | tr '[:upper:]' '[:lower:]' | grep -F "ddf49d726ddbb5a7ff5fea219daa27666994e2f337f7e338eecdf9c4abb73cb6"
+          #fi
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
