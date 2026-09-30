@@ -4,9 +4,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+
+import java.util.Scanner;
 
 import it.smg.hu.R;
 import it.smg.hu.config.Settings;
@@ -61,6 +64,9 @@ public class AdvancedFragment extends BaseSettingsFragment {
         CheckBox enableHondaMicVr = view.findViewById(R.id.enable_hondamicvr);
         initCheckBox(enableHondaMicVr, settings.advanced, Settings.Advanced.ADVANCED_ENABLE_HONDA_MIC_VR, Settings.Advanced.ADVANCED_ENABLE_HONDA_MIC_VR_DEFAULT_VALUE);
 
+        CheckBox useBtMicVr = view.findViewById(R.id.enable_usebtmicvr);
+        initCheckBox(useBtMicVr, settings.advanced, Settings.Advanced.ADVANCED_USE_BT_MIC_VR, Settings.Advanced.ADVANCED_USE_BT_MIC_VR_DEFAULT_VALUE);
+
         CheckBox enableHondaiMid = view.findViewById(R.id.enable_hondaimid);
         initCheckBox(enableHondaiMid, settings.advanced, Settings.Advanced.ADVANCED_ENABLE_HONDA_IMID, Settings.Advanced.ADVANCED_ENABLE_HONDA_IMID_DEFAULT_VALUE);
 
@@ -83,6 +89,9 @@ public class AdvancedFragment extends BaseSettingsFragment {
 
         EditText modeMgrAudioVideoIdx = view.findViewById(R.id.modemgraudiovideo_idx);
         initEditText(modeMgrAudioVideoIdx, settings.advanced, Settings.Advanced.ADVANCED_MODEMGRAUDIOVIDEO_IDX, Settings.Advanced.ADVANCED_MODEMGRAUDIOVIDEO_IDX_DEFAULT_VALUE);
+
+        EditText modeMgrVideoIdx = view.findViewById(R.id.modemgrvideo_idx);
+        initEditText(modeMgrVideoIdx, settings.advanced, Settings.Advanced.ADVANCED_MODEMGRVIDEO_IDX, Settings.Advanced.ADVANCED_MODEMGRVIDEO_IDX_DEFAULT_VALUE);
 
         EditText steeringWheelIdx = view.findViewById(R.id.steeringwheel_idx);
         initEditText(steeringWheelIdx, settings.advanced, Settings.Advanced.ADVANCED_SW_IDX, Settings.Advanced.ADVANCED_SW_IDX_DEFAULT_VALUE);

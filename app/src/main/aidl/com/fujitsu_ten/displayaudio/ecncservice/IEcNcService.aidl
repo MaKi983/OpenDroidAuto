@@ -7,4 +7,5 @@ interface IEcNcService {
     int endSiri();
     int startHft();
     int endHft();
+    boolean getFailsafeStat();
 }
