@@ -505,7 +505,7 @@ public class Settings {
         public final static String ADVANCED_SW_IDX = "steeringwheelidx";
 
         public final static boolean ADVANCED_ENABLED_DEBUG_DEFAULT_VALUE = false;
-        public final static String ADVANCED_LOG_DIR_DEFAULT_VALUE = "/mnt/sdcard/usbdrive2/";
+        public final static String ADVANCED_LOG_DIR_DEFAULT_VALUE = "/mnt/sdcard/usbdrive2/ODA/";
         public final static boolean ADVANCED_ENABLE_WIFI_DEFAULT_VALUE = false;
         public final static int ADVANCED_LOG_LEVEL_DEFAULT_VALUE = ILog.DEFAULT_LOG_LEVEL;
         public final static boolean ADVANCED_LOG_PROTOCOL_DEFAULT_VALUE = false;
