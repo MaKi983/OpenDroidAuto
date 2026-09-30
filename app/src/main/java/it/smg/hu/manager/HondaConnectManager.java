@@ -507,6 +507,8 @@ public class HondaConnectManager {
                 }
             } catch (RemoteException e) {
                 Log.e(TAG, "Error registering", e);
+            } catch (RuntimeException e) {
+                Log.e(TAG, "Unexpected error notifySteeringMenuDispMode", e);
             }
         }
     }
@@ -522,6 +524,10 @@ public class HondaConnectManager {
             }
         } catch (RemoteException e) {
             Log.e(TAG, "Error registerCallbackEx", e);
+            steeringMenuServiceCallback_ = null;
+        } catch (RuntimeException e) {
+            Log.e(TAG, "Unexpected error registerCallbackEx", e);
+            steeringMenuServiceCallback_ = null;
         }
     }
 
@@ -582,6 +588,10 @@ public class HondaConnectManager {
             }
         } catch (RemoteException e) {
             Log.e(TAG, "Error unregisterCallbackEx", e);
+            steeringMenuServiceCallback_ = null;
+        } catch (RuntimeException e) {
+            Log.e(TAG, "Unexpected error unregisterCallbackEx", e);
+            steeringMenuServiceCallback_ = null;
         }
     }
 

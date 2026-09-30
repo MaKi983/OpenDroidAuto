@@ -176,7 +176,7 @@ public class USBManager {
 
                 if (Log.isDebug()) Log.d(TAG, "Send Version " + VERSION);
                 buffer = (VERSION + "\0").getBytes();
-                len = usbConnection.controlTransfer(UsbConstants.USB_DIR_OUT | UsbConstants.USB_TYPE_VENDOR, ACC_REQ_SEND_STRING, 0, 0, buffer, buffer.length, 10000);
+                len = usbConnection.controlTransfer(UsbConstants.USB_DIR_OUT | UsbConstants.USB_TYPE_VENDOR, ACC_REQ_SEND_STRING, 0, 3, buffer, buffer.length, 10000);
                 if (len != buffer.length) {
                     Log.e(TAG, "Error sending Version, len= " + len + " expected= " + buffer.length);
                     return false;
@@ -184,7 +184,7 @@ public class USBManager {
 
                 if (Log.isDebug()) Log.d(TAG, "Send URI " + URI);
                 buffer = (URI + "\0").getBytes();
-                len = usbConnection.controlTransfer(UsbConstants.USB_DIR_OUT | UsbConstants.USB_TYPE_VENDOR, ACC_REQ_SEND_STRING, 0, 0, buffer, buffer.length, 10000);
+                len = usbConnection.controlTransfer(UsbConstants.USB_DIR_OUT | UsbConstants.USB_TYPE_VENDOR, ACC_REQ_SEND_STRING, 0, 4, buffer, buffer.length, 10000);
                 if (len != buffer.length) {
                     Log.e(TAG, "Error sending Manufacter, len= " + len + " expected= " + buffer.length);
                     return false;
@@ -192,7 +192,7 @@ public class USBManager {
 
                 if (Log.isDebug()) Log.d(TAG, "Send Serial " + SERIAL);
                 buffer = (SERIAL + "\0").getBytes();
-                len = usbConnection.controlTransfer(UsbConstants.USB_DIR_OUT | UsbConstants.USB_TYPE_VENDOR, ACC_REQ_SEND_STRING, 0, 0, buffer, buffer.length, 10000);
+                len = usbConnection.controlTransfer(UsbConstants.USB_DIR_OUT | UsbConstants.USB_TYPE_VENDOR, ACC_REQ_SEND_STRING, 0, 5, buffer, buffer.length, 10000);
                 if (len != buffer.length) {
                     Log.e(TAG, "Error sending Serial, len= " + len + " expected= " + buffer.length);
                     return false;

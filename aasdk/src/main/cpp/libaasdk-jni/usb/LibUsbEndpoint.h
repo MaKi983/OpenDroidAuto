@@ -24,7 +24,16 @@ public:
     void cancelTransfers() override;
 
 private:
-    typedef std::unordered_map<libusb_transfer*, Promise::Pointer> Transfers;
+    static constexpr uint32_t cMaxTransferRetries = 2;
+
+    static constexpr uint32_t cMaxErrorRetries = 1;
+
+    struct PendingTransfer {
+        Promise::Pointer promise;
+        uint32_t retryCount = 0;
+    };
+
+    typedef std::unordered_map<libusb_transfer*, PendingTransfer> Transfers;
 
     void transfer(libusb_transfer *transfer, Promise::Pointer promise);
     static void transferHandler(libusb_transfer *transfer);

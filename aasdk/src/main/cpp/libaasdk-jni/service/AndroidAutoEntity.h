@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <boost/asio.hpp>
 #include <configuration/IConfiguration.h>
 #include "transport/ITransport.hpp"
@@ -69,7 +70,13 @@ private:
 
     void sendPing();
 
+    static constexpr uint32_t cMaxConsecutiveTransientUsbErrors = 3;
+
+    static constexpr int cStartupSettleDelayMs = 300;
+
     aasdk::io::strand strand_;
+    boost::asio::deadline_timer startupSettleTimer_;
+    std::atomic<bool> isQuitting_{false};
     aasdk::messenger::ICryptor::Pointer cryptor_;
     aasdk::transport::ITransport::Pointer transport_;
     aasdk::messenger::IMessenger::Pointer messenger_;
@@ -78,6 +85,8 @@ private:
     ServiceList serviceList_;
     IPinger::Pointer pinger_;
     IAndroidAutoEntityEventHandler::Pointer eventHandler_;
+
+    uint32_t consecutiveTransientUsbErrors_ = 0;
 };
 
 }
