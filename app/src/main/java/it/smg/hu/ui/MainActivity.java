@@ -1,226 +1,170 @@
 package it.smg.hu.ui;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.widget.Toast;
 
 import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import it.smg.hu.service.ODAService;
 import it.smg.hu.R;
+import it.smg.hu.manager.ConnectionManager;
+import it.smg.hu.manager.ConnectionState;
 import it.smg.hu.manager.USBManager;
 import it.smg.hu.manager.WIFIManager;
+import it.smg.hu.service.ODAService;
 import it.smg.hu.ui.main.HomeFragment;
-import it.smg.hu.ui.notification.AppBadge;
-import it.smg.hu.ui.notification.NotificationFactory;
-import it.smg.libs.common.Log;
 
+/** Connection host. It launches the player only after a transport is ready. */
 public class MainActivity extends FragmentActivity {
-
     public static final int SETTINGS_ACTIVITY_REQUEST = 12345;
-
-    private final static String TAG = "MainActivity";
 
     private USBManager usbManager_;
     private WIFIManager wifiManager_;
     private LocalBroadcastManager localBroadcastManager_;
-
-    private Intent newUsbDeviceIntent_ = null;
-    private boolean isOpenFromMain_ = false;
-    private boolean isOpenFromUsb_ = false;
-    private boolean isServiceBound_ = false;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (Log.isDebug()) Log.d(TAG, "onCreate, intent: " + getIntent());
-        if (Log.isDebug()) Log.d(TAG, "onCreate, intent action: " + getIntent().getAction());
-
-        isOpenFromMain_ = false;
-        isOpenFromUsb_ = false;
-
-        localBroadcastManager_ = LocalBroadcastManager.getInstance(this);
-        usbManager_ = USBManager.instance();
-        wifiManager_ = WIFIManager.instance();
-
-        setContentView(R.layout.activity_main);
-
-        Intent intent = getIntent();
-        if (Log.isInfo()) Log.i(TAG, "intent action: " + intent.getAction());
-
-        if ( UsbManager.ACTION_USB_DEVICE_ATTACHED.equalsIgnoreCase(intent.getAction())) {
-            if (Log.isInfo()) Log.i(TAG, "new usb device intent: " + intent);
-            newUsbDeviceIntent_ = intent;
-            getWindow().setLayout(0, 0);
-            isOpenFromMain_ = false;
-            isOpenFromUsb_ = true;
-        } else if (Intent.ACTION_MAIN.equalsIgnoreCase(intent.getAction())) {
-            HomeFragment f = new HomeFragment();
-            Bundle args = new Bundle();
-            args.putBoolean(HomeFragment.AUTOSTART, true);
-            f.setArguments(args);
-
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.home_content, f)
-                    .commit();
-
-            isOpenFromMain_ = true;
-            isOpenFromUsb_ = false;
-        }
-
-    }
-
-    private void registerReceiver(){
-        IntentFilter wifiFilter = new IntentFilter();
-        wifiFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(wifiReceiver, wifiFilter);
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(USBManager.ATTACH_AOAP_DEVICE);
-        localBroadcastManager_.registerReceiver(usbReceiver, filter);
-    }
+    private boolean receiversRegistered_;
+    private boolean playerLaunchPending_;
 
     private final BroadcastReceiver wifiReceiver = new BroadcastReceiver() {
-        private final static String TAG = "MainActivity-WifiReceiver";
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (Log.isDebug()) Log.d(TAG, "Received action: " + intent.getAction());
             if (wifiManager_ != null) {
                 wifiManager_.checkNetwork();
             }
         }
     };
 
-    private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver usbAttachReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            final String TAG = "MainActivity-UsbReceiver";
+            if (usbManager_ == null || intent == null
+                    || !UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(intent.getAction())) {
+                return;
+            }
+            usbManager_.onUsbDeviceDetected(intent.getParcelableExtra(UsbManager.EXTRA_DEVICE));
+        }
+    };
 
-            if (Log.isDebug()) Log.d(TAG, intent.getAction());
-            if (isOpenFromUsb_) {
-                if (intent.getAction().equals(USBManager.ATTACH_AOAP_DEVICE)) {
-                    if (Log.isDebug()) Log.d(TAG, "open popup activity");
-                    NotificationFactory.instance().notifyStartRequest();
-
-//                    MainActivity.this.finish();
+    private final BroadcastReceiver connectionReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (ConnectionManager.ACTION_STATE_CHANGED.equals(action)) {
+                String state = intent.getStringExtra(ConnectionManager.EXTRA_STATE);
+                if (ConnectionState.ERROR.name().equals(state) || ConnectionState.IDLE.name().equals(state)
+                        || ConnectionState.EXITED.name().equals(state)) {
+                    playerLaunchPending_ = false;
                 }
             }
         }
     };
 
     @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        if (Log.isDebug()) Log.d(TAG, "onNewIntent, action " + intent.getAction());
-        if ( UsbManager.ACTION_USB_DEVICE_ATTACHED.equalsIgnoreCase(intent.getAction())) {
-            if (Log.isInfo()) Log.i(TAG, "attached new device, keep intent");
-            newUsbDeviceIntent_ = intent;
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        usbManager_ = USBManager.instance();
+        wifiManager_ = WIFIManager.instance();
+        localBroadcastManager_ = LocalBroadcastManager.getInstance(this);
+
+        setContentView(R.layout.activity_main);
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.home_content, new HomeFragment())
+                    .commit();
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (Log.isDebug()) Log.d(TAG, "onResume");
-
-        Intent odaServiceIntent = new Intent(this, ODAService.class);
-        startService(odaServiceIntent);
-
-        registerReceiver();
-
-        Intent intent = newUsbDeviceIntent_;
-        if (Log.isDebug()) Log.d(TAG, "onResume intent: " + intent);
-        if (intent != null) {
-            if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equalsIgnoreCase(intent.getAction())) {
-                UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                if (Log.isDebug()) Log.d(TAG, "attached device " + device);
-                if (device != null) {
-                    usbManager_.checkDevice(device);
-                }
-            } else if (USBManager.ACTION_USB_PERMISSION.equalsIgnoreCase(intent.getAction())) {
-                UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                    if (Log.isDebug()) Log.d(TAG, "permission granted for device " + device);
-                    if (device != null) {
-                        usbManager_.checkDevice(device);
-                    }
-                } else {
-                    if (Log.isWarn()) Log.w(TAG, "permission negated for device " + device + " do nothing");
-                }
-            }
+        playerLaunchPending_ = PlayerActivity.isActive();
+        registerConnectionReceivers();
+        if (usbManager_ != null) {
+            usbManager_.rescanAttachedDevices();
         }
-
-//        NotificationFactory.init(getApplicationContext());
-//        NotificationFactory.instance().notifyStartRequest();
-        AppBadge.instance().dismiss();
-
-        newUsbDeviceIntent_ = null;
+        if (wifiManager_ != null) {
+            wifiManager_.checkNetwork();
+        }
     }
 
     @Override
     protected void onPause() {
+        unregisterConnectionReceivers();
         super.onPause();
+    }
+
+    private void registerConnectionReceivers() {
+        if (receiversRegistered_) {
+            return;
+        }
+        registerReceiver(wifiReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        registerReceiver(usbAttachReceiver, new IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED));
+        IntentFilter localFilter = new IntentFilter();
+        localFilter.addAction(USBManager.ATTACH_AOAP_DEVICE);
+        localFilter.addAction(WIFIManager.CONNECT_WIFI);
+        localFilter.addAction(ConnectionManager.ACTION_STATE_CHANGED);
+        localBroadcastManager_.registerReceiver(connectionReceiver, localFilter);
+        receiversRegistered_ = true;
+    }
+
+    private void unregisterConnectionReceivers() {
+        if (!receiversRegistered_) {
+            return;
+        }
         unregisterReceiver(wifiReceiver);
-
-        localBroadcastManager_.unregisterReceiver(usbReceiver);
-        if (Log.isDebug()) Log.d(TAG, "onPause");
+        unregisterReceiver(usbAttachReceiver);
+        localBroadcastManager_.unregisterReceiver(connectionReceiver);
+        receiversRegistered_ = false;
     }
 
-    @Override
-    protected void onStart() {
-        if (Log.isDebug()) Log.d(TAG, "onStart");
-        super.onStart();
+    public void startConnectionManually(String mode) {
+        if (mode == null || playerLaunchPending_ || PlayerActivity.isActive()) {
+            return;
+        }
+        if (!ConnectionManager.instance().isManualStartAllowed()) {
+            return;
+        }
+        if (ODAService.MODE_WIFI.equals(mode) && usbManager_ != null && usbManager_.aoapDevice() != null) {
+            return;
+        }
+        playerLaunchPending_ = true;
+        Intent player = new Intent(this, PlayerActivity.class);
+        player.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        player.putExtra("mode", mode);
+        startActivity(player);
     }
 
-    @Override
-    protected void onStop() {
-        if (Log.isDebug()) Log.d(TAG, "onStop");
-        super.onStop();
+    /** Called by the home screen and PlayerActivity to prevent a reconnect loop. */
+    public void exitSession() {
+        playerLaunchPending_ = false;
+        ConnectionManager.instance().userExited(getString(R.string.connection_user_stopped));
+        stopService(new Intent(this, ODAService.class));
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (Log.isDebug()) Log.d(TAG, "onDestroy");
-    }
-
-    private boolean doubleBackToExitPressedOnce = false;
-
-    public void exitApp(){
-        Intent service = new Intent(this, ODAService.class);
-        stopService(service);
-
-        Log.shutdown();
-
+    /** Closes the task and terminates the process after service cleanup has run. */
+    public void exitApplication() {
+        exitSession();
         finish();
-//        android.os.Process.killProcess(android.os.Process.myPid());
-        return;
+
+        Thread terminator = new Thread(() -> {
+            try {
+                Thread.sleep(750L);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(0);
+        }, "ODA-app-exit");
+        terminator.start();
     }
 
     @Override
     public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            super.onBackPressed();
-            exitApp();
-            return;
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-        new Handler().postDelayed(() -> doubleBackToExitPressedOnce=false, 2000);
+        exitSession();
     }
+
 }

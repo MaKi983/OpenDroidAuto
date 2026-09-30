@@ -22,7 +22,9 @@ public class DayNightSensor implements ISensor, LocationListener, HondaConnectMa
     private static final String TAG = "DayNightSensor";
 
     private final Context context_;
-    private int currentState_;
+    // Written by the location/timer thread, read by isNight() from a native
+    // projection thread.
+    private volatile int currentState_;
     private TwilightCalculator twilightCalculator_;
     private LocationManager locationManager_;
     private HandlerThread handlerThread_;
@@ -126,7 +128,13 @@ public class DayNightSensor implements ISensor, LocationListener, HondaConnectMa
     }
 
     private void startTimeCheck() {
-        handler_.postDelayed(timeCallback_, 60*1000); // 10*60*1000
+        // Read once: this reschedules itself from the sensor thread while stop()
+        // can null the field from the teardown thread, which used to throw an NPE
+        // on a thread with no handler - killing the process mid-teardown.
+        Handler handler = handler_;
+        if (handler != null) {
+            handler.postDelayed(timeCallback_, 60*1000); // 10*60*1000
+        }
     }
 
     @Override
@@ -166,12 +174,19 @@ public class DayNightSensor implements ISensor, LocationListener, HondaConnectMa
             if (Log.isDebug()) Log.d(TAG, "remove location update");
             locationManager_.removeUpdates(this);
         }
-        if (handler_ != null){
+        Handler handler = handler_;
+        HandlerThread handlerThread = handlerThread_;
+        handler_ = null;
+        handlerThread_ = null;
+        if (handler != null){
             if (Log.isDebug()) Log.d(TAG, "remove handler callbacks");
-            handler_.removeCallbacks(timeCallback_);
-            handlerThread_.interrupt();
-            handlerThread_ = null;
-            handler_ = null;
+            handler.removeCallbacks(timeCallback_);
+        }
+        if (handlerThread != null){
+            // quit(), not interrupt(): a thread parked in MessageQueue.next() does
+            // not react to interruption, so the old code leaked one HandlerThread
+            // per session - which this hardware cannot afford.
+            handlerThread.quit();
         }
         if (Log.isDebug()) Log.d(TAG, "done");
     }

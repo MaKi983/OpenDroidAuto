@@ -28,7 +28,6 @@ AOAPDevice::~AOAPDevice()
     outEndpoint_->cancelTransfers();
 
     libUsbDevice_->releaseInterface(interfaceDescriptor_->bInterfaceNumber);
-    libUsbDevice_->resetDevice();
 
     inEndpoint_.reset();
     outEndpoint_.reset();

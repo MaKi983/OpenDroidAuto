@@ -40,6 +40,24 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            def storePath = System.getenv("ODA_RELEASE_STORE_FILE")
+            def storePasswordValue = System.getenv("ODA_RELEASE_STORE_PASSWORD")
+            def keyAliasValue = System.getenv("ODA_RELEASE_KEY_ALIAS")
+            def keyPasswordValue = System.getenv("ODA_RELEASE_KEY_PASSWORD")
+            if (storePath != null && !storePath.trim().isEmpty()
+                    && storePasswordValue != null && !storePasswordValue.trim().isEmpty()
+                    && keyAliasValue != null && !keyAliasValue.trim().isEmpty()
+                    && keyPasswordValue != null && !keyPasswordValue.trim().isEmpty()) {
+                storeFile file(storePath)
+                storePassword storePasswordValue
+                keyAlias keyAliasValue
+                keyPassword keyPasswordValue
+            }
+        }
+    }
+
     buildTypes {
         debug {
             packagingOptions {
@@ -50,7 +68,7 @@ android {
         }
 
         release {
-            signingConfig debug.signingConfig
+            signingConfig signingConfigs.release.storeFile != null ? signingConfigs.release : signingConfigs.debug
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
@@ -62,6 +80,14 @@ android {
     }
 
     ndkVersion rootProject.ext.ndkVersion
+
+    lint {
+        // Without this only this module is analysed, which left the aasdk,
+        // common and omxvideocodec sources unchecked - including the whole JNI
+        // Java layer. That is exactly where an accidental post-API-15 call would
+        // hurt, since this app targets a minSdk 15 head unit.
+        checkDependencies true
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

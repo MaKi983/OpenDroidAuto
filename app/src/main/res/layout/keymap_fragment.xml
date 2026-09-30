@@ -5,8 +5,10 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
-    android:background="#F1F1F1"
-    android:layout_marginBottom="64dp">
+    android:background="@color/settings_surface"
+    android:layout_marginBottom="16dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp">
 
     <RelativeLayout
         android:layout_width="446dp"
@@ -105,88 +107,88 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:textColor="#000"
+            android:layout_marginTop="6dp"
+            android:gravity="left|center_vertical"
+            android:textColor="@color/settings_text_primary"
             android:labelFor="@id/btn_left"
             android:text="@string/keymap_settings_btnleft"/>
 
         <Spinner
             android:id="@+id/btn_left"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:textColor="#000"
-            android:gravity="center_horizontal"
-            android:textAlignment="center"/>
+            android:layout_height="52dp"
+            android:textColor="@color/settings_text_primary"
+            android:gravity="left|center_vertical"
+            android:textAlignment="viewStart"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:textColor="#000"
+            android:layout_marginTop="6dp"
+            android:gravity="left|center_vertical"
+            android:textColor="@color/settings_text_primary"
             android:labelFor="@id/btn_right"
             android:text="@string/keymap_settings_btnright"/>
 
         <Spinner
             android:id="@+id/btn_right"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:textColor="#000"
-            android:gravity="center_horizontal"
-            android:textAlignment="center"/>
+            android:layout_height="52dp"
+            android:textColor="@color/settings_text_primary"
+            android:gravity="left|center_vertical"
+            android:textAlignment="viewStart"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:textColor="#000"
+            android:layout_marginTop="6dp"
+            android:gravity="left|center_vertical"
+            android:textColor="@color/settings_text_primary"
             android:labelFor="@id/btn_source"
             android:text="@string/keymap_settings_btnsource"/>
 
         <Spinner
             android:id="@+id/btn_source"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:textColor="#000"
-            android:gravity="center_horizontal"
-            android:textAlignment="center"/>
+            android:layout_height="52dp"
+            android:textColor="@color/settings_text_primary"
+            android:gravity="left|center_vertical"
+            android:textAlignment="viewStart"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:textColor="#000"
+            android:layout_marginTop="6dp"
+            android:gravity="left|center_vertical"
+            android:textColor="@color/settings_text_primary"
             android:labelFor="@id/btn_plus"
             android:text="@string/keymap_settings_btnplus"/>
 
         <Spinner
             android:id="@+id/btn_plus"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:textColor="#000"
-            android:gravity="center_horizontal"
-            android:textAlignment="center"
+            android:layout_height="52dp"
+            android:textColor="@color/settings_text_primary"
+            android:gravity="left|center_vertical"
+            android:textAlignment="viewStart"
             android:clickable="false" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:textColor="#000"
+            android:layout_marginTop="6dp"
+            android:gravity="left|center_vertical"
+            android:textColor="@color/settings_text_primary"
             android:labelFor="@id/btn_minus"
             android:text="@string/keymap_settings_btnminus"/>
 
         <Spinner
             android:id="@+id/btn_minus"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:textColor="#000"
-            android:gravity="center_horizontal"
-            android:textAlignment="center"
+            android:layout_height="52dp"
+            android:textColor="@color/settings_text_primary"
+            android:gravity="left|center_vertical"
+            android:textAlignment="viewStart"
             android:clickable="false"/>
     </LinearLayout>
 <!--

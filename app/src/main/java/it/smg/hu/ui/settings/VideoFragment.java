@@ -93,9 +93,6 @@ public class VideoFragment extends BaseSettingsFragment {
         CheckBox showNavigationNotification = view.findViewById(R.id.showNavigationNotification);
         initCheckBox(showNavigationNotification, settings.video, Settings.Video.VIDEO_SHOW_NAVIGATION_NOTIFICATION, Settings.Video.VIDEO_SHOW_NAVIGATION_NOTIFICATION_DEFAULT_VALUE);
 
-        CheckBox showAppBadge = view.findViewById(R.id.showAppBadge);
-        initCheckBox(showAppBadge, settings.video, Settings.Video.VIDEO_SHOW_APP_BADGE, Settings.Video.VIDEO_SHOW_APP_BADGE_DEFAULT_VALUE);
-
         return view;
 
     }

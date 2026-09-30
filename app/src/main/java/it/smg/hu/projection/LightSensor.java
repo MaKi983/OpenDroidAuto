@@ -15,7 +15,9 @@ public class LightSensor implements ISensor, SensorEventListener {
 
     private final Context context_;
     private Listener listener_;
-    private int currentState_;
+    // Written by the sensor callback thread, read by isNight() from a native
+    // projection thread.
+    private volatile int currentState_;
 
     public LightSensor(Context ctx){
         context_ = ctx;

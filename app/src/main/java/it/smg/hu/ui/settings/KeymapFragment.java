@@ -41,9 +41,13 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
         if (settings.advanced.hondaIntegrationEnabled()){
             if (Log.isVerbose()) Log.v(TAG, "init hondaconnection and keyholder");
             HondaConnectManager.instance().initialize();
-
-            HondaConnectManager.instance().requestAudioFocus();
             keyHolder_ = (InputDevice.OnKeyHolder) getActivity();
+            handler_.postDelayed(() -> {
+                if (isAdded() && settings.advanced.hondaIntegrationEnabled()
+                        && HondaConnectManager.instance() != null) {
+                    HondaConnectManager.instance().requestAudioFocus();
+                }
+            }, 500);
         }
 
         unsetKeyListener_ = () -> {
@@ -126,6 +130,9 @@ public class KeymapFragment extends BaseSettingsFragment implements View.OnClick
     @Override
     public void onStop() {
         if (Log.isVerbose()) Log.v(TAG, "onStop");
+        if (handler_ != null) {
+            handler_.removeCallbacksAndMessages(null);
+        }
         if (settings.advanced.hondaIntegrationEnabled()){
             HondaConnectManager.instance().endAudioBinding();
         }

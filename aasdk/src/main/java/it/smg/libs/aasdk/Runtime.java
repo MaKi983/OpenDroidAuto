@@ -1,5 +1,7 @@
 package it.smg.libs.aasdk;
 
+import android.content.Context;
+
 import androidx.annotation.Keep;
 
 import it.smg.libs.common.ILog;
@@ -17,7 +19,7 @@ public class Runtime {
     @Keep
     private long handle_;
 
-//    private static Thread.UncaughtExceptionHandler exceptionHandler;
+    private static Thread.UncaughtExceptionHandler exceptionHandler;
 
     static {
         System.loadLibrary("c++_shared");
@@ -36,16 +38,16 @@ public class Runtime {
         handle_ = 0;
     }
 
-//    @Keep
-//    private static void initExceptionHanlder(){
-//        if (exceptionHandler != null) {
-//            Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
-//        }
-//    }
+    @Keep
+    private static void initExceptionHanlder(){
+        if (exceptionHandler != null) {
+            Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
+        }
+    }
 
-//    public static void setExceptionHandler(Thread.UncaughtExceptionHandler exceptionHandler){
-//        Runtime.exceptionHandler = exceptionHandler;
-//    }
+    public static void setExceptionHandler(Thread.UncaughtExceptionHandler exceptionHandler){
+        Runtime.exceptionHandler = exceptionHandler;
+    }
 
     public void startThreads(int threads){
         nativeStartIOServiceWorker(threads);
@@ -58,8 +60,8 @@ public class Runtime {
         Log.init(log);
     }
 
-//    public static void init(Context ctx){
-//        initExceptionHanlder();
-//    }
+    public static void init(Context ctx){
+        initExceptionHanlder();
+    }
 
 }

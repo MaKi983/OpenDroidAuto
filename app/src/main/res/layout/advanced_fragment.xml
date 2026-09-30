@@ -2,163 +2,175 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginBottom="64dp"
-    android:background="#F1F1F1"
-    android:orientation="vertical">
+    android:layout_marginBottom="16dp"
+    android:background="@color/settings_surface"
+    android:orientation="vertical"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
-        android:textColor="#000"
+        android:layout_marginTop="6dp"
+        android:gravity="left|center_vertical"
+        android:textColor="@color/settings_text_primary"
         android:labelFor="@id/loglevel"
         android:text="@string/advanced_settings_logLevel"/>
 
     <Spinner
         android:id="@+id/loglevel"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:textColor="#000"
-        android:gravity="center_horizontal"
-        android:textAlignment="center"/>
+        android:layout_height="52dp"
+        android:textColor="@color/settings_text_primary"
+        android:gravity="left|center_vertical"
+        android:textAlignment="viewStart"/>
 
     <CheckBox
         android:id="@+id/logProtocol"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_gravity="left"
+        android:layout_marginTop="6dp"
         android:text="@string/advanced_settings_logProtocol"
-        android:textColor="#000" />
+        android:textColor="@color/settings_text_primary" />
 
     <CheckBox
         android:id="@+id/enable_debug"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_gravity="left"
+        android:layout_marginTop="6dp"
         android:text="@string/advanced_settings_enabledebug"
-        android:textColor="#000" />
+        android:textColor="@color/settings_text_primary" />
 
 <!--
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
+        android:layout_marginTop="6dp"
+        android:gravity="left|center_vertical"
         android:labelFor="@id/num_threads"
-        android:textColor="#000"
+        android:textColor="@color/settings_text_primary"
         android:text="@string/advanced_settings_threads"/>
 
     <EditText
         android:id="@+id/num_threads"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="52dp"
         android:inputType="number"
-        android:gravity="center_horizontal"
-        android:textColor="#000"
+        android:gravity="left|center_vertical"
+        android:textColor="@color/settings_text_primary"
         android:imeOptions="actionDone" />
 -->
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
+        android:layout_marginTop="6dp"
+        android:gravity="left|center_vertical"
         android:labelFor="@id/log_dir"
         android:text="@string/advanced_settings_logDir"
-        android:textColor="#000" />
+        android:textColor="@color/settings_text_primary" />
 
     <EditText
         android:id="@+id/log_dir"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:gravity="center_horizontal"
+        android:layout_height="52dp"
+        android:gravity="left|center_vertical"
         android:imeOptions="actionDone"
         android:inputType="text"
         android:maxLines="1"
-        android:textColor="#000" />
+        android:textColor="@color/settings_text_primary" />
 
     <CheckBox
         android:id="@+id/enable_wifi"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_gravity="left"
+        android:layout_marginTop="6dp"
         android:text="@string/advanced_settings_enablewifi"
-        android:textColor="#000" />
-
-    <CheckBox
-        android:id="@+id/enable_hondaintegration"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
-        android:text="@string/advanced_settings_enablehondaintegration"
-        android:textColor="#000" />
-
-    <CheckBox
-        android:id="@+id/enable_hondamicvr"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
-        android:text="@string/advanced_settings_enablehondamicvr"
-        android:textColor="#000" />
+        android:textColor="@color/settings_text_primary" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="6dp"
+        android:text="@string/advanced_settings_enablewifi_hint"
+        android:textColor="@color/settings_text_secondary"
+        android:textSize="12sp" />
+
+    <CheckBox
+        android:id="@+id/enable_hondaintegration"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_gravity="left"
+        android:layout_marginTop="6dp"
+        android:text="@string/advanced_settings_enablehondaintegration"
+        android:textColor="@color/settings_text_primary" />
+
+    <CheckBox
+        android:id="@+id/enable_hondamicvr"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_gravity="left"
+        android:layout_marginTop="6dp"
+        android:text="@string/advanced_settings_enablehondamicvr"
+        android:textColor="@color/settings_text_primary" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="left|center_vertical"
         android:labelFor="@id/modemgraudio_idx"
-        android:textColor="#000"
+        android:textColor="@color/settings_text_primary"
         android:text="@string/advanced_settings_modeMgrAudioIdx"/>
 
     <EditText
         android:id="@+id/modemgraudio_idx"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="52dp"
         android:inputType="number"
-        android:gravity="center_horizontal"
-        android:textColor="#000"
+        android:gravity="left|center_vertical"
+        android:textColor="@color/settings_text_primary"
         android:imeOptions="actionDone"
         android:text=""/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
+        android:layout_marginTop="6dp"
+        android:gravity="left|center_vertical"
         android:labelFor="@id/sw_mode"
-        android:textColor="#000"
+        android:textColor="@color/settings_text_primary"
         android:text="@string/advanced_settings_swmode"/>
 
     <Spinner
         android:id="@+id/sw_mode"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:gravity="center_horizontal"
-        android:textColor="#000"
-        android:textAlignment="center"/>
+        android:layout_height="52dp"
+        android:gravity="left|center_vertical"
+        android:textColor="@color/settings_text_primary"
+        android:textAlignment="viewStart"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
+        android:layout_marginTop="6dp"
+        android:gravity="left|center_vertical"
         android:labelFor="@id/steeringwheel_idx"
-        android:textColor="#000"
+        android:textColor="@color/settings_text_primary"
         android:text="@string/advanced_settings_steeringWheelIdx"/>
 
     <EditText
         android:id="@+id/steeringwheel_idx"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="52dp"
         android:inputType="number"
-        android:gravity="center_horizontal"
-        android:textColor="#000"
+        android:gravity="left|center_vertical"
+        android:textColor="@color/settings_text_primary"
         android:imeOptions="actionDone"
         android:enabled="false"
         android:text=""/>
