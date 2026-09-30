@@ -71,7 +71,7 @@ OMXDecoder::~OMXDecoder(){
 status_t OMXDecoder::read(){
     if (Log::isVerbose()) Log_v("read");
 
-    MediaBuffer *videoBuffer;
+    MediaBuffer *videoBuffer = nullptr;
     MediaSource::ReadOptions options;
     options.setLateBy(0);
     status_t ret = decoder_->read(&videoBuffer, &options);
@@ -81,10 +81,8 @@ status_t OMXDecoder::read(){
         if (videoBuffer->range_length() > 0) {
             if (Log::isVerbose()) Log_v("videobuffer length %d", videoBuffer->range_length());
             sp<MetaData> metaData = videoBuffer->meta_data();
-            int64_t timeUs = 0;
-            metaData->findInt64(kKeyTime, &timeUs);
             native_window_set_buffers_timestamp(nativeWindow_.get(),
-                                                timeUs); //NATIVE_WINDOW_TIMESTAMP_AUTO
+                                                NATIVE_WINDOW_TIMESTAMP_AUTO);
             ret = nativeWindow_->queueBuffer(nativeWindow_.get(),
                                              videoBuffer->graphicBuffer().get());
             if (ret == 0) {
@@ -102,6 +100,4 @@ status_t OMXDecoder::read(){
 
     return ret;
 }
-
-
 
