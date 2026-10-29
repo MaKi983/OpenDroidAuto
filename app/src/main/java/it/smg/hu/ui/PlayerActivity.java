@@ -56,7 +56,13 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
             isRunning_ = savedInstanceState.getBoolean("isRunning");
         } else {
             Bundle b = getIntent().getExtras();
-            startMode_ = b.getString("mode");
+            startMode_ = (b != null) ? b.getString("mode") : null;
+        }
+
+        // Fall back to the last known start mode if we were recreated without one,
+        // so we never crash on a null mode.
+        if (startMode_ == null) {
+            startMode_ = ODAService.lastStartMode();
         }
 
         if (Log.isDebug()) Log.d(TAG, "start mode: " + startMode_);
@@ -218,7 +224,11 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
 
         isServiceBound_ = true;
 
-        if (isRunning_){
+        // Never open a second connection while one is already running: that produced
+        // the "USB error" and disconnect when the Start screen was shown over a live
+        // session. If the service is already projecting, just regain focus.
+        if (isRunning_ || ODAService.isProjecting()){
+            isRunning_ = true;
             odaService_.gainFocus();
         } else {
             start();

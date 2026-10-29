@@ -10,7 +10,7 @@ ext {
     minSdk = 15
     targetSdk = 15
     versionCode = 200502 // major (x)-minor (xxx)-fix (xx)
-    versionName =  "2.5.2"
+    versionName =  "2.5.2-dbg-crashfix-resume-autostart3"
     SupportedABIs = ['armeabi-v7a']
     ndkVersion = '17.2.4988734'
 }

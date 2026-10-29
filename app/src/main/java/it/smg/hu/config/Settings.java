@@ -242,9 +242,9 @@ public class Settings {
         public final static int VIDEO_DPI_DEFAULT_VALUE = 140;
         public final static String VIDEO_MARGIN_DEFAULT_VALUE = "0,0";
         public final static String VIDEO_NIGHT_MODE_DEFAULT_VALUE = ""; //IDayNightSensor.TIME_GPS;
-        public final static boolean VIDEO_SHOW_MEDIA_NOTIFICATION_DEFAULT_VALUE = true;
+        public final static boolean VIDEO_SHOW_MEDIA_NOTIFICATION_DEFAULT_VALUE = false; // off: no music display blocking the Honda UI
         public final static boolean VIDEO_SHOW_NAVIGATION_NOTIFICATION_DEFAULT_VALUE = true;
-        public final static boolean VIDEO_SHOW_APP_BADGE_DEFAULT_VALUE = true;
+        public final static boolean VIDEO_SHOW_APP_BADGE_DEFAULT_VALUE = false; // off: no top-left arrow overlay blocking touches
 
         public int resolution(){
             return SP.getInt(VIDEO_RESOLUTION,VIDEO_RESOLUTION_DEFAULT_VALUE);

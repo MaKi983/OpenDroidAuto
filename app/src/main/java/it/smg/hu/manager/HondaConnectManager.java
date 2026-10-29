@@ -334,7 +334,10 @@ public class HondaConnectManager {
                     if (Log.isVerbose()) Log.v(TAG, "notifySteeringMenuDispMode " + mode + " addr " + idx);
                     steeringMenuServiceIface_.notifySteeringMenuDispMode(idx, mode);
                 }
-            } catch (RemoteException e) {
+            } catch (Exception e) {
+                // The Honda steering-menu service can throw IllegalStateException
+                // ("beginBroadcast() called while already in a broadcast") and other
+                // RuntimeExceptions across the binder. Never let that crash ODA.
                 Log.e(TAG, "Error registering", e);
             }
         }
@@ -349,8 +352,15 @@ public class HondaConnectManager {
                 steeringMenuServiceCallback_ = new SteeringMenuServiceCallback();
                 steeringMenuServiceIface_.registerCallbackEx(steeringMenuServiceCallback_, idx);
             }
-        } catch (RemoteException e) {
+        } catch (Exception e) {
+            // The Honda steering-menu service may reject registration with an
+            // IllegalStateException ("beginBroadcast() called while already in a
+            // broadcast") when it is in a bad state (e.g. after a prior ODA crash).
+            // That used to crash ODA on every Start. Swallow it so projection still
+            // runs; reset the callback so a later attempt can retry once the service
+            // recovers (typically after a head-unit reboot).
             Log.e(TAG, "Error registerCallbackEx", e);
+            steeringMenuServiceCallback_ = null;
         }
     }
 
@@ -363,8 +373,11 @@ public class HondaConnectManager {
                 steeringMenuServiceIface_.unregisterCallbackEx(steeringMenuServiceCallback_, idx);
                 steeringMenuServiceCallback_ = null;
             }
-        } catch (RemoteException e) {
+        } catch (Exception e) {
+            // Same defensive handling as registerCallbackEx: a misbehaving Honda
+            // service must never crash ODA. Clear the callback regardless.
             Log.e(TAG, "Error unregisterCallbackEx", e);
+            steeringMenuServiceCallback_ = null;
         }
     }
 

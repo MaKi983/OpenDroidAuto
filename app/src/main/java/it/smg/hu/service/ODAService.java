@@ -54,6 +54,20 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
 
     private boolean isRunning_;
 
+    // Projection state shared across the app so the launcher icon can return to the
+    // running session instead of showing the Start screen (which caused a second
+    // USB connection and a "USB error" disconnect). See MainActivity/PlayerActivity.
+    private static volatile boolean projecting_ = false;
+    private static volatile String lastStartMode_ = MODE_USB;
+
+    public static boolean isProjecting() {
+        return projecting_;
+    }
+
+    public static String lastStartMode() {
+        return lastStartMode_;
+    }
+
     public ODAService() {}
 
     @Override
@@ -77,6 +91,8 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
 
             if (usbManager_.aoapDevice() != null) {
                 isRunning_ = true;
+                projecting_ = true;
+                lastStartMode_ = MODE_USB;
 
                 if (Log.isVerbose()) Log.v(TAG, "aoap device available, start in usb mode");
                 try {
@@ -110,6 +126,8 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
                 String ipAddress = wifiManager_.getIpAddress();
                 if (ipAddress != null) {
                     isRunning_ = true;
+                    projecting_ = true;
+                    lastStartMode_ = MODE_WIFI;
 
 //                    if (Log.isInfo()) Log.i(TAG, "Connect to ip " + ipAddress);
                     TCPEndpoint tcpEndpoint = new TCPEndpoint(ipAddress);
@@ -146,6 +164,7 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         }
 
         isRunning_ = false;
+        projecting_ = false;
 
         if (Log.isInfo()) Log.i(TAG, "Stop");
 
