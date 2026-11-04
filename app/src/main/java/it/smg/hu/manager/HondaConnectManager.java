@@ -1084,9 +1084,7 @@ public class HondaConnectManager {
                 if (info.videoAddress == 92 && isRunning_) {
                     if (Log.isDebug()) {
                         Log.d(TAG, "activating rear camera -> restore activity after");
-                        mainHandler_.post(() -> {
-                            Toast.makeText(context_, "videoAddress " + info.videoAddress + " -> activating rear camera", Toast.LENGTH_SHORT).show();
-                        });
+                        printToast("videoAddress " + info.videoAddress + " -> activating rear camera");
                     }
 
                     restoreActivity_ = true;
@@ -1094,13 +1092,13 @@ public class HondaConnectManager {
                 } else if (info.videoAddress == 120 && isRunning_ && restoreActivity_) { // check info.videoResumeCompleted ?
                     if (Log.isDebug()) {
                         Log.d(TAG, "coming from reverse camera -> restore activity");
-                        mainHandler_.post(() -> {
-                            Toast.makeText(context_, "videoAddress " + info.videoAddress + " -> restore activity", Toast.LENGTH_SHORT).show();
-                        });
+                        printToast( "videoAddress " + info.videoAddress + " -> restore activity");
                     }
 
                     mainHandler_.postDelayed(() -> {
-                        Toast.makeText(context_, "restoring PlayerActivity", Toast.LENGTH_SHORT).show();
+                        if (Log.isDebug()) {
+                            Toast.makeText(context_, "restoring PlayerActivity", Toast.LENGTH_SHORT).show();
+                        }
 
                         Intent i = new Intent(context_, PlayerActivity.class);
                         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -1111,7 +1109,9 @@ public class HondaConnectManager {
 
                 } else if (info.videoAddress == 198 && isRunning_){
                     mainHandler_.postDelayed(() -> {
-                        Toast.makeText(context_, "restoring PlayerActivity", Toast.LENGTH_SHORT).show();
+                        if (Log.isDebug()) {
+                            Toast.makeText(context_, "restoring PlayerActivity", Toast.LENGTH_SHORT).show();
+                        }
 
                         Intent i = new Intent(context_, PlayerActivity.class);
                         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
