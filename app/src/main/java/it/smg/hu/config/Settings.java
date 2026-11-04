@@ -2,7 +2,6 @@ package it.smg.hu.config;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.media.AudioFormat;
 import android.media.MediaRecorder;
 import android.preference.PreferenceManager;
 
@@ -11,9 +10,6 @@ import androidx.annotation.Keep;
 import it.smg.libs.common.ILog;
 import it.smg.libs.aasdk.configuration.ICarConfiguration;
 import it.smg.hu.manager.HondaPlatform;
-
-//import it.smg.hu.oda.service.input.KeyCode;
-//import it.smg.hu.oda.service.sensor.IDayNightSensor;
 
 public class Settings {
 
@@ -368,8 +364,8 @@ public class Settings {
 
         public final static int MIC_SAMPLERATE_DEFAULT_VALUE = 16000;
         public final static int MIC_SAMPLESIZE_DEFAULT_VALUE = 16; // 16bit
-        public final static int MIC_CHANNELCOUNT_DEFAULT_VALUE = MediaRecorder.AudioSource.VOICE_COMMUNICATION; //1; //AudioFormat.CHANNEL_IN_MONO;;
-        public final static int MIC_SOURCE_DEFAULT_VALUE = 1; // 1 = MIC
+        public final static int MIC_CHANNELCOUNT_DEFAULT_VALUE = 1; //AudioFormat.CHANNEL_IN_MONO;;
+        public final static int MIC_SOURCE_DEFAULT_VALUE = MediaRecorder.AudioSource.DEFAULT;
 
         public boolean musicChannelEnabled(){
             return SP.getBoolean(MEDIA_ENABLE_CHANNEL, MEDIA_ENABLE_CHANNEL_DEFAULT_VALUE);

@@ -165,7 +165,7 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
         // floating badge here can reopen a half-torn-down PlayerActivity and
         // create a second Android Auto session.
         if (AppBadge.instance() != null) {
-            AppBadge.instance().dismiss();
+            AppBadge.instance().show();
         }
 
         if (localReceiver_ != null) {
@@ -324,6 +324,12 @@ public class PlayerActivity extends Activity implements ServiceConnection, Surfa
         if (AppBadge.instance() != null) {
             AppBadge.instance().dismiss();
         }
+
+        HondaConnectManager hondaConnectManager = hondaManager();
+        if (hondaConnectManager != null){
+            hondaConnectManager.endAudioBinding();
+        }
+
         if (odaService_ != null) {
             ConnectionManager.instance().disconnecting(getString(R.string.connection_user_stopping));
             odaService_.shutdown();

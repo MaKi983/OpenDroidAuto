@@ -2,11 +2,9 @@ package it.smg.hu.manager;
 
 import android.annotation.SuppressLint;
 import android.app.Instrumentation;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.AudioTrack;
 import android.os.Handler;
@@ -15,14 +13,10 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.widget.Toast;
 
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import com.fujitsu_ten.displayaudio.android.content.CustomContext;
 import com.fujitsu_ten.displayaudio.bluetooth.vr.BluetoothVr;
 import com.fujitsu_ten.displayaudio.bluetooth.vr.BluetoothVrListener;
 import com.fujitsu_ten.displayaudio.ecncservice.EcNcServiceNative;
-import com.fujitsu_ten.displayaudio.ecncservice.IEcNcService;
-import com.fujitsu_ten.displayaudio.linkingaudio.ILinkingAudioCallback;
 import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrInspectionCallBack;
 import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrServiceCallBack;
 import com.fujitsu_ten.displayaudio.modemanagement.IModeMgrServiceSWKeyEventCallBack;
@@ -50,6 +44,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import it.smg.hu.config.Settings;
+import it.smg.hu.ui.PlayerActivity;
 import it.smg.libs.aasdk.messenger.ChannelId;
 import it.smg.libs.aasdk.projection.ISensor;
 import it.smg.libs.common.Log;
@@ -106,15 +101,12 @@ public class HondaConnectManager {
     private IModeMgrServiceSWSmartPhoneCallBack modeMgrServiceSWSmartPhoneCallBack_;
     private IModeMgrInspectionCallBack modeMgrInspectionCallBack_;
 
-    // EcNc service
-    private IEcNcService ecNcServiceIface_;
-    private final ServiceConnection ecNcServiceConnection_;
-    private boolean boundToEcNcService_;
     private boolean micVrStarted_;
 
     // Bluetooth
     private BluetoothVr bluetoothVR_;
     private BluetoothVrListener bluetoothVrListener_;
+    private boolean btVoiceControlRights_;
 
     private final Context context_;
     private final Settings settings_;
@@ -131,8 +123,6 @@ public class HondaConnectManager {
     private ScheduledFuture<?> heartbeatFuture_;
     private int currentModeState_;
     private int currentIdx_;
-
-//    private final LocalBroadcastManager localBroadcastManager_;
 
     private final Handler mainHandler_;
     private ISensor.Listener dayNightListener_;
@@ -152,15 +142,12 @@ public class HondaConnectManager {
         settings_ = Settings.instance();
         hasAudioFocus_ = false;
         hasAudioFocusForMic_ = false;
-        boundToEcNcService_ = false;
         micVrStarted_ = false;
         isRunning_ = false;
         restoreActivity_ = false;
         mainHandler_ = new Handler(Looper.getMainLooper());
         currentModeState_ = 0;
         currentIdx_ = 255;
-
-//        localBroadcastManager_ = LocalBroadcastManager.getInstance(context_);
 
         try {
             modeMgrManager_ = (ModeMgrManager) context.getSystemService(CustomContext.MODE_MGR_SERVICE);
@@ -209,44 +196,13 @@ public class HondaConnectManager {
             }
         };
 
-        ecNcServiceConnection_ = new ServiceConnection() {
-            private static final String TAG = "HondaConnectManager-ecNcServiceConnection";
-
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                if (Log.isDebug()) Log.d(TAG, "Honda EcNc Service connected");
-                boundToEcNcService_ = true;
-                ecNcServiceIface_ = IEcNcService.Stub.asInterface(service);
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                if (Log.isDebug()) Log.d(TAG, "Honda EcNc Service disconnected");
-
-                boundToEcNcService_ = false;
-                ecNcServiceIface_ = null;
-                micVrStarted_ = false; // force to false
-            }
-        };
-
-        bluetoothVR_ = BluetoothVr.getInstance();
-        if (bluetoothVR_ != null) {
-            if (!settings_.advanced.useBtMicVr()) {
+        if (settings_.advanced.useBtMicVr()) {
+            bluetoothVR_ = BluetoothVr.getInstance();
+            if (bluetoothVR_ != null) {
                 if (Log.isDebug()) Log.d(TAG, "bluetoothVR " + bluetoothVR_);
                 bluetoothVrListener_ = new BTVrListener();
-
-                if (Log.isDebug()) Log.d(TAG, "bluetoothVR -> getVoiceControlRights");
-                int ret = bluetoothVR_.getVoiceControlRights(bluetoothVrListener_);
-                if (Log.isDebug()) Log.d(TAG, "bluetoothVR -> getVoiceControlRights ret = " + ret);
-
-                if (Log.isDebug()) Log.d(TAG, "bluetoothVR -> requestOnScoChanged");
-                ret = bluetoothVR_.requestOnScoChanged();
-                if (Log.isDebug()) Log.d(TAG, "bluetoothVR -> requestOnScoChanged ret = " + ret);
             }
         }
-
-        IntentFilter filter = new IntentFilter("com.fujitsu_ten.android.action.RESUME_OCCURED");
-        context.registerReceiver(resumeReceiver, filter);
 
         try {
             pControl_ = IWhiteList.getProcessControl("it.smg.hu", null);
@@ -333,12 +289,12 @@ public class HondaConnectManager {
     }
 
     private void requestFocus(int idx, int mode){
-        if (Log.isDebug()) Log.d(TAG, "requestFocus -> app with auth " + pControl_.authType);
+        if (Log.isDebug()) Log.d(TAG, "requestFocus -> app with auth " + authType());
         if (Log.isDebug()) Log.d(TAG, "requestFocus modeMgr hasAudioFocus= " + hasAudioFocus_);
         if (Log.isDebug()) Log.d(TAG, "requestFocus modeMgr idx= " + idx + ", mode= " + mode);
 
         // If AUTH_TYPE <> preinstall the app has already audio focus
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL) {
+        if (isPreinstall()) {
 
             if (idx == currentIdx_ && mode == currentModeState_){
                 if (Log.isWarn()) Log.w(TAG, "idx == currentIdx && mode == currentModeState -> do nothing");
@@ -368,7 +324,7 @@ public class HondaConnectManager {
         if (Log.isDebug()) Log.d(TAG, "releaseFocus modeMgr audio hasAudioFocus= " + hasAudioFocus_);
 
         // If AUTH_TYPE <> preinstall the app has already audio focus
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL) {
+        if (isPreinstall()) {
             int ret;
 
             if (Log.isDebug()) Log.d(TAG, "releaseFocus sendModeMgrOffReq idx= " + idx + ", state = " + mode);
@@ -397,10 +353,9 @@ public class HondaConnectManager {
     public void initialize(){
         if (Log.isDebug()) Log.d(TAG, "initialize -> app with auth " + authType());
 
-        bindToEcNcService();
         bindToWheelService();
 
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL) {
+        if (isPreinstall()) {
             registerModeMgrCallback();
             registerStateMgrCallback();
 
@@ -456,16 +411,6 @@ public class HondaConnectManager {
         if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> app with auth " + authType());
 
         stopMicSession();
-        unbindFromEcNcService();
-
-        if (settings_.advanced.useBtMicVr()) {
-            if (bluetoothVR_ != null) {
-                if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> releaseVoiceControlRights");
-                int ret = bluetoothVR_.releaseVoiceControlRights(bluetoothVrListener_);
-                if (Log.isDebug())
-                    Log.d(TAG, "endAudioBinding -> releaseVoiceControlRights ret = " + ret);
-            }
-        }
 
         if (isPreinstall()){
             if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> auth PREINSTALL -> release audio and unregister modemgr callback");
@@ -473,7 +418,9 @@ public class HondaConnectManager {
             isRunning_ = false;
             int ret;
 
-            releaseFocus(currentIdx_, currentModeState_);
+            if ( currentIdx_ != 255 ) {
+                releaseFocus(currentIdx_, currentModeState_);
+            }
 
             if (hasAudioFocus_){
                 notifySteeringMenuDispMode(0);
@@ -491,6 +438,7 @@ public class HondaConnectManager {
                     Log.w(TAG, "Could not set i-MID connect status", e);
                 }
             }
+
         }
 
         unregisterSteeringMenuCallback();
@@ -598,7 +546,7 @@ public class HondaConnectManager {
     }
 
     public void startMicSession() {
-        if (Log.isDebug()) Log.d(TAG, "starting MicSession -> boundToEcNcService= " + boundToEcNcService_ + " hasAudioFocus= " + hasAudioFocus_);
+        if (Log.isDebug()) Log.d(TAG, "starting MicSession -> hasAudioFocus= " + hasAudioFocus_);
         if (!settings_.advanced.hondaMicVrEnabled()){
             if (Log.isDebug()) Log.d(TAG, "mic disabled");
             return;
@@ -612,9 +560,42 @@ public class HondaConnectManager {
         int ret = -1;
         if (settings_.advanced.useBtMicVr()) {
             if (bluetoothVR_ != null) {
+                if (isPreinstall() && !hasAudioFocus_) {
+                    if (Log.isDebug()) Log.d(TAG, "startMicSession hasAudioFocus_ false -> request audio focus");
+                    requestFocus(settings_.advanced.modeMgrAudioVideoIdx(), ModeMgrMode.REQUEST_BOTH);
+                    hasAudioFocusForMic_ = true;
+                }
+
+                if (Log.isDebug()) Log.d(TAG, "bluetoothVR -> getVoiceControlRights");
+                ret = bluetoothVR_.getVoiceControlRights(bluetoothVrListener_);
+                if (Log.isDebug()) Log.d(TAG, "bluetoothVR -> getVoiceControlRights ret = " + ret);
+                if (ret == 0){
+                    btVoiceControlRights_ = true;
+                } else {
+                    if (Log.isWarn()) Log.w(TAG, "btVoiceControlRights= false");
+                    btVoiceControlRights_ = false;
+                    if (Log.isDebug()) {
+                        Log.d(TAG, "Error in get Voice Control Rights");
+                        printToast("Error in get Voice Control Rights");
+                    }
+                    return;
+                }
+
                 if (Log.isDebug()) Log.d(TAG, "requestVoiceRecognitionActivation START");
                 ret = bluetoothVR_.requestVoiceRecognitionActivation(BluetoothVrListener.REQUEST_VBRA_START); // invia AT+BVRA=1
                 if (Log.isDebug()) Log.d(TAG, "requestVoiceRecognitionActivation START ret=" + ret);
+                if (ret == 0){
+                    micVrStarted_ = true;
+                } else {
+                    if (Log.isWarn()) Log.w(TAG, "micVrStarted= false");
+                    micVrStarted_ = false;
+                    if (Log.isDebug()) {
+                        Log.d(TAG, "Error in activating VR");
+                        printToast("Error in activating VR");
+                    }
+                    return;
+                }
+
                 if (ret == 0) {
                     micVrStarted_ = true;
                 }
@@ -623,144 +604,91 @@ public class HondaConnectManager {
                 micVrStarted_ = false;
             }
         } else {
-            if (boundToEcNcService_) {
-                try {
-                    ret = ecNcServiceIface_.startVR(true);
-                    if (Log.isDebug()) Log.d(TAG, "ecNcServiceIface_ startVR ret= " + ret);
-
-                    if (ret == 0) {
-                        micVrStarted_ = true;
-                    }
-                } catch (Exception e) { //RemoteException
-                    Log.e(TAG, "startVR exception", e);
-                    micVrStarted_ = false;
+            try {
+                if (isPreinstall() && !hasAudioFocus_) {
+                    if (Log.isDebug()) Log.d(TAG, "startMicSession hasAudioFocus_ false -> request audio focus");
+                    requestFocus(settings_.advanced.modeMgrVideoIdx(), ModeMgrMode.REQUEST_BOTH);
+                    hasAudioFocusForMic_ = true;
                 }
+
+                ret = EcNcServiceNative.startVR(true, true);
+                if (Log.isDebug()) {
+                    Log.d(TAG, "ecNcServiceIface_ startVR ret= " + ret);
+                    printToast("ecNcServiceIface_ startVR ret= " + ret);
+                }
+
+                if (ret == 0) {
+                    micVrStarted_ = true;
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "startVR exception", e);
+                micVrStarted_ = false;
             }
         }
 
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL && !hasAudioFocus_) {
-            if (Log.isDebug()) Log.d(TAG, "startMicSession hasAudioFocus_ false -> request audio focus");
-            requestFocus(settings_.advanced.modeMgrAudioVideoIdx(), ModeMgrMode.REQUEST_BOTH);
-            hasAudioFocusForMic_ = true;
-        }
     }
 
     public void stopMicSession() {
-        if (Log.isDebug()) Log.d(TAG, "stopping MicSession -> boundToEcNcService= " + boundToEcNcService_ + " hasAudioFocus= " + hasAudioFocus_);
+        if (Log.isDebug()) Log.d(TAG, "stopping MicSession -> hasAudioFocus= " + hasAudioFocus_);
         if (!settings_.advanced.hondaMicVrEnabled()){
             if (Log.isDebug()) Log.d(TAG, "mic disabled");
-            return;
-        }
-
-        if (!micVrStarted_) {
-            Log.w(TAG, "no mic session started, return");
             return;
         }
 
         int ret = -1;
-        if (settings_.advanced.useBtMicVr()){
+        if (settings_.advanced.useBtMicVr()) {
             if (bluetoothVR_ != null) {
-                if (Log.isDebug()) Log.d(TAG, "requestVoiceRecognitionActivation STOP");
-                ret = bluetoothVR_.requestVoiceRecognitionActivation(BluetoothVrListener.REQUEST_VBRA_STOP); // invia AT+BVRA=1
-                if (Log.isDebug()) Log.d(TAG, "requestVoiceRecognitionActivation STOP ret=" + ret);
-                micVrStarted_ = false;
+                if (Log.isDebug()) Log.d(TAG, "stopMicSession micVrStarted_= " + micVrStarted_ + " btVoiceControlRights_= " + btVoiceControlRights_);
+                if (micVrStarted_) {
+                    if (Log.isDebug()) Log.d(TAG, "stopMicSession -> requestVoiceRecognitionActivation STOP");
+                    ret = bluetoothVR_.requestVoiceRecognitionActivation(BluetoothVrListener.REQUEST_VBRA_STOP); // invia AT+BVRA=1
+                    if (Log.isDebug()) Log.d(TAG, "stopMicSession -> requestVoiceRecognitionActivation STOP ret=" + ret);
+                    micVrStarted_ = false;
+                }
+
+                if (btVoiceControlRights_) {
+                    if (Log.isDebug()) Log.d(TAG, "stopMicSession -> releaseVoiceControlRights");
+                    ret = bluetoothVR_.releaseVoiceControlRights(bluetoothVrListener_);
+                    if (Log.isDebug()) Log.d(TAG, "stopMicSession -> releaseVoiceControlRights ret = " + ret);
+                    btVoiceControlRights_ = false;
+                }
+
+                if (isPreinstall() && hasAudioFocusForMic_ ) {
+                    if (Log.isDebug()) Log.d(TAG, "stopMicSession hasAudioFocusForMic_ true -> release audio focus");
+                    releaseFocus(settings_.advanced.modeMgrAudioVideoIdx(), ModeMgrMode.REQUEST_AUDIO);
+                    requestFocus(settings_.advanced.modeMgrVideoIdx(), ModeMgrMode.REQUEST_VIDEO);
+                }
+
+                hasAudioFocusForMic_ = false;
+
             } else {
-                if (Log.isWarn()) Log.w(TAG, "bluetoothVR_ null");
+                if (Log.isWarn()) Log.w(TAG, "stopMicSession bluetoothVR_ null");
             }
         } else {
-            if (boundToEcNcService_) {
-
-                try {
-                    ret = ecNcServiceIface_.endVr();
-                    if (Log.isDebug()) Log.d(TAG, "ecNcServiceIface_ endVr ret= " + ret);
-                } catch (Exception e) { //RemoteException
-                    Log.e(TAG, "startVR exception", e);
-                    micVrStarted_ = false;
+            try {
+                ret = EcNcServiceNative.endVr(true);
+                if (Log.isDebug()) {
+                    Log.d(TAG, "ecNcServiceIface_ endVr ret= " + ret);
+                    printToast("ecNcServiceIface_ endVr ret= " + ret);
                 }
 
-                /// ///////////////////////////////
-                int maxRetries = 20; // max 2 secondi
-                int retry = 0;
-                boolean failsafe = true;
-                while (retry < maxRetries) {
-                    try {
-                        Thread.sleep(100);
-                        // Se getFailsafeStat() restituisce false = stato stabile
-                        failsafe = ecNcServiceIface_.getFailsafeStat();
-                        if (!failsafe) {
-                            if (Log.isDebug()) Log.d(TAG, "EcNcService pronto dopo " + (retry * 100) + "ms");
-                            break;
-                        }
-                    } catch (Exception e) {
-                        break;
-                    }
-                    retry++;
+                ret = EcNcServiceNative.driverClose();
+                if (Log.isDebug()) {
+                    Log.d(TAG, "ecNcServiceIface_ driverClose ret= " + ret);
+                    printToast("ecNcServiceIface_ driverClose ret= " + ret);
                 }
 
-                if (failsafe){
-                    Log.w("EcNc", "EcNcService non pronto dopo 2s");
-                    try {
-                        if (Log.isDebug()) Log.d(TAG, "failsafe= " + failsafe);
-
-                        if (Log.isDebug()) Log.d(TAG, "EcNcServiceNative driverReset");
-                        ret = EcNcServiceNative.driverReset();
-                        if (Log.isDebug()) Log.d(TAG, "EcNcServiceNative driverReset ret= " + ret);
-
-                        Thread.sleep(100);
-
-                        if (ret != 0) {
-                            if (Log.isDebug()) Log.d(TAG, "EcNcServiceNative driverClose");
-                            ret = EcNcServiceNative.driverClose();
-                            if (Log.isDebug()) Log.d(TAG, "EcNcServiceNative driverClose ret= " + ret);
-
-                            Thread.sleep(100);
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Exception", e);
-                    }
-                }
-                //////////////////////////////////
-                if (ret == 0) {
-                    micVrStarted_ = false;
-                }
+            } catch (Exception e) {
+                Log.e(TAG, "startVR exception", e);
+                micVrStarted_ = false;
             }
 
-        }
-
-        if (pControl_.authType == Constants.AUTH_TYPE_PREINSTALL && hasAudioFocusForMic_) {
-            if (Log.isDebug()) Log.d(TAG, "startMicSession hasAudioFocusForMic_ true -> release audio focus");
-            releaseFocus(settings_.advanced.modeMgrAudioVideoIdx(), ModeMgrMode.REQUEST_AUDIO);
-            requestFocus(settings_.advanced.modeMgrVideoIdx(), ModeMgrMode.REQUEST_VIDEO);
+            if (isPreinstall() && hasAudioFocusForMic_) {
+                if (Log.isDebug()) Log.d(TAG, "stopMicSession hasAudioFocusForMic_ true -> release audio focus");
+                releaseFocus(settings_.advanced.modeMgrVideoIdx(), ModeMgrMode.REQUEST_AUDIO);
+            }
             hasAudioFocusForMic_ = false;
-        }
-    }
-
-    private void bindToEcNcService() {
-        if (!settings_.advanced.hondaMicVrEnabled()){
-            if (Log.isDebug()) Log.d(TAG, "mic disabled");
-            return;
-        }
-
-        if (!boundToEcNcService_) {
-            if (Log.isDebug()) Log.d(TAG, "Request binding to service " + IEcNcService.class.getName());
-            Intent intent = new Intent(IEcNcService.class.getName());
-            context_.bindService(intent, ecNcServiceConnection_, Context.BIND_AUTO_CREATE);
-        }
-    }
-
-    private void unbindFromEcNcService() {
-        if (!settings_.advanced.hondaMicVrEnabled()){
-            if (Log.isDebug()) Log.d(TAG, "mic disabled");
-            return;
-        }
-
-        if (boundToEcNcService_) {
-            if (Log.isDebug()) Log.d(TAG, "Request unbinding to service " + IEcNcService.class.getName());
-            context_.unbindService(ecNcServiceConnection_);
-
-            boundToEcNcService_ = false;
-            ecNcServiceIface_ = null;
-            micVrStarted_ = false; // force to false
+            micVrStarted_ = false;
         }
     }
 
@@ -909,15 +837,44 @@ public class HondaConnectManager {
         return res;
     }
 
+    private void heartbeat(){
+        if (Log.isDebug()) Log.d(TAG, "heartbeat currentModeState_= " + currentModeState_ + " currentIdx_= " + currentIdx_);
+        if (modeMgrManager_ != null && currentModeState_ != 0) {
+            int idx = currentIdx_;
+
+            int sound_param = currentModeState_ & ModeMgrMode.NOTIFY_AUDIO;
+            int image_param = currentModeState_ & ModeMgrMode.NOTIFY_VIDEO;
+            if (Log.isDebug()) Log.d(TAG, "heartbeat sound_param= " + sound_param + " image_param= " + image_param);
+
+            int notifyMode;
+            if (sound_param != 0 && image_param != 0){
+                notifyMode = ModeMgrMode.NOTIFY_BOTH;
+            } else if (sound_param == 0 && image_param != 0){
+                notifyMode = ModeMgrMode.NOTIFY_VIDEO;
+            } else if (sound_param != 0){
+                notifyMode = ModeMgrMode.NOTIFY_AUDIO;
+            } else {
+                if (Log.isWarn()) Log.w(TAG, "mode unknown");
+                return;
+            }
+
+            if (Log.isDebug()) Log.d(TAG, "heartbeat notifyModeMgrStatus idx= " + idx + ", state = " + notifyMode);
+
+            int ret = modeMgrManager_.notifyModeMgrStatus(idx, notifyMode);
+            if (Log.isDebug()) Log.d(TAG, "heartbeat notifyModeMgrStatus ret = " + ret);
+        }
+    }
+
     private void startHeartbeat() {
         if (Log.isDebug()) Log.d(TAG, "startHeartbeat currentModeState_ " + currentModeState_);
 
-        // Evita doppioni
         if (currentModeState_ == 0) {
             if (Log.isDebug()) Log.d(TAG, "startHeartbeat currentState 0 -> stop heartbeat");
             stopHeartbeat();
             return;
         }
+
+        heartbeat();
 
         if (heartbeatExecutor_ != null){
             if (Log.isDebug()) Log.d(TAG, "startHeartbeat heartbeat already running -> do nothing");
@@ -926,32 +883,7 @@ public class HondaConnectManager {
 
         heartbeatExecutor_ = Executors.newSingleThreadScheduledExecutor();
 
-        heartbeatFuture_ = heartbeatExecutor_.scheduleWithFixedDelay(() -> {
-            if (modeMgrManager_ != null && currentModeState_ != 0) {
-                int idx = currentIdx_;
-
-                int sound_param = currentModeState_ & ModeMgrMode.NOTIFY_AUDIO;
-                int image_param = currentModeState_ & ModeMgrMode.NOTIFY_VIDEO;
-                if (Log.isDebug()) Log.d(TAG, "heartbeat sound_param= " + sound_param + " image_param= " + image_param);
-
-                int notifyMode;
-                if (sound_param != 0 && image_param != 0){
-                    notifyMode = ModeMgrMode.NOTIFY_BOTH;
-                } else if (sound_param == 0 && image_param != 0){
-                    notifyMode = ModeMgrMode.NOTIFY_VIDEO;
-                } else if (sound_param != 0){
-                    notifyMode = ModeMgrMode.NOTIFY_AUDIO;
-                } else {
-                    if (Log.isWarn()) Log.w(TAG, "mode unknown");
-                    return;
-                }
-
-                if (Log.isDebug()) Log.d(TAG, "heartbeat notifyModeMgrStatus idx= " + idx + ", state = " + notifyMode);
-
-                int ret = modeMgrManager_.notifyModeMgrStatus(idx, notifyMode);
-                if (Log.isDebug()) Log.d(TAG, "heartbeat notifyModeMgrStatus ret = " + ret);
-            }
-        }, HEARTBEAT_INTERVAL_MS, HEARTBEAT_INTERVAL_MS, TimeUnit.MILLISECONDS);
+        heartbeatFuture_ = heartbeatExecutor_.scheduleWithFixedDelay(this::heartbeat, HEARTBEAT_INTERVAL_MS, HEARTBEAT_INTERVAL_MS, TimeUnit.MILLISECONDS);
     }
 
     private void stopHeartbeat() {
@@ -1063,13 +995,10 @@ public class HondaConnectManager {
         dayNightListener_ = dayNightListener;
     }
 
-    private class LinkingAudioCallback extends ILinkingAudioCallback.Stub {
-        private static final String TAG = "HondaConnectManager-LinkingAudioCallback";
-
-        @Override
-        public void serviceStateChanged(int i, int i1) throws RemoteException {
-            if (Log.isDebug()) Log.d(TAG, "serviceStateChanged  " + i + "/" + i1);
-        }
+    private void printToast(String message){
+        mainHandler_.post(() -> {
+            Toast.makeText(context_, message, Toast.LENGTH_SHORT).show();
+        });
     }
 
     private class ModeMgrServiceSWKeyEventCallBack extends IModeMgrServiceSWKeyEventCallBack.Stub {
@@ -1158,12 +1087,10 @@ public class HondaConnectManager {
                         mainHandler_.post(() -> {
                             Toast.makeText(context_, "videoAddress " + info.videoAddress + " -> activating rear camera", Toast.LENGTH_SHORT).show();
                         });
-                        restoreActivity_ = true;
-
-//                        if (Log.isVerbose()) Log.v(TAG, "stop video indication");
-//                        Intent stopIntent = new Intent(ODAService.STOP_VIDEO_INDICATION);
-//                        localBroadcastManager_.sendBroadcast(stopIntent);
                     }
+
+                    restoreActivity_ = true;
+
                 } else if (info.videoAddress == 120 && isRunning_ && restoreActivity_) { // check info.videoResumeCompleted ?
                     if (Log.isDebug()) {
                         Log.d(TAG, "coming from reverse camera -> restore activity");
@@ -1171,17 +1098,26 @@ public class HondaConnectManager {
                             Toast.makeText(context_, "videoAddress " + info.videoAddress + " -> restore activity", Toast.LENGTH_SHORT).show();
                         });
                     }
-                    restoreActivity_ = false;
-//                        Intent i = new Intent(context_, PlayerActivity.class);
-//                        i.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-//                        context_.startActivity(i);
 
-//                        Intent i = new Intent(context_, PlayerActivity.class);
-//                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-//                        context_.startActivity(i);
-                    if (Log.isDebug()) Log.d(TAG, "sendModeMgrLastMode");
-                    boolean ret = modeMgrManager_.sendModeMgrLastMode();
-                    if (Log.isDebug()) Log.d(TAG, "sendModeMgrLastMode= " + ret);
+                    mainHandler_.postDelayed(() -> {
+                        Toast.makeText(context_, "restoring PlayerActivity", Toast.LENGTH_SHORT).show();
+
+                        Intent i = new Intent(context_, PlayerActivity.class);
+                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        context_.startActivity(i);
+                    }, 500);
+
+                    restoreActivity_ = false;
+
+                } else if (info.videoAddress == 198 && isRunning_){
+                    mainHandler_.postDelayed(() -> {
+                        Toast.makeText(context_, "restoring PlayerActivity", Toast.LENGTH_SHORT).show();
+
+                        Intent i = new Intent(context_, PlayerActivity.class);
+                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        context_.startActivity(i);
+                    }, 500);
+
                 }
             }
 
@@ -1192,20 +1128,6 @@ public class HondaConnectManager {
                     dayNightListener_.onDayNightUpdate(isNight);
                 }
             }
-            
-//            if (changed.videoResumeCompletedC) {
-//                Log.v(TAG, "videoResumeCompleted=" + info.videoResumeCompleted);
-//
-//                if (info.videoResumeCompleted == StateMgrServiceConst.STATE_COMPLETED) {
-//                    Log.v(TAG, "videoResumeCompleted state completed");
-//                    if (info.lastVideoAddress == 92) {
-//                        Log.v(TAG, "videoResumeCompleted restore activity");
-//                        Intent i = new Intent(context_, PlayerActivity.class);
-//                        i.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-//                        context_.startActivity(i);
-//                    }
-//                }
-//            }
         }
     };
 
@@ -1231,18 +1153,16 @@ public class HondaConnectManager {
             }
 
             // Aggiorna il modestate e avvia/aggiorna il heartbeat
-            currentModeState_ = modestate;
-            if (sound_param != 0 && image_param != 0){
-                hasAudioFocus_ = true;
-            } else if (sound_param != 0) {
-                hasAudioFocus_ = true;
+            if (currentIdx_ == idx){
+                currentModeState_ |= modestate;
             } else {
-                hasAudioFocus_ = false;
+                currentModeState_ = modestate;
             }
 
+            hasAudioFocus_ = (currentModeState_ & ModeMgrMode.NOTIFY_AUDIO) != 0;
             currentIdx_ = idx;
 
-            if (Log.isDebug()) Log.d(TAG, "rcvOnInsCmd currentModeState_ = " + currentModeState_ + ", currentIdx_= " + currentIdx_);
+            if (Log.isDebug()) Log.d(TAG, "rcvOnInsCmd currentModeState_ = " + currentModeState_ + ", currentIdx_= " + currentIdx_ + " hasAudioFocus_= " + hasAudioFocus_);
 
             startHeartbeat();
 
@@ -1267,16 +1187,25 @@ public class HondaConnectManager {
 
             // Rimuovi i bit revocati dallo stato corrente
             if (currentIdx_ == idx) {
-                currentModeState_ &= ~modestate;
-                if (sound_param != 0 && image_param != 0) {
-                    hasAudioFocus_ = false;
-                } else if (sound_param != 0) {
-                    hasAudioFocus_ = false;
-                }
+                currentModeState_ &= ( (~modestate) + 4) ;
+                hasAudioFocus_ = (currentModeState_ & ModeMgrMode.NOTIFY_AUDIO) != 0;
             } else {
                 if (Log.isDebug()) Log.d(TAG, "rcvOffInsCmd currentIdx_ <> idx");
             }
 
+            if (Log.isDebug()) Log.d(TAG, "rcvOffInsCmd hasAudioFocus_ " + hasAudioFocus_ + ", currentModeState_ = " + currentModeState_ + ", currentIdx_= " + currentIdx_);
+            if (currentModeState_ == 0) {
+                if (Log.isDebug()) Log.d(TAG, "rcvOffInsCmd currentModeState_ == 0");
+                stopHeartbeat();
+                currentIdx_ = 255;
+            } else {
+                startHeartbeat();
+            }
+
+            if (waitCondOff_ != null) {
+                if (Log.isDebug()) Log.d(TAG, "rcvOffInsCmd notify waitCondOff");
+                waitCondOff_.countDown();
+            }
         }
 
         public void rcvOnReqCmdFailed(int audioaddr, int videoaddr, int reason) throws RemoteException {
@@ -1325,18 +1254,16 @@ public class HondaConnectManager {
             if (Log.isDebug()) Log.d(TAG, "rcvOnInsCmd iVideoAddr = " + modeMgrManager_.getModeMgrOnVideoAddr());
 
             // Aggiorna il modestate e avvia/aggiorna il heartbeat
-            currentModeState_ = modestate;
-            if (sound_param != 0 && image_param != 0){
-                hasAudioFocus_ = true;
-            } else if (sound_param != 0) {
-                hasAudioFocus_ = true;
+            if (currentIdx_ == idx){
+                currentModeState_ |= modestate;
             } else {
-                hasAudioFocus_ = false;
+                currentModeState_ = modestate;
             }
 
+            hasAudioFocus_ = (currentModeState_ & ModeMgrMode.NOTIFY_AUDIO) != 0;
             currentIdx_ = idx;
 
-            if (Log.isDebug()) Log.d(TAG, "rcvOnInsCmd currentModeState_ = " + currentModeState_ + ", currentIdx_= " + currentIdx_);
+            if (Log.isDebug()) Log.d(TAG, "rcvOnInsCmd currentModeState_ = " + currentModeState_ + ", currentIdx_= " + currentIdx_ + " hasAudioFocus_= " + hasAudioFocus_);
 
             startHeartbeat();
 
@@ -1349,6 +1276,7 @@ public class HondaConnectManager {
 
         public void rcvOffInsCmd(int modestate) {
             if (Log.isDebug()) Log.d(TAG, "rcvOffInsCmd modestate = " + modestate);
+
             int idx = settings_.advanced.modeMgrAudioVideoIdx();
 
             int sound_param = modestate & ModeMgrMode.NOTIFY_AUDIO;
@@ -1363,17 +1291,13 @@ public class HondaConnectManager {
             // Rimuovi i bit revocati dallo stato corrente
             if (Log.isDebug()) Log.d(TAG, "rcvOffInsCmd currentIdx_ = " + currentIdx_ + ", idx= " + idx);
             if (currentIdx_ == idx) {
-                currentModeState_ &= ~modestate;
-                if (sound_param != 0 && image_param != 0) {
-                    hasAudioFocus_ = false;
-                } else if (sound_param != 0) {
-                    hasAudioFocus_ = false;
-                }
+                currentModeState_ &= ( (~modestate) + 4) ;
+                hasAudioFocus_ = (currentModeState_ & ModeMgrMode.NOTIFY_AUDIO) != 0;
             } else {
                 if (Log.isDebug()) Log.d(TAG, "rcvOffInsCmd currentIdx_ <> idx");
             }
 
-            if (Log.isDebug()) Log.d(TAG, "rcvOffInsCmd hasAudioFocus_ " + hasAudioFocus_ + ". currentModeState_ = " + currentModeState_ + ", currentIdx_= " + currentIdx_);
+            if (Log.isDebug()) Log.d(TAG, "rcvOffInsCmd hasAudioFocus_ " + hasAudioFocus_ + ", currentModeState_ = " + currentModeState_ + ", currentIdx_= " + currentIdx_);
             if (currentModeState_ == 0) {
                 if (Log.isDebug()) Log.d(TAG, "rcvOffInsCmd currentModeState_ == 0");
                 stopHeartbeat();
@@ -1409,30 +1333,6 @@ public class HondaConnectManager {
         }
     };
 
-    private final BroadcastReceiver resumeReceiver = new BroadcastReceiver() {
-
-        private static final String TAG = "HondaConnectManager-resumeReceiver";
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (Log.isDebug()) Log.d(TAG, "received action " + intent.getAction());
-
-            if (!"com.fujitsu_ten.android.action.RESUME_OCCURED".equals(intent.getAction())) {
-                return;
-            }
-
-            int resumeId = intent.getIntExtra("resumeId", -1);
-            int refreshFactor = intent.getIntExtra("refreshFactor", -1);
-
-            dumpStateMgr(stateMgrManager_.getAllState());
-
-            int videoAddr = modeMgrManager_.getModeMgrOnVideoAddr();
-            int audioAddr = modeMgrManager_.getModeMgrOnAudioAddr();
-
-            if (Log.isDebug()) Log.d(TAG, "resumeId=" + resumeId + " refreshFactor=" + refreshFactor + " currentIdx_= " + currentIdx_ + " videoAddr= " + videoAddr + " audioAddr= " + audioAddr);
-        }
-    };
-
     private final class BTVrListener implements BluetoothVrListener {
 
         private static final String TAG = "HondaConnectManager-BTVrListener";
@@ -1461,6 +1361,9 @@ public class HondaConnectManager {
         @Override
         public void onVoiceControlRightsResponse(int i) {
             if (Log.isDebug()) Log.d(TAG, "onVoiceControlRightsResponse " + i);
+            if (i == 1){
+               stopMicSession();
+            }
         }
     }
 

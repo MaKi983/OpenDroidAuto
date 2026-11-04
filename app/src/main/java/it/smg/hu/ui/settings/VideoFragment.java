@@ -89,6 +89,9 @@ public class VideoFragment extends BaseSettingsFragment {
             }
         });
 
+//        Spinner source = view.findViewById(R.id.audio_micSource);
+//        initSpinner(source, R.array.mic_source_labels, R.array.mic_source_values, settings.audio, Settings.Audio.MIC_SOURCE, Settings.Audio.MIC_SOURCE_DEFAULT_VALUE);
+
         CheckBox showMediaNotification = view.findViewById(R.id.showMediaNotification);
         initCheckBox(showMediaNotification, settings.video, Settings.Video.VIDEO_SHOW_MEDIA_NOTIFICATION, Settings.Video.VIDEO_SHOW_MEDIA_NOTIFICATION_DEFAULT_VALUE);
 

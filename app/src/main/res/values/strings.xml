@@ -83,6 +83,7 @@
 	<string name="video_settings_dpi">DPI</string>
 	<string name="video_settings_margin">Margin</string>
 	<string name="video_settings_nightmode">Night Mode</string>
+	<string name="audio_settings_micsource">Mic Source</string>
 	<string name="video_show_media_notification">Show Media notification when app is in background</string>
 	<string name="video_show_navigation_notification">Show Navigation notification when app is in background</string>
 	<string name="video_show_app_badge">Show an application badge when app is in background</string>

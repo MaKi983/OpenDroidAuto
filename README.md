@@ -2,7 +2,7 @@
 
 Android Auto receiver for legacy Android ARM32 head units, including Honda Connect units and compatible generic multimedia systems.
 
-Current hotfix version: **2.6.2**.
+Current version: **2.6.0**.
 
 ## Connection behavior
 
@@ -12,9 +12,6 @@ Current hotfix version: **2.6.2**.
 - Wi-Fi is optional. Enable it in settings only after the phone hotspot is already saved by Android on the head unit. The app uses the hotspot gateway on TCP port 5277 and reports failures for manual recovery.
 - The dashboard and Settings support a persistent light/dark selector. A fresh installation starts in light mode; Portuguese multimedia systems use Portuguese interface text and every other locale falls back to English.
 - Android controls USB permission. A non-rooted head unit can still show the system dialog on a first connection or after a device is disconnected; the app does not bypass that permission.
-- Version 2.6.1 introduces a stable release certificate. Uninstall the older debug-signed APK once before installing 2.6.1; future stable-signed updates can then preserve the app identity and USB default association.
-- Version 2.6.2 restores the proven legacy projection lifecycle, adds bounded native USB transfer retries and simplifies the dashboard/Settings layout for the Honda display viewport.
-- Stable release certificate SHA-256: `DD:F4:9D:72:6D:DB:B5:A7:FF:5F:EA:21:9D:AA:27:66:69:94:E2:F3:37:F7:E3:38:EE:CD:F9:C4:AB:B7:3C:B6`.
 
 ## Compatibility
 

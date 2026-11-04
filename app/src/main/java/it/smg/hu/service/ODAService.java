@@ -96,7 +96,6 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
         if (Log.isInfo()) Log.i(TAG, "create");
         super.onCreate();
 
-        NotificationFactory.init(getApplicationContext());
         notificationFactory_ = NotificationFactory.instance();
 
         usbManager_ = USBManager.instance();
@@ -314,7 +313,7 @@ public class ODAService extends Service implements IAndroidAutoEntityEventHandle
 //        		Intent service = new Intent(this, ODAService.class);
 //        		stopService(service);
             stopForeground(true);
-        	stopSelf();
+            stopSelf();
         } finally {
             // Cleared unconditionally so a failed teardown cannot wedge the
             // service into a state where no further session can be started.

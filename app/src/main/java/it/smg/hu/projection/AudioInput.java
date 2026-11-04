@@ -95,11 +95,11 @@ public class AudioInput extends it.smg.libs.aasdk.projection.AudioInput {
 
         isActive_ = true;
 
+        audioRecord_ = new AudioRecord(sourceType_, sampleRate_, channels2num(channelConfig_), sampleSizeFromInt(sampleSize_), bufferSize_ * 4);
+
         if (settings_.advanced.hondaIntegrationEnabled()) {
             hondaConnectManager_.startMicSession();
         }
-
-        audioRecord_ = new AudioRecord(sourceType_, sampleRate_, channels2num(channelConfig_), sampleSizeFromInt(sampleSize_), bufferSize_ * 4);
 
         if (Log.isDebug()) Log.d(TAG, "State: " + audioRecord_.getState() + ", recording state: " + audioRecord_.getRecordingState());
         if (audioRecord_.getState() != AudioRecord.STATE_INITIALIZED){
@@ -130,10 +130,6 @@ public class AudioInput extends it.smg.libs.aasdk.projection.AudioInput {
         if (Log.isInfo()) Log.i(TAG, "stop -> isActive= " + isActive_);
 
         if (isActive_) {
-            if (settings_.advanced.hondaIntegrationEnabled()) {
-                hondaConnectManager_.stopMicSession();
-            }
-
             if (audioRecord_ != null) {
                 if (Log.isDebug()) Log.d(TAG, "stop audioRecord");
                 try {
@@ -147,7 +143,12 @@ public class AudioInput extends it.smg.libs.aasdk.projection.AudioInput {
             }
 
             isActive_ = false;
+
+            if (settings_.advanced.hondaIntegrationEnabled()) {
+                hondaConnectManager_.stopMicSession();
+            }
         }
+
         if (Log.isDebug()) Log.d(TAG, "stop done");
     }
 

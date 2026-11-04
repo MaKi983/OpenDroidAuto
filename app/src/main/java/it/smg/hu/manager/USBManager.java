@@ -40,6 +40,7 @@ public class USBManager {
     private static final String SERIAL = "HU-AAAAAA001";
 
     public static final String ACTION_USB_PERMISSION =  "it.smg.hu.USB_PERMISSION";
+    public static final String USB_DEVICE_ATTACHED =  "it.smg.hu.USB_DEVICE_ATTACHED";
     public static final String DETACH_AOAP_DEVICE = "it.smg.hu.DETACH_AOAP_DEVICE";
     public static final String ATTACH_AOAP_DEVICE = "it.smg.hu.ATTACH_AOAP_DEVICE";
 
@@ -223,7 +224,7 @@ public class USBManager {
         }
 
         if (Log.isDebug()) Log.d(TAG, "Request permission for USB device " + deviceId);
-        Intent permissionIntent = new Intent(ctx_, UsbPermissionReceiver.class);
+        Intent permissionIntent = new Intent(ctx_, UsbReceiver.class);
         permissionIntent.setAction(ACTION_USB_PERMISSION);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(ctx_, deviceId, permissionIntent,
                 PendingIntent.FLAG_ONE_SHOT);
@@ -346,8 +347,11 @@ public class USBManager {
             return;
         }
         ConnectionManager.instance().transportAvailable("modeUSB", ctx_.getString(R.string.connection_usb_ready));
-        Intent aoapDeviceIntent = new Intent(ATTACH_AOAP_DEVICE);
+
+        Intent aoapDeviceIntent = new Intent(ctx_, UsbReceiver.class);
+        aoapDeviceIntent.setAction(ATTACH_AOAP_DEVICE);
         aoapDeviceIntent.putExtra(UsbManager.EXTRA_DEVICE, device);
+        ctx_.sendBroadcast(aoapDeviceIntent);
         localBroadcastManager_.sendBroadcast(aoapDeviceIntent);
     }
 

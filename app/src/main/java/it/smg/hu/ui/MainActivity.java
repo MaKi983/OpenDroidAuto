@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.usb.UsbManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 
@@ -18,9 +17,12 @@ import it.smg.hu.manager.USBManager;
 import it.smg.hu.manager.WIFIManager;
 import it.smg.hu.service.ODAService;
 import it.smg.hu.ui.main.HomeFragment;
+import it.smg.hu.ui.notification.AppBadge;
+import it.smg.libs.common.Log;
 
 /** Connection host. It launches the player only after a transport is ready. */
 public class MainActivity extends FragmentActivity {
+    private final static String TAG = "MainActivity";
     public static final int SETTINGS_ACTIVITY_REQUEST = 12345;
 
     private USBManager usbManager_;
@@ -28,6 +30,7 @@ public class MainActivity extends FragmentActivity {
     private LocalBroadcastManager localBroadcastManager_;
     private boolean receiversRegistered_;
     private boolean playerLaunchPending_;
+    private static boolean isActive_;
 
     private final BroadcastReceiver wifiReceiver = new BroadcastReceiver() {
         @Override
@@ -38,21 +41,12 @@ public class MainActivity extends FragmentActivity {
         }
     };
 
-    private final BroadcastReceiver usbAttachReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (usbManager_ == null || intent == null
-                    || !UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(intent.getAction())) {
-                return;
-            }
-            usbManager_.onUsbDeviceDetected(intent.getParcelableExtra(UsbManager.EXTRA_DEVICE));
-        }
-    };
-
     private final BroadcastReceiver connectionReceiver = new BroadcastReceiver() {
+        final String TAG = "MainActivity-connectionReceiver";
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            if (Log.isDebug()) Log.d(TAG, action);
             if (ConnectionManager.ACTION_STATE_CHANGED.equals(action)) {
                 String state = intent.getStringExtra(ConnectionManager.EXTRA_STATE);
                 if (ConnectionState.ERROR.name().equals(state) || ConnectionState.IDLE.name().equals(state)
@@ -66,35 +60,52 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (Log.isDebug()) Log.d(TAG, "onCreate, intent action: " + getIntent().getAction());
+
         usbManager_ = USBManager.instance();
         wifiManager_ = WIFIManager.instance();
         localBroadcastManager_ = LocalBroadcastManager.getInstance(this);
 
         setContentView(R.layout.activity_main);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.home_content, new HomeFragment())
-                    .commit();
-        }
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.home_content, new HomeFragment(), "HomeFragment")
+                .commit();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (Log.isDebug()) Log.d(TAG, "onNewIntent, action " + intent.getAction());
     }
 
     @Override
     protected void onResume() {
+        if (Log.isDebug()) Log.d(TAG, "onResume");
         super.onResume();
         playerLaunchPending_ = PlayerActivity.isActive();
         registerConnectionReceivers();
+
+        if (AppBadge.instance() != null){
+            AppBadge.instance().dismiss();
+        }
+
         if (usbManager_ != null) {
             usbManager_.rescanAttachedDevices();
         }
+
         if (wifiManager_ != null) {
             wifiManager_.checkNetwork();
         }
+
+        isActive_ = true;
     }
 
     @Override
     protected void onPause() {
+        if (Log.isDebug()) Log.d(TAG, "onPause");
         unregisterConnectionReceivers();
         super.onPause();
+        isActive_ = false;
     }
 
     private void registerConnectionReceivers() {
@@ -102,9 +113,7 @@ public class MainActivity extends FragmentActivity {
             return;
         }
         registerReceiver(wifiReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-        registerReceiver(usbAttachReceiver, new IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED));
         IntentFilter localFilter = new IntentFilter();
-        localFilter.addAction(USBManager.ATTACH_AOAP_DEVICE);
         localFilter.addAction(WIFIManager.CONNECT_WIFI);
         localFilter.addAction(ConnectionManager.ACTION_STATE_CHANGED);
         localBroadcastManager_.registerReceiver(connectionReceiver, localFilter);
@@ -116,7 +125,6 @@ public class MainActivity extends FragmentActivity {
             return;
         }
         unregisterReceiver(wifiReceiver);
-        unregisterReceiver(usbAttachReceiver);
         localBroadcastManager_.unregisterReceiver(connectionReceiver);
         receiversRegistered_ = false;
     }
@@ -136,6 +144,10 @@ public class MainActivity extends FragmentActivity {
         player.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         player.putExtra("mode", mode);
         startActivity(player);
+    }
+
+    public static boolean isActive(){
+        return isActive_;
     }
 
     /** Called by the home screen and PlayerActivity to prevent a reconnect loop. */
@@ -165,6 +177,7 @@ public class MainActivity extends FragmentActivity {
     @Override
     public void onBackPressed() {
         exitSession();
+        exitApplication();
     }
 
 }

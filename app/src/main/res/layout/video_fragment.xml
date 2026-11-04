@@ -94,7 +94,24 @@
         android:gravity="left|center_vertical"
         android:textColor="@color/settings_text_primary"
         android:textAlignment="viewStart"/>
+<!--
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="left|center_vertical"
+        android:textColor="@color/settings_text_primary"
+        android:labelFor="@id/audio_micSource"
+        android:text="@string/audio_settings_micsource"/>
 
+    <Spinner
+        android:id="@+id/audio_micSource"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:textColor="@color/settings_text_primary"
+        android:gravity="left|center_vertical"
+        android:textAlignment="viewStart"/>
+-->
     <CheckBox
         android:id="@+id/showMediaNotification"
         android:layout_width="match_parent"

@@ -36,11 +36,18 @@
         android:hardwareAccelerated="true"
         android:theme="@style/Theme.AppCompat">
 
-        <activity android:name=".ui.MainActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme" android:launchMode="singleTask" android:exported="true">
+        <activity android:name=".ui.MainActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity android:name=".ui.UsbActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.Popup" android:launchMode="singleTask" android:exported="true" android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
         </activity>
 
         <activity android:name=".ui.SettingsActivity" android:label="Settings" android:screenOrientation="landscape" android:exported="false">
@@ -52,9 +59,11 @@
         <service android:enabled="true" android:name=".service.ODAService" android:exported="false">
         </service>
 
-        <receiver android:name=".manager.UsbPermissionReceiver" android:exported="false">
+        <receiver android:name=".manager.UsbReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="it.smg.hu.USB_PERMISSION" />
+                <action android:name="it.smg.hu.USB_DEVICE_ATTACHED" />
+                <action android:name="it.smg.hu.ATTACH_AOAP_DEVICE" />
                 <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED" />
             </intent-filter>
         </receiver>
