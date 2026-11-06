@@ -15,6 +15,7 @@ public:
 
     int open(int fd);
     void close();
+    int resetDevice();
     int deviceDescriptor(libusb_device_descriptor &descriptor);
     LibUsbDevice::Pointer getLibUsbDevice();
 

@@ -3,26 +3,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F1F1F1"
-    android:layout_marginBottom="64dp">
+    android:background="@color/settings_surface"
+    android:layout_marginBottom="16dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp">
 
     <CheckBox
         android:id="@+id/enable_ad2p"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_gravity="left"
+        android:layout_marginTop="6dp"
         android:text="@string/conn_settings_enableAd2p"
-        android:textColor="#000" />
+        android:textColor="@color/settings_text_primary" />
 
     <CheckBox
         android:id="@+id/enable_hfp"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_gravity="left"
+        android:layout_marginTop="6dp"
         android:text="@string/conn_settings_enableHfp"
-        android:textColor="#000" />
+        android:textColor="@color/settings_text_primary" />
 
 
 </LinearLayout>

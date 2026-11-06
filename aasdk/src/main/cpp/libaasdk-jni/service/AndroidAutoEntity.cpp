@@ -6,6 +6,8 @@
 namespace service
 {
 
+constexpr int AndroidAutoEntity::cStartupSettleDelayMs;
+
 AndroidAutoEntity::AndroidAutoEntity(aasdk::io::ioService& ioService,
                                      aasdk::messenger::ICryptor::Pointer cryptor,
                                      aasdk::messenger::IMessenger::Pointer messenger,
@@ -13,6 +15,7 @@ AndroidAutoEntity::AndroidAutoEntity(aasdk::io::ioService& ioService,
                                      ServiceList serviceList,
                                      IPinger::Pointer pinger)
         : strand_(ioService)
+        , startupSettleTimer_(ioService)
         , cryptor_(std::move(cryptor))
         , messenger_(std::move(messenger))
         , controlServiceChannel_(std::make_shared<aasdk::channel::control::ControlServiceChannel>(strand_, messenger_))
@@ -40,15 +43,24 @@ void AndroidAutoEntity::start(IAndroidAutoEntityEventHandler::Pointer eventHandl
 
         this->schedulePing();
 
-        auto versionRequestPromise = aasdk::channel::SendPromise::defer(strand_, "AndroidAutoEntity_versionRequest");
-        versionRequestPromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
-        controlServiceChannel_->sendVersionRequest(std::move(versionRequestPromise));
+        startupSettleTimer_.expires_from_now(boost::posix_time::milliseconds(cStartupSettleDelayMs));
+        startupSettleTimer_.async_wait(strand_->wrap([this, self = this->shared_from_this()](const boost::system::error_code& ec) {
+            if(ec || isQuitting_.load(std::memory_order_relaxed)) {
+                return;
+            }
+
+            auto versionRequestPromise = aasdk::channel::SendPromise::defer(strand_, "AndroidAutoEntity_versionRequest");
+            versionRequestPromise->then([]() {}, std::bind(&AndroidAutoEntity::onChannelError, this->shared_from_this(), std::placeholders::_1));
+            controlServiceChannel_->sendVersionRequest(std::move(versionRequestPromise));
+        }));
     });
 }
 
 void AndroidAutoEntity::stop()
 {
     if(Log::isInfo()) Log_i("stop");
+
+    startupSettleTimer_.cancel();
 
     delete eventHandler_;
     eventHandler_ = nullptr;
@@ -238,6 +250,10 @@ void AndroidAutoEntity::onChannelError(const aasdk::error::Error& e)
 
 void AndroidAutoEntity::triggerQuitOnError(const aasdk::error::Error& e)
 {
+    if(isQuitting_.exchange(true, std::memory_order_acq_rel)) {
+        return;
+    }
+
     if(eventHandler_ != nullptr)
     {
         eventHandler_->onAndroidAutoQuitOnError(e);
@@ -246,6 +262,10 @@ void AndroidAutoEntity::triggerQuitOnError(const aasdk::error::Error& e)
 
 void AndroidAutoEntity::triggerQuit()
 {
+    if(isQuitting_.exchange(true, std::memory_order_acq_rel)) {
+        return;
+    }
+
     if(eventHandler_ != nullptr)
     {
         eventHandler_->onAndroidAutoQuit();

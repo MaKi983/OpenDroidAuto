@@ -118,6 +118,11 @@ const libusb_interface_descriptor* LibUsbDevice::interfaceDescriptor(const libus
 
 int LibUsbDevice::claimInterface(uint8_t bInterfaceNumber){
 
+    if (handle_ == nullptr) {
+        Log_e("libusb_claim_interface failed: device handle already closed");
+        return LIBUSB_ERROR_NO_DEVICE;
+    }
+
     int result = libusb_claim_interface(handle_, bInterfaceNumber);
     if (result < LIBUSB_SUCCESS) {
         Log_e("libusb_claim_interface failed:(%d / %s)", result, libusb_error_name(result));
@@ -128,6 +133,11 @@ int LibUsbDevice::claimInterface(uint8_t bInterfaceNumber){
 
 int LibUsbDevice::releaseInterface(uint8_t bInterfaceNumber){
 
+    if (handle_ == nullptr) {
+        if (Log::isWarn()) Log_w("libusb_release_interface skipped: device handle already closed");
+        return LIBUSB_ERROR_NO_DEVICE;
+    }
+
     int result = libusb_release_interface(handle_, bInterfaceNumber);
     if (result < LIBUSB_SUCCESS) {
         Log_e("libusb_release_interface failed:(%d / %s)", result, libusb_error_name(result));
@@ -136,11 +146,17 @@ int LibUsbDevice::releaseInterface(uint8_t bInterfaceNumber){
     return result;
 }
 
-void LibUsbDevice::resetDevice() {
+int LibUsbDevice::resetDevice() {
+    if (handle_ == nullptr) {
+        if (Log::isWarn()) Log_w("libusb_reset_device skipped: device handle already closed");
+        return LIBUSB_ERROR_NO_DEVICE;
+    }
+
     int result = libusb_reset_device(handle_);
     if (result < LIBUSB_SUCCESS) {
         Log_e("libusb_reset_device failed:(%d / %s)", result, libusb_error_name(result));
     }
+    return result;
 }
 
 }

@@ -120,9 +120,8 @@ public class AppBadge extends Notification{
     @Override
     public void show() {
         if (Settings.instance().video.showAppBadge()) {
-
-            Intent odaServiceIntent = new Intent(ctx_, AppBadge.class);
-            ctx_.startService(odaServiceIntent);
+//            Intent odaServiceIntent = new Intent(ctx_, AppBadge.class);
+//            ctx_.startService(odaServiceIntent);
             super.show();
         }
     }

@@ -30,7 +30,7 @@ Messenger::~Messenger(){
 
 void Messenger::enqueueReceive(ChannelId channelId, ReceivePromise::Pointer promise)
 {
-    if(Log::isDebug()) Log_d("%s / enqueueReceive", channelIdToString(channelId).c_str());
+    if(Log::isVerbose()) Log_v("%s / enqueueReceive", channelIdToString(channelId).c_str());
     channelReceivePromiseQueue_.insert(std::pair<ChannelId, ReceivePromise::Pointer>(channelId, std::move(promise)));
 }
 
@@ -65,7 +65,7 @@ void Messenger::inStreamMessageHandler(Message::Pointer message)
     doReceive();
 
     auto channelId = message->getChannelId();
-    if (Log::isDebug()) Log_d("%s/inStreamMessageHandler", channelIdToString(channelId).c_str());
+    if (Log::isVerbose()) Log_v("%s/inStreamMessageHandler", channelIdToString(channelId).c_str());
     if (channelReceivePromiseQueue_.count(channelId) > 0) {
         ReceivePromise::Pointer promise = channelReceivePromiseQueue_.at(channelId);
         if (promise) {
@@ -83,7 +83,7 @@ void Messenger::doReceive() {
     }
 
     receiveStrand_->dispatch([this, self = this->shared_from_this()]() {
-        if (Log::isDebug()) Log_d("doReceive");
+        if (Log::isVerbose()) Log_d("doReceive");
         auto inStreamPromise = ReceivePromise::defer(receiveStrand_, "Messenger_doReceive");
         inStreamPromise->then(
                 std::bind(&Messenger::inStreamMessageHandler, this->shared_from_this(),

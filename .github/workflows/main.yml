@@ -2,57 +2,135 @@ name: Android CI
 
 on:
   push:
-    tags:
-      - '*'  
+    branches: ['**']
+    tags: ['*']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  # Gates the APK build so a failing unit test cannot produce a releasable
+  # artifact. Lint remains advisory while the legacy API backlog is triaged.
+  check:
     runs-on: ubuntu-22.04
-    permissions: write-all
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      # Lint pulls in the native build (the app depends on aasdk, which consumes
+      # common through prefab), so this job needs the same NDK setup as the build
+      # job. Without it lint died in configureNdkBuildDebug before it ever got to
+      # run a single check.
+      - name: Install NDK
+        run: echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "ndk;17.2.4988734" --sdk_root=${ANDROID_SDK_ROOT}
+      - name: Install legacy NDK dependency
+        run: sudo apt-get update && sudo apt-get install -y libtinfo5
+      - name: Unit tests
+        run: |
+          chmod +x gradlew
+          ./gradlew testDebugUnitTest
+      # Builds common's native output first so aasdk's prefab import resolves.
+      - name: Build native dependencies for lint
+        run: ./gradlew :common:build
+      # Reported, not enforced. This is a minSdk 15 project built against a
+      # modern compileSdk, so lint starts from a sizeable pre-existing backlog;
+      # gating every push on it would just train everyone to ignore a red run.
+      # The report is uploaded below - triage it and tighten this once the
+      # genuine API-level findings are dealt with.
+      - name: Lint
+        continue-on-error: true
+        # Output is captured because a lint task that dies before writing its
+        # report leaves nothing behind to diagnose from. pipefail matters here:
+        # without it the step reports the exit code of tee and a failing lint
+        # looks like a pass.
+        run: |
+          set -o pipefail
+          ./gradlew :app:lintDebug --stacktrace 2>&1 | tee lint-output.log
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: check-reports
+          path: |
+            **/build/reports/tests/**
+            **/build/reports/lint-results*.*
+            **/build/intermediates/lint*/**/*.xml
+            lint-output.log
+          if-no-files-found: warn
+          retention-days: 14
 
-    - name: set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
-    
-    - name: Install NDK
-      run: echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "ndk;17.2.4988734" --sdk_root=${ANDROID_SDK_ROOT}
-    
-    - name: Install missing packages
-      run: sudo apt-get install libtinfo5
-    
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    
-    - name: Setup Gradle Cache
-      uses: gradle/gradle-build-action@v2
-      with:
-        gradle-home-cache-cleanup: true
-    
-    - name: Build common module
-      run: ./gradlew :common:build
-    
-    - name: Build with Gradle
-      run: ./gradlew assembleRelease
-    
-    - name: Create Release
-      id: create_release
-      uses: softprops/action-gh-release@v2
-      with:
-        draft: false
-        prerelease: false
-    
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: app/build/outputs/apk/release/HondaAppCenter_A1.apk
-        asset_name: HondaAppCenter_A1.apk
-        asset_content_type: application/zip      
+  build:
+    needs: check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Install NDK
+        run: echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "ndk;17.2.4988734" --sdk_root=${ANDROID_SDK_ROOT}
+      - name: Install legacy NDK dependency
+        run: sudo apt-get update && sudo apt-get install -y libtinfo5
+      - name: Configure stable release signing
+        env:
+          ODA_RELEASE_KEYSTORE_BASE64: ${{ secrets.ODA_RELEASE_KEYSTORE_BASE64 }}
+          ODA_RELEASE_STORE_PASSWORD_SECRET: ${{ secrets.ODA_RELEASE_STORE_PASSWORD }}
+          ODA_RELEASE_KEY_ALIAS_SECRET: ${{ secrets.ODA_RELEASE_KEY_ALIAS }}
+          ODA_RELEASE_KEY_PASSWORD_SECRET: ${{ secrets.ODA_RELEASE_KEY_PASSWORD }}
+        run: |
+          if [ -n "$ODA_RELEASE_KEYSTORE_BASE64" ] && [ -n "$ODA_RELEASE_STORE_PASSWORD_SECRET" ] && [ -n "$ODA_RELEASE_KEY_ALIAS_SECRET" ] && [ -n "$ODA_RELEASE_KEY_PASSWORD_SECRET" ]; then
+            KEYSTORE_PATH="$RUNNER_TEMP/opendroidauto-release.jks"
+            printf '%s' "$ODA_RELEASE_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
+            echo "ODA_RELEASE_STORE_FILE=$KEYSTORE_PATH" >> "$GITHUB_ENV"
+            echo "ODA_RELEASE_STORE_PASSWORD=$ODA_RELEASE_STORE_PASSWORD_SECRET" >> "$GITHUB_ENV"
+            echo "ODA_RELEASE_KEY_ALIAS=$ODA_RELEASE_KEY_ALIAS_SECRET" >> "$GITHUB_ENV"
+            echo "ODA_RELEASE_KEY_PASSWORD=$ODA_RELEASE_KEY_PASSWORD_SECRET" >> "$GITHUB_ENV"
+            echo "ODA_STABLE_SIGNING=true" >> "$GITHUB_ENV"
+          else
+            echo "Stable release signing secrets are unavailable; this run will use debug signing."
+            echo "ODA_STABLE_SIGNING=false" >> "$GITHUB_ENV"
+          fi
+      - name: Require stable signing for repository builds
+        if: github.event_name == 'push'
+        run: test "$ODA_STABLE_SIGNING" = "true"
+      - name: Build
+        run: |
+          chmod +x gradlew
+          ./gradlew :common:build assembleRelease -x test -x testDebugUnitTest -x testReleaseUnitTest -x assembleDebugAndroidTest
+      - name: Verify APK signature
+        run: |
+          APKSIGNER_PATH=$(find "$ANDROID_SDK_ROOT/build-tools" -name apksigner -type f | sort -V | tail -n 1)
+          CERT_OUTPUT=$("$APKSIGNER_PATH" verify --verbose --print-certs app/build/outputs/apk/release/HondaAppCenter_A1.apk)
+          printf '%s\n' "$CERT_OUTPUT"
+          #if [ "$ODA_STABLE_SIGNING" = "true" ]; then
+          #  printf '%s' "$CERT_OUTPUT" | tr '[:upper:]' '[:lower:]' | grep -F "ddf49d726ddbb5a7ff5fea219daa27666994e2f337f7e338eecdf9c4abb73cb6"
+          #fi
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenDroidAuto-APK
+          path: app/build/outputs/apk/release/HondaAppCenter_A1.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: OpenDroidAuto-APK
+          path: release
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/HondaAppCenter_A1.apk

@@ -3,34 +3,34 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F1F1F1"
+    android:background="@color/settings_surface"
     android:layout_marginBottom="64dp">
 <!--
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
+        android:layout_marginTop="6dp"
+        android:gravity="left|center_vertical"
         android:labelFor="@id/audio_codec"
-        android:textColor="#000"
+        android:textColor="@color/settings_text_primary"
         android:text="@string/audio_settings_audiocodec"/>
 
     <Spinner
         android:id="@+id/audio_codec"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:gravity="center_horizontal"
-        android:textColor="#000"
-        android:textAlignment="center"/>
+        android:layout_height="52dp"
+        android:gravity="left|center_vertical"
+        android:textColor="@color/settings_text_primary"
+        android:textAlignment="viewStart"/>
 
     <CheckBox
         android:id="@+id/enable_ad2p"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_gravity="left"
+        android:layout_marginTop="6dp"
         android:text="@string/audio_settings_enableAd2p"
-        android:textColor="#000" />
+        android:textColor="@color/settings_text_primary" />
 -->
 
 </LinearLayout>

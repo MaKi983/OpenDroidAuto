@@ -1,95 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="#F1F1F1">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settingsRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/settings_surface">
 
-    <FrameLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_gravity="top|center"
-        android:layout_marginLeft="88dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginRight="88dp"
-        android:layout_marginBottom="68dp"
-        android:orientation="vertical"
-        android:padding="8dp" />
+    <LinearLayout
+        android:id="@+id/settingsHeader"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentTop="true"
+        android:background="@color/home_light_surface_elevated"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp">
+
+        <Button
+            android:id="@+id/settingsBackBtn"
+            style="@style/AutomotiveButton"
+            android:layout_width="92dp"
+            android:layout_height="48dp"
+            android:background="@drawable/button_secondary_light"
+            android:text="@string/settings_back"
+            android:textColor="@color/home_light_text_primary"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/settingsTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/car_settings"
+                android:textColor="@color/home_light_text_primary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/settingsSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_subtitle"
+                android:textColor="@color/home_light_text_secondary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/settingsThemeBtn"
+            style="@style/AutomotiveButton"
+            android:layout_width="132dp"
+            android:layout_height="48dp"
+            android:background="@drawable/button_secondary_light"
+            android:text="@string/theme_light"
+            android:textColor="@color/home_light_text_primary"
+            android:textSize="13sp" />
+    </LinearLayout>
 
     <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+        android:id="@+id/settingsScroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/settingsNav"
+        android:layout_below="@id/settingsHeader"
+        android:fillViewport="true"
+        android:paddingLeft="16dp"
+        android:paddingTop="10dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="10dp">
 
         <FrameLayout
             android:id="@+id/main_content"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-        </FrameLayout>
+            android:background="@color/settings_surface" />
     </ScrollView>
 
     <LinearLayout
+        android:id="@+id/settingsNav"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_gravity="bottom"
-        android:background="#F1F1F1"
+        android:layout_height="72dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/home_light_surface_elevated"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp">
 
         <ImageButton
             android:id="@+id/car_settings"
-            android:layout_width="128dp"
-            android:layout_height="64dp"
-            android:adjustViewBounds="true"
-            android:background="#039BE5"
-            android:contentDescription="@string/main_settings"
-            android:scaleType="fitCenter"
+            android:layout_width="116dp"
+            android:layout_height="56dp"
+            android:background="@drawable/button_secondary_light"
+            android:contentDescription="@string/car_settings"
+            android:padding="8dp"
+            android:scaleType="centerInside"
             android:src="@drawable/car_settings" />
 
         <ImageButton
             android:id="@+id/video_settings"
-            android:layout_width="128dp"
-            android:layout_height="64dp"
-            android:layout_marginStart="15dp"
-            android:adjustViewBounds="true"
-            android:background="#039BE5"
+            android:layout_width="116dp"
+            android:layout_height="56dp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/button_secondary_light"
             android:contentDescription="@string/video_settings"
-            android:scaleType="fitCenter"
+            android:padding="8dp"
+            android:scaleType="centerInside"
             android:src="@drawable/video_settings" />
 
         <ImageButton
             android:id="@+id/conn_settings"
-            android:layout_width="128dp"
-            android:layout_height="64dp"
-            android:layout_marginStart="15dp"
-            android:adjustViewBounds="true"
-            android:background="#039BE5"
+            android:layout_width="116dp"
+            android:layout_height="56dp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/button_secondary_light"
             android:contentDescription="@string/conn_settings"
-            android:scaleType="fitCenter"
-            android:src="@drawable/connectivity_settings"/>
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/connectivity_settings" />
 
         <ImageButton
             android:id="@+id/keymap_settings"
-            android:layout_width="128dp"
-            android:layout_height="64dp"
-            android:layout_marginStart="15dp"
-            android:background="#039BE5"
-            android:src="@drawable/keymap_settings"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            android:contentDescription="@string/keymap_settings" />
+            android:layout_width="116dp"
+            android:layout_height="56dp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/button_secondary_light"
+            android:contentDescription="@string/keymap_settings"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/keymap_settings" />
 
         <ImageButton
             android:id="@+id/advanced_settings"
-            android:layout_width="128dp"
-            android:layout_height="64dp"
-            android:layout_marginStart="15dp"
-            android:adjustViewBounds="true"
-            android:background="#039BE5"
+            android:layout_width="116dp"
+            android:layout_height="56dp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/button_secondary_light"
             android:contentDescription="@string/advanced_settings"
-            android:scaleType="fitCenter"
+            android:padding="8dp"
+            android:scaleType="centerInside"
             android:src="@drawable/advanced_settings" />
-
     </LinearLayout>
-
-</FrameLayout>
+</RelativeLayout>

@@ -3,7 +3,9 @@ package it.smg.hu.config;
 import android.os.Environment;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -82,13 +84,41 @@ public class ODALog implements ILog {
                             }
                         }
 
+                        // A logcat spawned here is a separate process: it survives our
+                        // own process being killed or crashing, keeping the output file
+                        // open and draining the ring buffer forever. Without this the
+                        // leftovers pile up across restarts (one per app launch), and
+                        // several logcat writing the full stream to the same (often
+                        // USB) volume starves the A/V pipeline badly enough to stall
+                        // video and stutter audio. Reap the previous one first.
+                        File pidFile = new File(logDirectory, "logcat.pid");
+                        killLeakedLogProcess(pidFile);
+
                         // clear the previous logcat and then write the new one to the file
                         try {
                             v_(TAG, "start logcat process");
                             Runtime.getRuntime().exec("logcat -c");
                             Thread.sleep(100);
+                            // Do NOT add "*:S" here to trim the volume: a logcat
+                            // filterspec matches exact tags, and this app logs under
+                            // "ODA/<subtag>" tags, never under its package name. So
+                            // PACKAGE_NAME matches nothing, silencing everything else
+                            // would empty the file, and it would also drop the
+                            // DEBUG/ActivityManager/AudioFlinger lines that make
+                            // native crashes and ANRs diagnosable in the first place.
                             String cmd = "logcat -v threadtime -f " + logFile + " " + PACKAGE_NAME + ":V";
-                            logProcess_ = Runtime.getRuntime().exec(cmd);
+                            // Record the child's pid so the next launch can reap it:
+                            // "exec" makes logcat inherit the shell's pid, so the value
+                            // written by "$$" stays valid for the logcat itself.
+                            try {
+                                logProcess_ = Runtime.getRuntime().exec(new String[]{"sh", "-c",
+                                        "echo $$ > '" + pidFile.getAbsolutePath() + "'; exec " + cmd});
+                            } catch (IOException noShell) {
+                                // No usable shell: still log, just without the pid
+                                // bookkeeping that lets the next launch reap us.
+                                w_(TAG, "shell unavailable, starting logcat directly: " + noShell);
+                                logProcess_ = Runtime.getRuntime().exec(cmd);
+                            }
                             Thread.sleep(200);
                             v_(TAG, "started log process with cmd: " + cmd);
                         } catch (IOException e) {
@@ -103,6 +133,64 @@ public class ODALog implements ILog {
                 w_(TAG, "log storage readonly");
             } else {
                 w_(TAG, "log storage not accessible");
+            }
+        }
+    }
+
+    /**
+     * Kills a logcat left behind by a previous run of this app, if it is still
+     * alive. Only pids we recorded ourselves are touched, and killProcess is
+     * restricted by the system to our own uid, so this cannot affect anything
+     * outside the app.
+     */
+    private void killLeakedLogProcess(File pidFile){
+        if (!pidFile.exists()) {
+            return;
+        }
+
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(pidFile));
+            String line = reader.readLine();
+            if (line != null && !line.trim().isEmpty()) {
+                int pid = Integer.parseInt(line.trim());
+                // The pid file outlives reboots on removable storage, so the
+                // recorded pid may have been recycled by an unrelated process.
+                // Only kill it if it really still is our logcat.
+                if (pid > 0 && pid != android.os.Process.myPid() && isLogcatProcess(pid)) {
+                    v_(TAG, "reaping leaked log process " + pid);
+                    android.os.Process.killProcess(pid);
+                }
+            }
+        } catch (NumberFormatException | IOException e) {
+            w_(TAG, "could not reap leaked log process: " + e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ignored) {}
+            }
+            if (!pidFile.delete()) {
+                w_(TAG, "could not delete " + pidFile);
+            }
+        }
+    }
+
+    /** Whether the given pid is still a logcat process, per /proc. */
+    private boolean isLogcatProcess(int pid){
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader("/proc/" + pid + "/cmdline"));
+            String cmdline = reader.readLine();
+            return cmdline != null && cmdline.contains("logcat");
+        } catch (IOException e) {
+            // No such process any more, or /proc not readable: nothing to reap.
+            return false;
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ignored) {}
             }
         }
     }
@@ -123,7 +211,11 @@ public class ODALog implements ILog {
         if (logProcess_ != null){
             try {
                 v_(TAG, "Destroy log process");
-                Thread.sleep(1500);
+                // Brief pause so logcat can flush the lines emitted just before
+                // shutdown. This runs on the caller's thread (including the main
+                // thread, via Log.shutdown() from the crash handler), so it has to
+                // stay short.
+                Thread.sleep(200);
                 logProcess_.destroy();
                 v_(TAG, "Log process destroyed");
                 logProcess_ = null;
