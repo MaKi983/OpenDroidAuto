@@ -130,4 +130,13 @@
         android:text="@string/video_show_navigation_notification"
         android:textColor="@color/settings_text_primary" />
 
+    <CheckBox
+        android:id="@+id/showAppBadge"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_gravity="left"
+        android:layout_marginTop="6dp"
+        android:text="@string/video_show_app_badge"
+        android:textColor="@color/settings_text_primary" />
+
 </LinearLayout>

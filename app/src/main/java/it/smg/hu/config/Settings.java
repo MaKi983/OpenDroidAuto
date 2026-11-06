@@ -511,7 +511,7 @@ public class Settings {
         public final static int ADVANCED_LOG_LEVEL_DEFAULT_VALUE = ILog.DEFAULT_LOG_LEVEL;
         public final static boolean ADVANCED_LOG_PROTOCOL_DEFAULT_VALUE = false;
         public final static int ADVANCED_THREADS_NUM_DEFAULT_VALUE = 4;
-        public final static boolean ADVANCED_ENABLE_HONDA_INTEGRATION_DEFAULT_VALUE = false;
+        public final static boolean ADVANCED_ENABLE_HONDA_INTEGRATION_DEFAULT_VALUE = true;
         public final static boolean ADVANCED_ENABLE_HONDA_MIC_VR_DEFAULT_VALUE = true;
         public final static boolean ADVANCED_USE_BT_MIC_VR_DEFAULT_VALUE = false;
         public final static boolean ADVANCED_ENABLE_HONDA_IMID_DEFAULT_VALUE = false;
