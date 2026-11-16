@@ -374,11 +374,11 @@ public class HondaConnectManager {
     // Used in onResume
     public void initAudioBinding(){
         if (Log.isDebug()) Log.d(TAG, "initAudioBinding -> app with auth " + authType());
+
+        isRunning_ = true;
         // if app has THIRD_PARTY auth will have exclusive audio focus, only bind wheel service
         if (isPreinstall()){
             if (Log.isDebug()) Log.d(TAG, "initAudioBinding -> app auth = preinstall -> register ModeMgr and SW callback");
-
-            isRunning_ = true;
 
             if (Log.isDebug()) Log.d(TAG, "initAudioBinding -> hasAudioFocus= " + hasAudioFocus_);
             if (hasAudioFocus_){
@@ -412,10 +412,11 @@ public class HondaConnectManager {
 
         stopMicSession();
 
+        isRunning_ = false;
+
         if (isPreinstall()){
             if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> auth PREINSTALL -> release audio and unregister modemgr callback");
 
-            isRunning_ = false;
             int ret;
 
             if ( currentIdx_ != 255 ) {
