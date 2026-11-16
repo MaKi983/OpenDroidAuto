@@ -256,6 +256,16 @@ public class HondaConnectManager {
     public void requestAudioFocus(){
         // If AUTH_TYPE <> preinstall the app has already audio focus
         if (isPreinstall() && modeMgrManager_ != null && !hasAudioFocus_) {
+            if (settings_.advanced.hondaImidEnabled()) {
+                try {
+                    if (Log.isDebug()) Log.d(TAG, "requestFocus setImidConnectStatus 1");
+                    int ret = modeMgrManager_.setImidConnectStatus(1);
+                    if (Log.isDebug()) Log.d(TAG, "requestFocus setImidConnectStatus ret= " + ret);
+                } catch (Exception e) {
+                    Log.w(TAG, "Could not set i-MID connect status", e);
+                }
+            }
+
             requestFocus(settings_.advanced.modeMgrAudioVideoIdx(), ModeMgrMode.REQUEST_BOTH);
 
             if (Log.isDebug()) Log.d(TAG, "requestAudioFocus statusBarExManager_ audioSourceStartUp");
@@ -285,6 +295,17 @@ public class HondaConnectManager {
             unregisterSteeringMenuCallback();
             unregisterModeMgrSWCallbacks();
             notifySteeringMenuDispMode(0);
+
+
+            if (settings_.advanced.hondaImidEnabled()) {
+                try {
+                    if (Log.isDebug()) Log.d(TAG, "releaseFocus setImidConnectStatus 0");
+                    int ret = modeMgrManager_.setImidConnectStatus(0);
+                    if (Log.isDebug()) Log.d(TAG, "releaseFocus setImidConnectStatus ret= " + ret);
+                } catch (Exception e) {
+                    Log.w(TAG, "Could not set i-MID connect status", e);
+                }
+            }
         }
     }
 
@@ -358,16 +379,6 @@ public class HondaConnectManager {
         if (isPreinstall()) {
             registerModeMgrCallback();
             registerStateMgrCallback();
-
-            if (settings_.advanced.hondaImidEnabled()) {
-                try {
-                    if (Log.isDebug()) Log.d(TAG, "requestFocus setImidConnectStatus 1");
-                    int ret = modeMgrManager_.setImidConnectStatus(1);
-                    if (Log.isDebug()) Log.d(TAG, "requestFocus setImidConnectStatus ret= " + ret);
-                } catch (Exception e) {
-                    Log.w(TAG, "Could not set i-MID connect status", e);
-                }
-            }
         }
     }
 
@@ -417,8 +428,6 @@ public class HondaConnectManager {
         if (isPreinstall()){
             if (Log.isDebug()) Log.d(TAG, "endAudioBinding -> auth PREINSTALL -> release audio and unregister modemgr callback");
 
-            int ret;
-
             if ( currentIdx_ != 255 ) {
                 releaseFocus(currentIdx_, currentModeState_);
             }
@@ -429,17 +438,6 @@ public class HondaConnectManager {
 
             unregisterModeMgrCallback();
             unregisterStateMgrCallback();
-
-            if (settings_.advanced.hondaImidEnabled()) {
-                try {
-                    if (Log.isDebug()) Log.d(TAG, "releaseFocus setImidConnectStatus 0");
-                    ret = modeMgrManager_.setImidConnectStatus(0);
-                    if (Log.isDebug()) Log.d(TAG, "releaseFocus setImidConnectStatus ret= " + ret);
-                } catch (Exception e) {
-                    Log.w(TAG, "Could not set i-MID connect status", e);
-                }
-            }
-
         }
 
         unregisterSteeringMenuCallback();
